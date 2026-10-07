@@ -1,0 +1,37 @@
+{
+  "inputs": [],
+  "servers": {
+    "jira": {
+      "type": "stdio",
+      "command": "${workspaceFolder}/.tools/Jira.Mcp.exe",
+      "env": {
+        "JIRA_URL": "https://jira.exampleqa.local",
+        "JIRA_PERSONAL_TOKEN": "DUMMY_JIRA_TOKEN_FOR_LOCAL_TESTING_ONLY",
+        "JIRA_SSL_VERIFY": "false"
+      }
+    },
+    "bitbucket": {
+      "type": "stdio",
+      "command": "${workspaceFolder}/.tools/Bitbucket.Mcp.exe",
+      "env": {
+        "BITBUCKET_URL": "https://bitbucket.exampleqa.local",
+        "BITBUCKET_TOKEN": "DUMMY_BITBUCKET_TOKEN_FOR_LOCAL_TESTING_ONLY",
+        "BITBUCKET_DEFAULT_PROJECT": "DEMO"
+      }
+    },
+    "confluence": {
+      "type": "stdio",
+      "command": "${workspaceFolder}/.tools/Confluence.Mcp.exe",
+      "env": {
+        "CONFLUENCE_URL": "https://confluence.exampleqa.local",
+        "CONFLUENCE_PERSONAL_TOKEN": "DUMMY_CONFLUENCE_TOKEN_FOR_LOCAL_TESTING_ONLY",
+        "CONFLUENCE_SSL_VERIFY": "false"
+      }
+    },
+  "lc-asssisthub": {
+    "url": "https://assist.exampleqa.local/api/unicorns/mcp",
+		"type": "https",
+    "comment": "Replace URL with your own AssistHub URL for your environment"
+	}
+  }
+}
