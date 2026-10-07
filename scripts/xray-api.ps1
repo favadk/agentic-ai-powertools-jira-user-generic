@@ -123,7 +123,7 @@ function Get-StoryStatus {
         Strategy 2: Xray Cloud GraphQL jira(fields:["status"]) — fallback for
                     Test issues or issues where the REST API returns 404/403.
         Returns $null only when both strategies fail.
-    .PARAMETER IssueKey   Any Jira issue key (e.g. STORY-7456, STORY-7496)
+    .PARAMETER IssueKey   Any Jira issue key (e.g. STORY-0000, STORY-0000)
     .PARAMETER StoryKey   Alias for IssueKey — kept for backwards compatibility
     #>
     param(
@@ -177,7 +177,7 @@ function Assert-StoryInDev {
         Returns $true when the story is in an allowed status ("In Dev" or "Ready for Dev").
         Returns $false and writes a warning when the story is in a non-qualifying status.
         Fails open (returns $true with a warning) when status cannot be determined.
-    .PARAMETER StoryKey   User Story key to check (e.g. STORY-7456)
+    .PARAMETER StoryKey   User Story key to check (e.g. STORY-0000)
     .PARAMETER Allowed    Override the default allowed status names.
     #>
     param(
@@ -211,13 +211,13 @@ function New-XrayTest {
         Creates an Xray Test issue and populates its test steps.
 
     .PARAMETER ProjectKey  Jira project key (e.g. "STORY")
-    .PARAMETER Summary     Test issue summary (e.g. "TC STORY-7456: Restrict help to auth users")
+    .PARAMETER Summary     Test issue summary (e.g. "TC STORY-0000: Restrict help to auth users")
     .PARAMETER StoryKey    User Story key to link via "Tests" link
     .PARAMETER Steps       Array of hashtables: @{ Action="..."; Data="..."; Expected="..." }
     .PARAMETER Description Optional description / preconditions text
     .PARAMETER AssigneeAccountId  Optional Jira accountId to assign the test to after creation
 
-    .OUTPUTS   The created Test issue key (e.g. "STORY-7461")
+    .OUTPUTS   The created Test issue key (e.g. "STORY-0000")
     #>
     param(
         [Parameter(Mandatory)][string]$ProjectKey,
@@ -324,8 +324,8 @@ function New-XrayTestExecution {
         and links the execution back to the User Story.
 
     .PARAMETER ProjectKey   Jira project key
-    .PARAMETER StoryKey     User Story key (e.g. STORY-7456)
-    .PARAMETER TestKeys     Array of Test issue keys to include (e.g. @("STORY-7461"))
+    .PARAMETER StoryKey     User Story key (e.g. STORY-0000)
+    .PARAMETER TestKeys     Array of Test issue keys to include (e.g. @("STORY-0000"))
     .PARAMETER Summary      Optional summary override. Defaults to "Test Execution: {StoryKey}"
     .PARAMETER Environment  Test environment label (e.g. "SIT", "UAT")
 
@@ -673,14 +673,14 @@ function Import-XrayCloudTestSteps {
         using the Xray Cloud REST API v2. Does NOT require BULK_CHANGE permission.
 
     .PARAMETER JsonFilePath   Path to a Xray JSON import file (array of test objects).
-                              Use scripts/xray-import-STORY-7456.json for STORY-7496.
+                              Use scripts/xray-import-STORY-0000.json for STORY-0000.
     .PARAMETER XrayToken      Bearer token from Get-XrayCloudToken. If omitted,
                               Get-XrayCloudToken is called automatically.
     .PARAMETER Region         Xray Cloud region base URL. Defaults to US region.
 
     .EXAMPLE
         $tok = Get-XrayCloudToken
-        Import-XrayCloudTestSteps -JsonFilePath "scripts\xray-import-STORY-7456.json" -XrayToken $tok
+        Import-XrayCloudTestSteps -JsonFilePath "scripts\xray-import-STORY-0000.json" -XrayToken $tok
     #>
     param(
         [Parameter(Mandatory)][string]$JsonFilePath,
@@ -728,7 +728,7 @@ function Set-XrayCloudTestSteps {
         addTestStep GraphQL mutation (Xray Cloud API v2).
         Returns $true on success, $false if any steps failed.
 
-    .PARAMETER TestKey      Existing Xray Test issue key (e.g. "STORY-7421")
+    .PARAMETER TestKey      Existing Xray Test issue key (e.g. "STORY-0000")
     .PARAMETER ProjectKey   Jira project key (e.g. "STORY") — used to look up numeric ID
     .PARAMETER Summary      Unused — kept for signature compatibility
     .PARAMETER Steps        Array of hashtables: @{ Action; Data; Expected }
@@ -793,7 +793,7 @@ function Find-ExistingXrayTest {
         Returns the first Xray Test issue key linked to the given User Story,
         or $null if none is found.
 
-    .PARAMETER StoryKey   User Story key to check (e.g. STORY-7328)
+    .PARAMETER StoryKey   User Story key to check (e.g. STORY-0000)
 
     .OUTPUTS   String: existing Test issue key, or $null
     #>
@@ -849,7 +849,7 @@ function Get-XrayTestStepCount {
         Returns the number of steps on an existing Xray Test issue.
         Returns -1 if the Xray step API is unavailable (Jira Cloud).
 
-    .PARAMETER TestKey   Xray Test issue key (e.g. STORY-7510)
+    .PARAMETER TestKey   Xray Test issue key (e.g. STORY-0000)
     #>
     param([Parameter(Mandatory)][string]$TestKey)
 
@@ -1054,7 +1054,7 @@ function Invoke-JiraTransition {
     .SYNOPSIS
         Executes a named workflow transition on a Jira issue.
         Returns $true on success, $false on failure.
-    .PARAMETER IssueKey        Jira issue key to transition (e.g. STORY-7496)
+    .PARAMETER IssueKey        Jira issue key to transition (e.g. STORY-0000)
     .PARAMETER TransitionName  Exact name of the target transition (e.g. "Open", "Ready for Test Review")
     #>
     param(
@@ -1096,7 +1096,7 @@ function Get-XrayCloudTestSteps {
     .SYNOPSIS
         Retrieves the current steps from an existing Xray Cloud Test issue via GraphQL.
         Returns an array of @{ Action; Data; Expected } hashtables (empty array if none).
-    .PARAMETER TestKey   Xray Test issue key (e.g. STORY-7496)
+    .PARAMETER TestKey   Xray Test issue key (e.g. STORY-0000)
     .PARAMETER Region    Xray Cloud region. Defaults to US.
     #>
     param(
@@ -1145,7 +1145,7 @@ function Update-XrayTestForStory {
         $steps = @(
             @{ Action="Navigate to Help"; Data=""; Expected="Help page loads" }
         )
-        Update-XrayTestForStory -StoryKey "STORY-7600" -TestKey "STORY-7496" -NewSteps $steps
+        Update-XrayTestForStory -StoryKey "STORY-0000" -TestKey "STORY-0000" -NewSteps $steps
     #>
     param(
         [Parameter(Mandatory)][string]$StoryKey,

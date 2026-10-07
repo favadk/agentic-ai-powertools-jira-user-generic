@@ -171,11 +171,11 @@ After the Xray Test is confirmed Active, check whether the **Test Case Review su
       ```
       [QA Monitor] 📋 Sub-task Housekeeping — Action Required
 
-      The Xray Test *{xrayTestKey}* ( https://jira.exampleqa.local/browse/{xrayTestKey} ) has been set to *Active*, confirming the test case review is complete.
+      The Xray Test *{xrayTestKey}* ( https://app.example.com ) has been set to *Active*, confirming the test case review is complete.
 
       However, the following sub-task is still open on this story:
 
-      - *{subTaskKey}* ( https://jira.exampleqa.local/browse/{subTaskKey} ) — {subTaskSummary}
+      - *{subTaskKey}* ( https://app.example.com ) — {subTaskSummary}
         Assignee: {assigneeName} ( @{assigneeEmail} )
         Current status: {subTaskStatus}
 
@@ -236,8 +236,8 @@ Run Story Team Discovery (see `.github/skills/story-team-discovery.md`) on the s
 ### Step 2 — Gather Context
 
 Load `docs/TestCases/{sprint-slug}/TC_{STORY-KEY}.md` and extract:
-- **Story Key** (e.g., STORY-7456)
-- **Xray Test Key** (e.g., STORY-7461) — the `Xray Test Key` field in the doc header
+- **Story Key** (e.g., STORY-0000)
+- **Xray Test Key** (e.g., STORY-0000) — the `Xray Test Key` field in the doc header
 - **All test steps** — every step row across all TCs, in order
 - **Total step count**
 
@@ -257,7 +257,7 @@ docs/TestExecution/{sprint-slug}/evidence/{STORY-KEY}/
 Run this in the terminal to create the Test Execution, add the Test, and link it to the User Story:
 
 ```powershell
-cd "C:\Agentic-AI\agentic-ai-powertools-jira-user-new"
+cd "C:\Agentic-AI\agentic-ai-powertools-jira-user-generic"
 . .\scripts\xray-api.ps1
 
 $execKey = New-XrayTestExecution `
@@ -278,7 +278,7 @@ Write-Host "Test Run ID: $runId | Steps: $($steps.Count)"
 
 Tell the user:
 - "Test Execution **{execKey}** created in Jira."
-- "View at: https://jira.exampleqa.local/browse/{execKey}"
+- "View at: https://app.example.com
 - "Test Run ID: {runId} | {N} steps ready for execution."
 
 ### Step 4 — Execute Steps One by One
@@ -582,7 +582,7 @@ Save to `docs/TestExecution/{sprint-slug}/TE_{STORY-KEY}_Cycle{N}.md`:
 |--------------------|------------------|
 | QA Lead            | {Name / TBD} |
 | Date               | {Date}       |
-| Xray Execution URL | https://jira.exampleqa.local/browse/{EXEC-KEY} |
+| Xray Execution URL | https://app.example.com |
 ```
 
 ## Evidence Rules
@@ -598,5 +598,5 @@ Save to `docs/TestExecution/{sprint-slug}/TE_{STORY-KEY}_Cycle{N}.md`:
 
 ## Example Usage
 
-- User: "Execute test cases for STORY-7456 in SIT, Cycle 1, build 5.2.1."
+- User: "Execute test cases for STORY-0000 in SIT, Cycle 1, build 5.2.1."
 - Agent: loads TC doc → reads Xray Test key → creates Test Execution in Jira → adds Test → for each step: presents step, records actual result, updates Xray step status, prompts for screenshot, attaches to Xray → logs defects on failures → sets overall status → saves local execution report.

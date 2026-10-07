@@ -10,8 +10,8 @@ function Invoke-Gql($query) {
 $runId = "6a5ff87b72d5b592fbee751e"
 $step4 = "2cb9dfec-5f85-4d8c-aaa7-fb885b7a7c78"
 
-$actualResult = "AC-03 DEFECT: After navigating to /docs/security/ while unauthenticated and completing sign-in via Cognito, the docs-auth flow redirected to hub root / instead of returning to the original /docs/security/ path. The returnUrl parameter is not honoured. Finding raised: STORY-7531 (Sub-task, High, Open)."
-$comment      = "Finding: STORY-7531 - returnUrl not honoured post sign-in redirect. AC-03 violated. Sub-task linked to parent story STORY-7456."
+$actualResult = "AC-03 DEFECT: After navigating to /docs/security/ while unauthenticated and completing sign-in via Cognito, the docs-auth flow redirected to hub root / instead of returning to the original /docs/security/ path. The returnUrl parameter is not honoured. Finding raised: STORY-0000 (Sub-task, High, Open)."
+$comment      = "Finding: STORY-0000 - returnUrl not honoured post sign-in redirect. AC-03 violated. Sub-task linked to parent story STORY-0000."
 
 Write-Output "=== Setting actualResult + comment on step 4 ==="
 $m = "mutation { updateTestRunStep(testRunId: `"$runId`", stepId: `"$step4`", updateData: { status: `"FAILED`", actualResult: `"$actualResult`", comment: `"$comment`" }) { warnings } }"

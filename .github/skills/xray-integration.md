@@ -9,7 +9,7 @@ description: Xray Cloud integration patterns using the xray-api.ps1 helper scrip
 The Xray helper script must be dot-sourced before use:
 
 ```powershell
-cd "C:\Agentic-AI\agentic-ai-powertools-jira-user-new"
+cd "C:\Agentic-AI\agentic-ai-powertools-jira-user-generic"
 . .\scripts\xray-api.ps1
 ```
 
@@ -55,7 +55,7 @@ $execKey = New-XrayTestExecution `
     -Summary      "Test Execution Cycle {N}: {STORY-KEY} — {Story Summary}"
 
 Write-Host "Test Execution created: $execKey"
-# View at: https://jira.exampleqa.local/browse/$execKey
+# View at: https://app.example.com
 ```
 
 ---
@@ -115,4 +115,4 @@ For bulk import via the Xray Cloud REST API, use the `XrayImportTestSteps` tool 
 - Auth endpoint: `POST https://xray.cloud.getxray.app/api/v2/authenticate`
 - Import endpoint: `POST https://us.xray.cloud.getxray.app/api/v2/import/test`
 - Credentials: set `XRAY_CLIENT_ID` and `XRAY_CLIENT_SECRET` in `.vscode/mcp.local.json` under the `xray` server entry.
-- Example payload: see `scripts/xray-import-STORY-7456.json`.
+- Example payload: see `scripts/xray-import-STORY-0000.json`.

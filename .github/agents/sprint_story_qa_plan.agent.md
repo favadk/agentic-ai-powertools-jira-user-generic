@@ -68,7 +68,7 @@ This determines whether the story needs a **new test case** or an **enhancement 
 
 3. For each candidate test found, retrieve its Xray status:
    ```powershell
-   cd "C:\Agentic-AI\agentic-ai-powertools-jira-user-new"
+   cd "C:\Agentic-AI\agentic-ai-powertools-jira-user-generic"
    . .\scripts\xray-api.ps1
    Get-StoryStatus -IssueKey "{CANDIDATE-TEST-KEY}"
    ```

@@ -5,7 +5,7 @@ $hdrs = @{ Authorization = "Bearer $tok"; "Content-Type" = "application/json" }
 
 $runId = "6a5ff87b72d5b592fbee751e"
 $step4 = "2cb9dfec-5f85-4d8c-aaa7-fb885b7a7c78"
-$base  = "C:\Agentic-AI\agentic-ai-powertools-jira-user-new\docs\TestExecution\evidence\STORY-7456-Cycle1"
+$base  = "C:\Agentic-AI\agentic-ai-powertools-jira-user-generic\docs\TestExecution\evidence\STORY-0000-Cycle1"
 
 # Read and base64-encode one file as a test
 $testFile = "$base\evidence-step4-01-cognito-signin.png"

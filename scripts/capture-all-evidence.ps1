@@ -1,8 +1,8 @@
 param()
 $ErrorActionPreference = "Stop"
 
-$workspace = "c:\Agentic-AI\agentic-ai-powertools-jira-user-new"
-$evidenceDir = "$workspace\docs\TestExecution\evidence\STORY-7456-FullRun"
+$workspace = "c:\Agentic-AI\agentic-ai-powertools-jira-user-generic"
+$evidenceDir = "$workspace\docs\TestExecution\evidence\STORY-0000-FullRun"
 New-Item -ItemType Directory -Force -Path $evidenceDir | Out-Null
 
 # Write a Node.js Playwright script
@@ -12,9 +12,9 @@ const path = require('path');
 const fs = require('fs');
 
 const EVIDENCE_DIR = process.argv[2];
-const HUB_URL = 'https://hub.tst-51.aws.GenericQA.com';
-const DOCS_URL = 'https://hub.tst-51.aws.GenericQA.com/docs/';
-const DOCS_SECURITY_URL = 'https://hub.tst-51.aws.GenericQA.com/docs/security/';
+const HUB_URL = 'https://app.example.com
+const DOCS_URL = 'https://app.example.com
+const DOCS_SECURITY_URL = 'https://app.example.com
 
 const CREDS = {
   user:    { email: 'sidqawadautomation+user@gmail.com',            pass: 'nsu4Test@wad' },
@@ -184,7 +184,7 @@ async function ss(page, name) {
     await ss(page, 'step7-01-docs-still-accessible-after-f5-refresh.png');
     
     // Check for ac_docs_auth cookie
-    const cookies = await ctx.cookies('https://hub.tst-51.aws.GenericQA.com');
+    const cookies = await ctx.cookies('https://app.example.com);
     const acDocsCookie = cookies.find(c => c.name === 'ac_docs_auth');
     console.log('AC_DOCS_AUTH_COOKIE: ' + (acDocsCookie ? JSON.stringify(acDocsCookie) : 'not found'));
     

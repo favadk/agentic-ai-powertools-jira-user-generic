@@ -22,7 +22,7 @@ For a triggered story, the first two Xray and local TC steps are always:
 | 1 | Run automated smoke suite against the selected environment. | `npx protractor smoke.conf.js` | All smoke tests pass. |
 | 2 | Run automated smoke-install suite against the selected environment. | `npx protractor smokeInstallation.conf.js` | All smoke-install tests pass. |
 
-Run both commands from `C:\automation\06102026\UI_Protractor_Tests` with `BASE_URL` set to the target environment. The smoke suite uses `Tests/Smoke tests/*`; the smoke-install suite uses `Tests/Installation Tests/STORY-3957.spec.js`.
+Run both commands from `C:\automation\06102026\UI_Protractor_Tests` with `BASE_URL` set to the target environment. The smoke suite uses `Tests/Smoke tests/*`; the smoke-install suite uses `Tests/Installation Tests/STORY-0000.spec.js`.
 
 ## Gate Behavior
 

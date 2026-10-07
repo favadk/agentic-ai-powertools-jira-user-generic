@@ -257,7 +257,7 @@ Before doing a broad keyword search, check whether the story is a **version incr
 
 | Pattern | Example |
 |---|---|
-| `Release {Component} {X.Y.Z}` | "Release GenericQA GC 4.5.228 Driver" |
+| `Release {Component} {X.Y.Z}` | "Release ExampleOrg GC 4.5.228 Driver" |
 | `Upgrade {Component} to {X.Y.Z}` | "Upgrade OpenLab to 2.8.1" |
 | `{Component} {X.Y.Z} support` | "CDS 10.2 support" |
 | `Deploy {Component} {X.Y.Z}` | "Deploy firmware 3.1.4" |
@@ -304,7 +304,7 @@ issueType = Test AND summary ~ "{KEYWORD}" AND project = "{PROJECT-KEY}"
 For each candidate test identified in Steps 2–3, run in terminal to retrieve its current Xray status:
 
 ```powershell
-cd "C:\Agentic-AI\agentic-ai-powertools-jira-user-new"
+cd "C:\Agentic-AI\agentic-ai-powertools-jira-user-generic"
 . .\scripts\xray-api.ps1
 $status = Get-StoryStatus -IssueKey "{CANDIDATE-TEST-KEY}"
 Write-Host "Status: $status"
@@ -454,7 +454,7 @@ Use `jira_get_issue` to fetch:
 
 Resolve `{sprint-slug}` from the story's active sprint name:
 ```
-Sprint name "CID sprint 111"  →  sprint-slug = "CID-sprint-111"
+Sprint name "sample-sprint"  →  sprint-slug = "sample-sprint"
 Rule: replace all whitespace with hyphens (no lowercase conversion needed)
 Source: jira_get_sprints_from_board (state=active) OR $trigger.sprintSlug if present in trigger file
 ```
@@ -675,7 +675,7 @@ $steps = @(
 Run this in the terminal (from workspace root):
 
 ```powershell
-cd "C:\Agentic-AI\agentic-ai-powertools-jira-user-new"
+cd "C:\Agentic-AI\agentic-ai-powertools-jira-user-generic"
 . .\scripts\xray-api.ps1
 
 $steps = @(
@@ -695,12 +695,12 @@ Write-Host "Xray Test created: $testKey"
 ### 7c — Record the Xray Test key
 
 After the script runs:
-1. Note the returned Xray Test issue key (e.g., `STORY-7461`)
+1. Note the returned Xray Test issue key (e.g., `STORY-0000`)
 2. Add it to the local TC document header table:
    ```
-   | **Xray Test Key** | STORY-7461 |
+   | **Xray Test Key** | STORY-0000 |
    ```
-3. Tell the user: "Xray Test **{KEY}** created in Jira with all {N} steps. Linked to {STORY-KEY}. View at: https://jira.exampleqa.local/browse/{KEY}"
+3. Tell the user: "Xray Test **{KEY}** created in Jira with all {N} steps. Linked to {STORY-KEY}. View at: https://app.example.com
 
 ### 7d — Handle Xray API failure gracefully
 
@@ -819,7 +819,7 @@ Extract:
 Run in terminal to get the complete story detail — description, AC **and every comment**:
 
 ```powershell
-cd "C:\Agentic-AI\agentic-ai-powertools-jira-user-new"
+cd "C:\Agentic-AI\agentic-ai-powertools-jira-user-generic"
 . .\scripts\xray-api.ps1
 $ctx = Get-JiraStoryDetail -StoryKey "{IMPACTING-STORY-KEY}"
 Write-Host "=== SUMMARY ===" ; Write-Host $ctx.Summary
@@ -872,12 +872,12 @@ Example:
 ```powershell
 $newSteps = @(
     @{
-        Action   = "[IMPACT STORY-7600][AC-03]: Auth redirect — Verify unauthenticated user is redirected to login"
+        Action   = "[IMPACT STORY-0000][AC-03]: Auth redirect — Verify unauthenticated user is redirected to login"
         Data     = "User: not logged in; URL: /help"
         Expected = "User is redirected to /login?returnUrl=/help. Login page is displayed."
     },
     @{
-        Action   = "[IMPACT STORY-7600][COMMENT-01]: Mid-sprint enhancement — Verify redirect preserves returnUrl parameter"
+        Action   = "[IMPACT STORY-0000][COMMENT-01]: Mid-sprint enhancement — Verify redirect preserves returnUrl parameter"
         Data     = "User not authenticated; direct URL access to /help"
         Expected = "After login, user is returned to /help (returnUrl is preserved)"
     }
@@ -899,7 +899,7 @@ Update `docs/TestCases/{sprint-slug}/TC_{ORIGINAL-STORY-KEY}.md`:
 Run `Update-XrayTestForStory` to append steps and transition the test:
 
 ```powershell
-cd "C:\Agentic-AI\agentic-ai-powertools-jira-user-new"
+cd "C:\Agentic-AI\agentic-ai-powertools-jira-user-generic"
 . .\scripts\xray-api.ps1
 
 $newSteps = @(
@@ -964,5 +964,5 @@ Wait for the review agent to return before proceeding to Step 9.
 **Mode A:** "Prepare test cases for story CDS2REP-1234."  
 Agent: fetches story → parses AC → generates full TC document → saves locally → creates Xray Test issue → links to story → reports key and coverage matrix.
 
-**Mode C:** "Resolve impact review findings from `docs/TestCaseReview/TCR_STORY-7496_Impact_STORY-7600.md`. Test key: STORY-7496. Impacting story: STORY-7600."  
+**Mode C:** "Resolve impact review findings from `docs/TestCaseReview/TCR_STORY-7496_Impact_STORY-7600.md`. Test key: STORY-0000. Impacting story: STORY-0000."  
 Agent: reads review findings → loads full story context including comments → generates delta steps → updates local TC doc → runs `Update-XrayTestForStory` → reports outcome.

@@ -183,7 +183,7 @@ Skills are shared markdown documents loaded by agents at runtime. They encode do
 | `process-qa-review-triggers.ps1` | Scheduled processor — classifies linked-Xray test comments with local Ollama using story, TC, and Xray-step evidence; writes `TCR_{TEST-KEY}_Comments.md`, posts a verdict/evidence request on the Xray Test, and never edits Xray steps |
 | `monitor-story-changes.ps1` | Scheduled payload — polls Jira for **description/AC edits**, **status changes**, and sprint carry-over on active sprint non-terminal Story issues; emits `SPRINT_CHANGE` for carry-over stories, ignores out-of-sprint legacy entries, excludes legacy trigger types from active processing, and auto-cleans triggers for terminal-status stories |
 | `process-qa-agent-triggers.ps1` | Scheduled handoff worker — verifies current-sprint TE/Xray-run readiness through `xray-api.ps1`, requires and invokes a configured automation runner, syncs manifest-backed automated step results/evidence to Xray, and records blocked handoffs when the runner or sync fails |
-| `automation-runner.ps1` | Local automation runner — chains the Bitbucket Protractor smoke-install flow and STORY-7566 feature spec, requires `IP_ADDRESS`, `OLS_NAME`, and `OLD_CID_NAME` for install/upgrade evidence, and writes the evidence manifest consumed by Xray sync |
+| `automation-runner.ps1` | Local automation runner — chains the Bitbucket Protractor smoke-install flow and STORY-0000 feature spec, requires `IP_ADDRESS`, `OLS_NAME`, and `OLD_CID_NAME` for install/upgrade evidence, and writes the evidence manifest consumed by Xray sync |
 | `build-agent-activity-log.ps1` | Dashboard data builder — scans QA artifacts and trigger files to generate `scripts/agent-activity-log.json` with `currentSprint`, `changeLogUpdates`, and `pendingUserActions` for the monitoring dashboard |
 | `setup-task-scheduler.ps1` | Registers the QA Automation Orchestrator as a scheduled task |
 | `setup-story-monitor-scheduler.ps1` | Registers **both** QA monitors (`QA-Monitor-PO-Responses` + `QA-Monitor-Story-Changes`) as scheduled tasks; self-elevates via UAC if not admin |
@@ -419,7 +419,7 @@ stateDiagram-v2
     "enabled": true,
     "boardId": 440,
     "sprintId": 78391,
-    "sprintName": "CID sprint 110",
+    "sprintName": "sample-sprint",
     "autoAddNewStories": true
   },
   "issues": [{
@@ -467,7 +467,7 @@ PO response triggers are emitted one-per-comment (`{KEY}-response-{COMMENT_ID}.j
 ### Step 1 — Clone the framework repo
 
 ```powershell
-git clone https://bitbucket.exampleqa.local/scm/siddev/agentic-ai-powertools.git
+git clone https://app.example.com
 cd agentic-ai-powertools
 ```
 
@@ -514,7 +514,7 @@ The MCP servers connect automatically. Start using agents from the Copilot chat.
 In GitHub Copilot Chat, select the appropriate agent and type:
 
 ```
-@workspace STORY-7456
+@workspace STORY-0000
 ```
 
 Or just describe what you need — the agent determines the story key from context.

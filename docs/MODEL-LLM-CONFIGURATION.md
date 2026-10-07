@@ -253,7 +253,7 @@ Agent Request
 - Live API tokens or secrets
 
 **Safe to pass:**
-- Jira issue keys (STORY-7502)
+- Jira issue keys (STORY-0000)
 - Test step descriptions (anonymized)
 - Generic error messages
 - Public documentation
@@ -271,7 +271,7 @@ All LLM calls are logged with:
   "cost_usd": 0.062,
   "duration_seconds": 4.2,
   "result_status": "success",
-  "story_key": "STORY-7502"
+  "story_key": "STORY-0000"
 }
 ```
 

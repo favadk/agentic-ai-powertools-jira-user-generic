@@ -1,4 +1,4 @@
-﻿cd "C:\Agentic-AI\agentic-ai-powertools-jira-user-new"
+cd "C:\Agentic-AI\agentic-ai-powertools-jira-user-generic"
 . ".\scripts\xray-api.ps1"
 $tok = Get-XrayCloudToken
 $ep = "https://us.xray.cloud.getxray.app/api/v2/graphql"

@@ -1,5 +1,5 @@
 param()
-Set-Location "C:\Agentic-AI\agentic-ai-powertools-jira-user-new"
+Set-Location "C:\Agentic-AI\agentic-ai-powertools-jira-user-generic"
 . ".\scripts\xray-api.ps1"
 
 $token = Get-XrayCloudToken
@@ -8,7 +8,7 @@ Write-Output "Token length: $($token.Length)"
 $runId = "6a5ff87b72d5b592fbee751e"
 $ep = "https://us.xray.cloud.getxray.app/api/v2/graphql"
 $hdrs = @{ Authorization = "Bearer $token"; "Content-Type" = "application/json" }
-$dir = ".\docs\TestExecution\evidence\STORY-7456-FullRun"
+$dir = ".\docs\TestExecution\evidence\STORY-0000-FullRun"
 
 $sids = @{
     1 = "1d664a4c-f24b-41fd-9b21-7afadb81787b"

@@ -10,7 +10,7 @@ services:
     restart: unless-stopped
     environment:
       # Jira Configuration
-      JIRA_URL: ${JIRA_URL:-https://jira.exampleqa.local}
+      JIRA_URL: ${JIRA_URL:-https://app.example.com
       JIRA_USER: ${JIRA_USER:-qa-automation@company.atlassian.net}
       JIRA_API_TOKEN: ${JIRA_API_TOKEN}
       JIRA_PROJECT_KEY: ${JIRA_PROJECT_KEY:-STORY}
@@ -23,7 +23,7 @@ services:
       GITHUB_TOKEN: ${GITHUB_TOKEN}
 
       # QA Framework Configuration
-      SPRINT_SLUG: ${SPRINT_SLUG:-CID-sprint-111}
+      SPRINT_SLUG: ${SPRINT_SLUG:-sample-sprint}
       ACTIVE_BOARD_ID: ${ACTIVE_BOARD_ID:-440}
       PRODUCT_NAME: ${PRODUCT_NAME:-CID}
       ENVIRONMENT: ${ENVIRONMENT:-DEV}
@@ -116,7 +116,7 @@ services:
     container_name: qa-dashboard
     restart: unless-stopped
     environment:
-      JIRA_URL: ${JIRA_URL:-https://jira.exampleqa.local}
+      JIRA_URL: ${JIRA_URL:-https://app.example.com
       JIRA_API_TOKEN: ${JIRA_API_TOKEN}
       JIRA_PROJECT_KEY: ${JIRA_PROJECT_KEY:-STORY}
       DB_HOST: postgres

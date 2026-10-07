@@ -237,7 +237,7 @@ This guide provides a single reference point for all project documentation, orga
 **Triggers**: Auto-trigger after evidence review APPROVED  
 **Output**:
 - docs/Automation/AUT_{STORY-KEY}.md (local)
-- Automation spec file (e.g., STORY-7502.spec.js)
+- Automation spec file (e.g., STORY-0000.spec.js)
 **Handles**:
 - Protractor spec generation from test steps
 - Page object mapping
@@ -545,7 +545,7 @@ Template for project compatibility matrix (browsers, OS, devices)
 
 | Resource | Link |
 |----------|------|
-| Project Repo | https://github.com/your-org/agentic-ai-powertools-jira-user-new |
+| Project Repo | https://github.com/your-org/agentic-ai-powertools-jira-user-generic |
 | README | [README.md](../README.md) |
 | Architecture | [FRAMEWORK-ARCHITECTURE.md](FRAMEWORK-ARCHITECTURE.md) |
 | Deployment | [DEPLOYMENT-GUIDE.md](DEPLOYMENT-GUIDE.md) |

@@ -118,8 +118,8 @@ Save to `docs/Automation/AUTR_{STORY-KEY}.md`.
 1. Create the automation branch from the default branch:
 ```powershell
 cd "C:\automation\06102026\UI_Protractor_Tests"
-git checkout windows-STORY-6457-new-release-fix-latest
-git pull origin windows-STORY-6457-new-release-fix-latest
+git checkout windows-STORY-0000-new-release-fix-latest
+git pull origin windows-STORY-0000-new-release-fix-latest
 git checkout -b automation/{STORY-KEY}
 ```
 

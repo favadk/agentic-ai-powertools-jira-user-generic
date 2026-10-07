@@ -1,5 +1,5 @@
 ---
-description: Project-specific compatibility matrix — defines the supported OS, browser, database, device, and GenericQA software product version environments for this project, coverage tiers per feature area, and the primary environment for smoke testing. Configure this file once per project. All QA agents read it automatically.
+description: Project-specific compatibility matrix — defines the supported OS, browser, database, device, and ExampleOrg software product version environments for this project, coverage tiers per feature area, and the primary environment for smoke testing. Configure this file once per project. All QA agents read it automatically.
 ---
 
 # Project Environment Matrix
@@ -18,12 +18,12 @@ The CID Hub project has four named environments. All QA agents use this table to
 
 | Env Label | URL | Purpose | Use for Xray `Environment` field |
 |-----------|-----|---------|----------------------------------|
-| **TEST** | https://hub.tst-51.aws.GenericQA.com/ | Active QA/testing — **default for story execution** | `SIT` |
-| **DEV** | https://hub.dev-51.aws.GenericQA.com/ | Developer integration | `DEV` |
-| **STAGING** | https://hub.stg-51.aws.GenericQA.com/ | Pre-production / UAT | `STAGING` |
-| **PRODUCTION** | https://hub.cid.GenericQA.com | Live production | `PROD` |
+| **TEST** | https://app.example.com | Active QA/testing — **default for story execution** | `SIT` |
+| **DEV** | https://app.example.com | Developer integration | `DEV` |
+| **STAGING** | https://app.example.com | Pre-production / UAT | `STAGING` |
+| **PRODUCTION** | https://app.example.com | Live production | `PROD` |
 
-> **Default for test execution**: TEST (`https://hub.tst-51.aws.GenericQA.com/`) unless the story explicitly requires a different environment.
+> **Default for test execution**: TEST (`https://app.example.com) unless the story explicitly requires a different environment.
 
 ---
 
@@ -118,7 +118,7 @@ Define per-area tiers when specific areas need different coverage rules than the
 
 ## Software Version Traceability Matrix
 
-Define the GenericQA software product configurations that apply to this project. Each row is a **named environment** (Env ID) representing a specific combination of installed product versions. Agents read this table to determine which software configurations must be tested, and create one Xray Test Execution per applicable row.
+Define the ExampleOrg software product configurations that apply to this project. Each row is a **named environment** (Env ID) representing a specific combination of installed product versions. Agents read this table to determine which software configurations must be tested, and create one Xray Test Execution per applicable row.
 
 > **How to use**:
 > - Add one row per software version configuration you need to test.
@@ -128,7 +128,7 @@ Define the GenericQA software product configurations that apply to this project.
 > - A column not applicable to this project may be removed from the table.
 > - Set all rows to a single Env ID (P1 only) for single-environment projects.
 
-| Env ID | OpenLab Server | OpenLab CDS | Instr. Driver | GenericQA Add-on | 3rd-Party Add-on | Tier |
+| Env ID | OpenLab Server | OpenLab CDS | Instr. Driver | ExampleOrg Add-on | 3rd-Party Add-on | Tier |
 |--------|----------------|-------------|---------------|----------------|-----------------|------|
 | SWE-1  | {e.g. v2.7 SP2} | {e.g. v2.7 SP2} | {e.g. v7.4.3} | {e.g. GC Backflush v3.1 or None} | {e.g. None} | P1 |
 | SWE-2  | {e.g. v2.7 SP1} | {e.g. v2.7 SP1} | {e.g. v7.4.2} | {e.g. GC Backflush v3.1 or None} | {e.g. Waters MassLynx v2.0 or None} | P2 |
@@ -159,8 +159,8 @@ To test specific Env IDs for a particular story (overriding the tier rules), add
 | **Env ID** | Short unique identifier used on Xray executions and defect labels (e.g., `SWE-1`, `PROD-Baseline`, `QA-v27`) |
 | **OpenLab Server** | Full version + service pack, e.g., `v2.7 SP2`, `v2.6 SR2` |
 | **OpenLab CDS** | Full version + SP or product name variant, e.g., `v2.7 SP2`, `ChemStation C.01.10` |
-| **Instr. Driver** | GenericQA instrument driver version, e.g., `v7.4.3`, `DDK v5.1` |
-| **GenericQA Add-on** | Name + version of each installed GenericQA add-on, e.g., `GC Backflush v3.1`; use `None` if absent |
+| **Instr. Driver** | ExampleOrg instrument driver version, e.g., `v7.4.3`, `DDK v5.1` |
+| **ExampleOrg Add-on** | Name + version of each installed ExampleOrg add-on, e.g., `GC Backflush v3.1`; use `None` if absent |
 | **3rd-Party Add-on** | Name + version of each third-party integrated add-on, e.g., `Waters MassLynx v2.0`; use `None` if absent |
 | **Tier** | P1 = always tested, P2 = tested when story tier is P1 or P2, P3 = tested only when story tier is P1 |
 

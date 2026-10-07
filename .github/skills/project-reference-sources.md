@@ -16,8 +16,8 @@ Product help pages are **authoritative** — expected results are derived from t
 
 | Label | URL | Used By |
 | --- | --- | --- |
-| CID Hub Home (stg-51) | [https://hub.stg-51.aws.GenericQA.com/home](https://hub.stg-51.aws.GenericQA.com/home) | test_case_preparation, test_case_review, automation_code_preparation |
-| Product Help Portal (CID Docs, stg-51) | [https://hub.stg-51.aws.GenericQA.com/docs/](https://hub.stg-51.aws.GenericQA.com/docs/) | test_case_preparation, test_case_review, automation_code_preparation |
+| CID Hub Home (stg-51) | [https://app.example.com](https://app.example.com) | test_case_preparation, test_case_review, automation_code_preparation |
+| Product Help Portal (CID Docs, stg-51) | [https://app.example.com](https://app.example.com) | test_case_preparation, test_case_review, automation_code_preparation |
 | Swagger / OpenAPI Spec | *(configure in Setup Wizard — Step 4)* | test_case_preparation, automation_code_preparation |
 | Reference Doc 1 | *(configure in Setup Wizard — Step 4)* | all TC agents |
 | Reference Doc 2 | *(configure in Setup Wizard — Step 4)* | all TC agents |

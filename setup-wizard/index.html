@@ -746,19 +746,19 @@
 // Sourced from mcp.local.json + automation-repository-config.md
 // ===========================
 const EXISTING_CONFIG = {
-  TargetPath:           'C:\\Agentic-AI\\agentic-ai-powertools-jira-user-new',
-  JiraBaseUrl:          'jira.exampleqa.local',
+  TargetPath:           'C:\\Agentic-AI\\agentic-ai-powertools-jira-user-generic',
+  JiraBaseUrl:          'issue-tracker.example.com',
   JiraEmail:            'favad.khan@exampleqa.local',
   JiraToken:            'DUMMY_JIRA_TOKEN_FOR_LOCAL_TESTING_ONLY',
   JiraProjectKey:       'STORY',
   JiraBoardId:          '440',
   XrayClientId:         '32A143092D234A279FF6D9A7025DBD47',
   XrayClientSecret:     '563a10290811c92356ca275d83fb060ac7ec8224ab620daa19a980d17fe5f02d',
-  ConfluenceUrl:        'jira.exampleqa.local/wiki',
-  BitbucketServer:      'bitbucket.exampleqa.local',
+  ConfluenceUrl:        'issue-tracker.example.com/wiki',
+  BitbucketServer:      'source-control.example.com',
   BitbucketProjectKey:  'SIDDEV',
   BitbucketRepo:        'ac_portal_e2e',
-  DefaultBranch:        'windows-STORY-6457-new-release-fix-latest',
+  DefaultBranch:        'windows-STORY-0000-new-release-fix-latest',
   PrTargetBranch:       'release-fr1.4',
   LocalRepoPath:        'C:\\automation\\06102026\\UI_Protractor_Tests',
   // Step 4 — populated from project-reference-sources.md if set
@@ -1048,7 +1048,7 @@ function buildPS() {
     ? (activeProvider === 'hybrid' ? document.getElementById('HybridFallback').value : document.getElementById('OllamaModel').value)
     : '';
 
-  let cmd = `# Run from the QA Framework source folder (agentic-ai-powertools-jira-user-new)\n`;
+  let cmd = `# Run from the QA Framework source folder (agentic-ai-powertools-jira-user-generic)\n`;
 
   if (needsOllama) {
     cmd += `\n# ---- Step 1: Select Ollama model ----\n`;

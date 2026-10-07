@@ -6,7 +6,7 @@
 .DESCRIPTION
     Triggered by monitor-story-changes.ps1 when it writes a WINDOWS_UPDATE trigger file.
     Executes the following steps automatically:
-        1. Link Xray Test STORY-6457 to the story
+        1. Link Xray Test STORY-0000 to the story
         2. Create branch qualify/monthly-windows-update-<Month-YYYY> from master
         3. Fetch latest cumulative KB article IDs from Microsoft Update Catalog
         4. Update SoftwareManager.js (kbArticles, softwareVersions, softwareDependencies,
@@ -23,12 +23,12 @@
 
 .EXAMPLE
     . .\scripts\xray-api.ps1
-    .\scripts\handle-windows-update.ps1 -TriggerFile scripts/triggers/STORY-7548-windows-update.json
+    .\scripts\handle-windows-update.ps1 -TriggerFile scripts/triggers/STORY-0000-windows-update.json
 #>
 param(
     [Parameter(Mandatory)][string]$TriggerFile,
     [string]$JenkinsJobPath    = "",
-    [string]$JenkinsBaseUrl    = "https://scs-jenkins-5.scs.GenericQA.com",
+    [string]$JenkinsBaseUrl    = "https://app.example.com
     [string]$AutomationRepoDir = "C:\automation\06102026\UI_Protractor_Tests",
     [string]$GitRepoDir        = "C:\automation\ac_repo_fr13"
 )
@@ -40,7 +40,7 @@ $repoRoot = Split-Path $PSScriptRoot -Parent
 . (Join-Path $PSScriptRoot "xray-api.ps1")
 $creds    = Get-XrayCreds
 $encoded  = $creds.Headers.Authorization
-$jiraBase = "https://jira.exampleqa.local"
+$jiraBase = "https://app.example.com
 
 # --- Read trigger -------------------------------------------------------------
 $trigger  = Get-Content $TriggerFile -Raw | ConvertFrom-Json
@@ -93,20 +93,20 @@ $branchName= "qualify/monthly-windows-update-$monthFull-$year"
 Write-Host ""
 Write-Host "  Month: $monthFull $year  ->  Branch: $branchName"
 
-# --- STEP 1: Link STORY-6457 to the story -------------------------------------
+# --- STEP 1: Link STORY-0000 to the story -------------------------------------
 Write-Host ""
-Write-Host "STEP 1 -- Linking STORY-6457 to $storyKey..."
+Write-Host "STEP 1 -- Linking STORY-0000 to $storyKey..."
 $existingLinks = Invoke-RestMethod -Uri "$jiraBase/rest/api/3/issue/$storyKey`?fields=issuelinks" `
     -Headers @{Authorization=$encoded;Accept="application/json"}
-$alreadyLinked = $existingLinks.fields.issuelinks | Where-Object { $_.inwardIssue.key -eq 'STORY-6457' }
+$alreadyLinked = $existingLinks.fields.issuelinks | Where-Object { $_.inwardIssue.key -eq 'STORY-0000' }
 if ($alreadyLinked) {
-    Write-Host "  STORY-6457 already linked. Skipping."
+    Write-Host "  STORY-0000 already linked. Skipping."
 } else {
-    $linkBody = '{"type":{"name":"Test"},"inwardIssue":{"key":"STORY-6457"},"outwardIssue":{"key":"' + $storyKey + '"}}'
+    $linkBody = '{"type":{"name":"Test"},"inwardIssue":{"key":"STORY-0000"},"outwardIssue":{"key":"' + $storyKey + '"}}'
     $r = Invoke-WebRequest -Uri "$jiraBase/rest/api/3/issueLink" -Method POST `
         -Headers @{Authorization=$encoded;Accept="application/json"} `
         -Body $linkBody -ContentType "application/json" -UseBasicParsing
-    Write-Host "  Linked STORY-6457 -> $storyKey (HTTP $($r.StatusCode))"
+    Write-Host "  Linked STORY-0000 -> $storyKey (HTTP $($r.StatusCode))"
 }
 
 # --- STEP 2: Create branch from master ---------------------------------------
@@ -200,8 +200,8 @@ if (-not $lastWinLine) {
     $lastWinLine = [regex]::Match($smContent, "$lastWinIdx\s*:\s*'[^']+'\s*(?:\r?\n|$)").Value
 }
 $newWinLines = $lastWinLine.TrimEnd() + "`n" +
-    "            $nextWin10Idx`: '$win10Ver', // STORY-7548-pattern: $monthShort'$yearShort Windows update (win10)`n" +
-    "            $nextWin11Idx`: '$win11Ver'  // STORY-7548-pattern: $monthShort'$yearShort Windows update (win11)"
+    "            $nextWin10Idx`: '$win10Ver', // STORY-0000-pattern: $monthShort'$yearShort Windows update (win10)`n" +
+    "            $nextWin11Idx`: '$win11Ver'  // STORY-0000-pattern: $monthShort'$yearShort Windows update (win11)"
 $smContent = $smContent -replace [regex]::Escape($lastWinLine.TrimEnd()), $newWinLines
 
 # 2. Update softwareDependencies[windows] -- replace each CDS entry with new indices
@@ -255,7 +255,7 @@ try {
 Write-Host ""
 Write-Host "STEP 6 -- Ensuring single Test Execution then triggering Jenkins..."
 
-# Reuse existing TE linked to this story+STORY-6457. Create one only if none exists.
+# Reuse existing TE linked to this story+STORY-0000. Create one only if none exists.
 $existingLinks = Invoke-RestMethod -Uri "$jiraBase/rest/api/3/issue/$storyKey`?fields=issuelinks" `
     -Headers @{Authorization=$encoded;Accept="application/json"}
 $existingTE = $existingLinks.fields.issuelinks |
@@ -275,7 +275,7 @@ if ($existingTE) {
 } else {
     Write-Host "  No existing TE found -- creating one..."
     $teKey = New-XrayTestExecution -ProjectKey "STORY" -StoryKey $storyKey `
-        -TestKeys @("STORY-6457") `
+        -TestKeys @("STORY-0000") `
         -Summary "TE: $storyKey $summary - Cycle 1" `
         -Environment "TST-51"
     Write-Host "  Created: $teKey"
@@ -291,7 +291,7 @@ $resolvedJobPath = if ($JenkinsJobPath) { $JenkinsJobPath }
 if (-not $resolvedJobPath) {
     Write-Warning "  Jenkins job path not configured (set runTestsJobPath in constantData.json or pass -JenkinsJobPath)."
     Write-Warning "  Manual run command:"
-    Write-Host    "  BRANCH=origin/$branchName SPEC='./Tests/Story tests/STORY-6457.spec.js' BASE_URL=https://hub.tst-51.aws.GenericQA.com OLS_NAME=scs-perfPhy-SRV.scs.GenericQA.com"
+    Write-Host    "  BRANCH=origin/$branchName SPEC='./Tests/Story tests/STORY-0000.spec.js' BASE_URL=https://app.example.com OLS_NAME=scs-perfPhy-SRV.scs.ExampleOrg.com"
 } else {
     $jenkinsUser  = $env:JENKINS_USER
     $jenkinsToken = $env:JENKINS_TOKEN
@@ -301,9 +301,9 @@ if (-not $resolvedJobPath) {
     } else {
         $bp1 = "BRANCH=$([Uri]::EscapeDataString('origin/' + $branchName))"
         $bp2 = "CONF=storyTests"
-        $bp3 = "SPEC=$([Uri]::EscapeDataString('./Tests/Story tests/STORY-6457.spec.js'))"
-        $bp4 = "BASE_URL=$([Uri]::EscapeDataString('https://hub.tst-51.aws.GenericQA.com'))"
-        $bp5 = 'OLS_NAME=' + [Uri]::EscapeDataString('scs-perfPhy-SRV.scs.GenericQA.com')
+        $bp3 = "SPEC=$([Uri]::EscapeDataString('./Tests/Story tests/STORY-0000.spec.js'))"
+        $bp4 = "BASE_URL=$([Uri]::EscapeDataString('https://app.example.com))"
+        $bp5 = 'OLS_NAME=' + [Uri]::EscapeDataString('scs-perfPhy-SRV.scs.ExampleOrg.com')
         $buildParams = "$bp1&$bp2&$bp3&$bp4&$bp5"
         $triggerUrl  = "$JenkinsBaseUrl/$resolvedJobPath/buildWithParameters?$buildParams"
         $jenkinsCred = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes("${jenkinsUser}:${jenkinsToken}"))

@@ -52,7 +52,7 @@ description: 5-Why root cause analysis methodology, process steps, classificatio
 
 ### External Factors
 - Issue with third party
-- GenericQA Driver/Add-on Issue
+- ExampleOrg Driver/Add-on Issue
 
 ### Other
 - Not designed for specific workflow or action (enhancement request, not a defect)

@@ -1,5 +1,5 @@
 ---
-description: Environment and compatibility matrix — determines which OS, browser, database, device, and GenericQA software product version environments a story requires. Covers multi-environment coverage scoping, per-environment Xray executions, evidence requirements, and defect tagging. Includes a Product Version Traceability Matrix for OpenLab Server, OpenLab CDS, instrument drivers, GenericQA add-ons, and third-party add-ons — supporting single or multi-environment software version testing driven by a user-defined configuration table.
+description: Environment and compatibility matrix — determines which OS, browser, database, device, and ExampleOrg software product version environments a story requires. Covers multi-environment coverage scoping, per-environment Xray executions, evidence requirements, and defect tagging. Includes a Product Version Traceability Matrix for OpenLab Server, OpenLab CDS, instrument drivers, ExampleOrg add-ons, and third-party add-ons — supporting single or multi-environment software version testing driven by a user-defined configuration table.
 ---
 
 # Test Environment Compatibility
@@ -21,7 +21,7 @@ Before writing or reviewing any test case, scan the story **summary, description
 | **Mobile / Device** | mobile, tablet, iPad, iPhone, Android, responsive design, screen resolution, device |
 | **Database** | database, SQL Server, Oracle, MySQL, PostgreSQL, Postgres, DB, data store, RDBMS |
 | **General** | compatibility, cross-browser, multi-environment, supported environments, supported platforms |
-| **GenericQA Software Products** | OpenLab, OpenLab Server, OpenLab CDS, OpenLab ECM, OpenLab ChemStation, ChemStation, instrument driver, GenericQA driver, add-on, add-ons, DDK, driver version, firmware version, software version, product version, software compatibility, version compatibility, driver compatibility, service pack, SP1, SP2, SR1, SR2, version matrix |
+| **ExampleOrg Software Products** | OpenLab, OpenLab Server, OpenLab CDS, OpenLab ECM, OpenLab ChemStation, ChemStation, instrument driver, ExampleOrg driver, add-on, add-ons, DDK, driver version, firmware version, software version, product version, software compatibility, version compatibility, driver compatibility, service pack, SP1, SP2, SR1, SR2, version matrix |
 
 **Rule**: If ANY trigger keyword is found in ANY of the scanned fields, cross-environment testing is required. Log which dimension(s) were detected.
 
@@ -61,14 +61,14 @@ If none of the above yielded a matrix and cross-env keywords were detected, ask 
 
 ---
 
-## 2B. Product Version Traceability Matrix (GenericQA Software)
+## 2B. Product Version Traceability Matrix (ExampleOrg Software)
 
-This section applies when the story involves **GenericQA software product version compatibility** — OpenLab Server, OpenLab CDS, instrument drivers, GenericQA add-ons, or third-party integrated add-on software.
+This section applies when the story involves **ExampleOrg software product version compatibility** — OpenLab Server, OpenLab CDS, instrument drivers, ExampleOrg add-ons, or third-party integrated add-on software.
 
 ### When this section activates
 
 Active when **any** of the following are true:
-- Section 1 detection found GenericQA software trigger keywords in the story
+- Section 1 detection found ExampleOrg software trigger keywords in the story
 - `docs/_TEMPLATES/EnvironmentMatrixTemplate.md` contains a populated **Software Version Traceability Matrix** table
 - Story AC or description explicitly names a software version, service pack, or add-on product
 
@@ -81,7 +81,7 @@ Each row defines a **named software environment configuration** (Env ID) — a s
 ```
 ## Software Version Traceability Matrix
 
-| Env ID  | OpenLab Server | OpenLab CDS       | Instr. Driver | GenericQA Add-on       | 3rd-Party Add-on          | Tier |
+| Env ID  | OpenLab Server | OpenLab CDS       | Instr. Driver | ExampleOrg Add-on       | 3rd-Party Add-on          | Tier |
 |---------|----------------|-------------------|---------------|----------------------|---------------------------|------|
 | SWE-1   | v2.7 SP2       | v2.7 SP2          | v7.4.3        | GC Backflush v3.1    | None                      | P1   |
 | SWE-2   | v2.7 SP1       | v2.7 SP1          | v7.4.2        | GC Backflush v3.1    | Waters MassLynx v2.0      | P2   |
@@ -95,8 +95,8 @@ Each row defines a **named software environment configuration** (Env ID) — a s
 | **Env ID** | Yes | Short unique identifier — used as label on Xray executions and defects | `SWE-1`, `QA-v27`, `PROD-Baseline` |
 | **OpenLab Server** | If applicable | Full version + service pack / service release | `v2.7 SP2`, `v2.6 SR2`, `N/A` |
 | **OpenLab CDS** | If applicable | Full version + SP, or product name variant | `v2.7 SP2`, `ChemStation C.01.10`, `N/A` |
-| **Instr. Driver** | If applicable | GenericQA instrument driver version | `v7.4.3`, `DDK v5.1`, `N/A` |
-| **GenericQA Add-on** | If applicable | Name + version of each installed GenericQA add-on product | `GC Backflush v3.1`, `None` |
+| **Instr. Driver** | If applicable | ExampleOrg instrument driver version | `v7.4.3`, `DDK v5.1`, `N/A` |
+| **ExampleOrg Add-on** | If applicable | Name + version of each installed ExampleOrg add-on product | `GC Backflush v3.1`, `None` |
 | **3rd-Party Add-on** | If applicable | Name + version of each third-party integrated add-on | `Waters MassLynx v2.0`, `None` |
 | **Tier** | Yes | P1 / P2 / P3 — controls which story coverage tier includes this row | `P1`, `P2`, `P3` |
 
@@ -292,8 +292,8 @@ For software version compatibility tests, capture a version evidence screenshot 
 | Component | Evidence method | Screenshot naming |
 |-----------|----------------|-------------------|
 | OpenLab Server / CDS | `Help > About` dialog — shows product name, full version, build number, and service pack | `step0-about-openlab-{env-id}.png` |
-| Instrument Driver | GenericQA Connection Expert or Device Manager — driver version visible | `step0-driver-version-{env-id}.png` |
-| GenericQA Add-ons | OpenLab Administration > Add-ons list — name + installed version visible | `step0-addons-{env-id}.png` |
+| Instrument Driver | ExampleOrg Connection Expert or Device Manager — driver version visible | `step0-driver-version-{env-id}.png` |
+| ExampleOrg Add-ons | OpenLab Administration > Add-ons list — name + installed version visible | `step0-addons-{env-id}.png` |
 | 3rd-Party Add-on | Add-on's own About / Version dialog | `step0-thirdparty-{env-id}.png` |
 
 **Rule**: The version evidence screenshot is treated as **Step 0** of every software-version Xray execution. It is the primary traceability link between the test result and the exact software configuration under test. If Step 0 evidence is absent, the execution evidence is incomplete.

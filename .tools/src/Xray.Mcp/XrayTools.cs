@@ -94,7 +94,7 @@ public static class XrayTools
         "Returns a JSON array with testRunId, issueId, status, etc. for each test.")]
     public static async Task<string> XrayGetTestRunsInExecution(
         [Description("Bearer token from XrayAuthenticate (auto-fetched if omitted).")] string? token,
-        [Description("Jira issue key of the Test Execution (e.g. 'STORY-7500').")] string testExecutionKey)
+        [Description("Jira issue key of the Test Execution (e.g. 'STORY-0000').")] string testExecutionKey)
     {
         var bearerToken = token ?? await GetTokenFromEnv();
         var result = await Xray.Mcp.XrayClient.GetTestRunsInExecutionAsync(bearerToken, testExecutionKey);
@@ -160,8 +160,8 @@ public static class XrayTools
         "Useful after creating a Test Execution via the Jira MCP server.")]
     public static async Task<string> XrayAddTestsToExecution(
         [Description("Bearer token from XrayAuthenticate (auto-fetched if omitted).")] string? token,
-        [Description("Jira issue key of the Test Execution (e.g. 'STORY-7500').")] string testExecutionKey,
-        [Description("Comma-separated list of Test issue keys to add (e.g. 'STORY-7496,STORY-7497').")] string testKeys)
+        [Description("Jira issue key of the Test Execution (e.g. 'STORY-0000').")] string testExecutionKey,
+        [Description("Comma-separated list of Test issue keys to add (e.g. 'STORY-0000,STORY-0000').")] string testKeys)
     {
         var bearerToken = token ?? await GetTokenFromEnv();
         var keys = testKeys.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);

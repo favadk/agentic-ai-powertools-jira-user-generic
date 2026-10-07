@@ -89,7 +89,7 @@ When no TE exists in the active sprint, run the following sequence fully before 
 ### Step 3.1 — Create the Test Execution
 
 ```powershell
-cd "C:\Agentic-AI\agentic-ai-powertools-jira-user-new"
+cd "C:\Agentic-AI\agentic-ai-powertools-jira-user-generic"
 . .\scripts\xray-api.ps1
 
 # Create TE with no tests initially — tests are bulk-added in Section 4

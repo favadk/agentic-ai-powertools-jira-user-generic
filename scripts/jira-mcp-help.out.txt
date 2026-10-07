@@ -220,8 +220,8 @@ Atlassian APIs: https://developer.atlassian.com/
 อออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ
 
 Version:        1.0.0
-Maintainer:     GenericQA OpenLab Reporting Team
-Company:        GenericQA Technologies Inc.
+Maintainer:     ExampleOrg OpenLab Reporting Team
+Company:        ExampleOrg Technologies Inc.
 License:        Internal Use Only
 
 อออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ

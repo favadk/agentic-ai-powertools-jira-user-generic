@@ -112,7 +112,7 @@ Permissions:  Browse Projects, Create Issues, Comment on Issues, Transition Issu
 ### 4. Network Access
 
 **Required outbound:**
-- `jira.exampleqa.local` (Jira Cloud)
+- `issue-tracker.example.com` (Jira Cloud)
 - `api.github.com` (GitHub Copilot)
 - Your CID/product test environment (for network tests)
 
@@ -129,7 +129,7 @@ Permissions:  Browse Projects, Create Issues, Comment on Issues, Transition Issu
 If you want guided setup after cloning, run:
 
 ```powershell
-cd C:\Projects\agentic-ai-powertools-jira-user-new
+cd C:\Projects\agentic-ai-powertools-jira-user-generic
 .\setup-wizard\Start-SetupWizard.ps1
 ```
 
@@ -147,8 +147,8 @@ Use the step-by-step CLI flow below if you prefer manual setup.
 
 ```powershell
 cd C:\Projects  # or your workspace location
-git clone https://github.com/your-org/agentic-ai-powertools-jira-user-new.git
-cd agentic-ai-powertools-jira-user-new
+git clone https://github.com/your-org/agentic-ai-powertools-jira-user-generic.git
+cd agentic-ai-powertools-jira-user-generic
 ```
 
 ### Step 2: Configure Credentials
@@ -159,7 +159,7 @@ cd agentic-ai-powertools-jira-user-new
 # .env (do NOT commit to git)
 
 # ========== Jira Configuration ==========
-JIRA_URL=https://jira.exampleqa.local
+JIRA_URL=https://app.example.com
 JIRA_USER=qa-automation@company.atlassian.net
 JIRA_API_TOKEN=<paste-your-api-token-here>
 JIRA_PROJECT_KEY=STORY
@@ -188,7 +188,7 @@ ANTHROPIC_TEMPERATURE=0.3
 ANTHROPIC_MAX_TOKENS=2048
 
 # ========== QA Framework Configuration ==========
-SPRINT_SLUG=CID-sprint-111
+SPRINT_SLUG=sample-sprint
 ACTIVE_BOARD_ID=440
 PRODUCT_NAME=CID
 ENVIRONMENT=DEV
@@ -229,7 +229,7 @@ cd ..
 
 ```powershell
 # Right-click PowerShell → "Run as Administrator"
-cd C:\Projects\agentic-ai-powertools-jira-user-new
+cd C:\Projects\agentic-ai-powertools-jira-user-generic
 .\scripts\setup-story-monitor-scheduler.ps1
 ```
 
@@ -377,14 +377,14 @@ services:
 
 ```bash
 # Set environment variables
-export JIRA_URL=https://jira.exampleqa.local
+export JIRA_URL=https://app.example.com
 export JIRA_USER=qa-automation@company.atlassian.net
 export JIRA_API_TOKEN=<token>
 export JIRA_PROJECT_KEY=STORY
 export XRAY_CLOUD_CLIENT_ID=<id>
 export XRAY_CLOUD_CLIENT_SECRET=<secret>
 export GITHUB_TOKEN=<token>
-export SPRINT_SLUG=CID-sprint-111
+export SPRINT_SLUG=sample-sprint
 
 # Build and start
 docker-compose up -d
@@ -476,7 +476,7 @@ az container create \
   --registry-username <username> \
   --registry-password <password> \
   --environment-variables \
-    JIRA_URL=https://jira.exampleqa.local \
+    JIRA_URL=https://app.example.com \
     JIRA_PROJECT_KEY=STORY \
   --secure-environment-variables \
     JIRA_API_TOKEN=$JIRA_API_TOKEN \
@@ -518,7 +518,7 @@ aws ecs create-service \
   "sprintWatch": {
     "enabled": true,
     "boardId": 440,           // Your board ID
-    "sprintName": "CID sprint 111",
+    "sprintName": "sample-sprint",
     "projectKey": "STORY"      // Your project key
   },
   "qaTeamGroupEmail": "qa-team@company.atlassian.net",
@@ -636,7 +636,7 @@ docker-compose logs -f --tail=100 qa-framework | grep -i error
 # Check which triggers were processed
 Get-ChildItem .\scripts\triggers\*.processed
 # Re-process a failed trigger
-Copy-Item .\scripts\triggers\STORY-7502-create-tc.json.processed .\scripts\triggers\STORY-7502-create-tc.json
+Copy-Item .\scripts\triggers\STORY-0000-create-tc.json.processed .\scripts\triggers\STORY-0000-create-tc.json
 ```
 
 ---

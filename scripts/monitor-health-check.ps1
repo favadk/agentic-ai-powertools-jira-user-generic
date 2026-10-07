@@ -137,7 +137,7 @@ if (Test-Path $stateFile) {
 Write-Host "[..] Checking Jira API..."
 try {
     $creds  = Get-XrayCreds
-    $jiraUrl = if ($env:JIRA_URL) { $env:JIRA_URL } else { 'https://jira.exampleqa.local' }
+    $jiraUrl = if ($env:JIRA_URL) { $env:JIRA_URL } else { 'https://app.example.com }
     $null = Invoke-RestMethod -Uri "$jiraUrl/rest/api/3/myself" -Headers $creds.Headers -TimeoutSec 10 -ErrorAction Stop
     Write-Host "[OK] Jira API reachable."
 } catch {
@@ -194,7 +194,7 @@ if (-not $DryRun) {
 if (-not $DryRun) {
     try {
         $creds2  = Get-XrayCreds
-        $jiraUrl2 = if ($env:JIRA_URL) { $env:JIRA_URL } else { 'https://jira.exampleqa.local' }
+        $jiraUrl2 = if ($env:JIRA_URL) { $env:JIRA_URL } else { 'https://app.example.com }
         $affected = ($failures + $warnings) | Where-Object { $_.story } | ForEach-Object { $_.story } | Sort-Object -Unique
         foreach ($sk in $affected) {
             $issues = ($failures + $warnings) | Where-Object { $_.story -eq $sk }

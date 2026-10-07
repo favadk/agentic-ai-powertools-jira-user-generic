@@ -36,7 +36,7 @@ The description field **must** include all of the following sections. Do not ski
 **Failed Test Case**: TC-{STORY-KEY}-{nn} — {TC Title}
 **Step**: Step {i} — "{Step action text}"
 **AC Reference**: AC-{nn} — {AC text summary}
-**Environment**: {Environment e.g. SIT/TEST https://hub.tst-51.aws.GenericQA.com/}
+**Environment**: {Environment e.g. SIT/TEST https://app.example.com
 **Build / Version**: {e.g. CID Hub 1.4.0 2a250245}
 **Test Execution**: {XRAY-EXEC-KEY} Step {i}
 

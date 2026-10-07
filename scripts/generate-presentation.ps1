@@ -508,7 +508,7 @@ Add-TextBox $s14 "Thank You" 40 140 ($SW-80) 80 54 $true $WHITE 2 | Out-Null
 Add-TextBox $s14 "Questions & Discussion" 40 230 ($SW-80) 50 24 $false $LTBLUE 2 | Out-Null
 
 Add-TextBox $s14 "Framework repo:" 40 340 160 24 13 $true $WHITE 1 | Out-Null
-Add-TextBox $s14 "bitbucket.exampleqa.local/scm/siddev/agentic-ai-powertools.git" 205 340 ($SW-240) 24 11 $false $LTBLUE 1 | Out-Null
+Add-TextBox $s14 "source-control.example.com/scm/siddev/agentic-ai-powertools.git" 205 340 ($SW-240) 24 11 $false $LTBLUE 1 | Out-Null
 
 Write-Host "  Slide 14 done"
 

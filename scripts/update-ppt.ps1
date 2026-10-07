@@ -1,8 +1,8 @@
 # Update-PPT.ps1 — Patches Agentic-AI-QA-Framework-Presentation.pptx with latest changes
 # Session changes: dynamic sprint detection, dual monitors, Agile endpoint fix, bootstrapper update
 
-$pptSrc  = 'c:\Agentic-AI\agentic-ai-powertools-jira-user-new\docs\Agentic-AI-QA-Framework-Presentation.pptx'
-$pptDest = 'c:\Agentic-AI\agentic-ai-powertools-jira-user-new\docs\Agentic-AI-QA-Framework-Presentation.pptx'
+$pptSrc  = 'c:\Agentic-AI\agentic-ai-powertools-jira-user-generic\docs\Agentic-AI-QA-Framework-Presentation.pptx'
+$pptDest = 'c:\Agentic-AI\agentic-ai-powertools-jira-user-generic\docs\Agentic-AI-QA-Framework-Presentation.pptx'
 $work    = "$env:TEMP\pptx_edit"
 
 Add-Type -AssemblyName System.IO.Compression.FileSystem
