@@ -1,0 +1,269 @@
+version: '3.9'
+
+services:
+  # Main QA Framework Service - Runs monitors and agents
+  qa-framework:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: agentic-qa-framework
+    restart: unless-stopped
+    environment:
+      # Jira Configuration
+      JIRA_URL: ${JIRA_URL:-https://jira.exampleqa.local}
+      JIRA_USER: ${JIRA_USER:-qa-automation@company.atlassian.net}
+      JIRA_API_TOKEN: ${JIRA_API_TOKEN}
+      JIRA_PROJECT_KEY: ${JIRA_PROJECT_KEY:-OLAC}
+
+      # Xray Cloud Configuration
+      XRAY_CLOUD_CLIENT_ID: ${XRAY_CLOUD_CLIENT_ID}
+      XRAY_CLOUD_CLIENT_SECRET: ${XRAY_CLOUD_CLIENT_SECRET}
+
+      # GitHub Integration
+      GITHUB_TOKEN: ${GITHUB_TOKEN}
+
+      # QA Framework Configuration
+      SPRINT_SLUG: ${SPRINT_SLUG:-CID-sprint-111}
+      ACTIVE_BOARD_ID: ${ACTIVE_BOARD_ID:-440}
+      PRODUCT_NAME: ${PRODUCT_NAME:-CID}
+      ENVIRONMENT: ${ENVIRONMENT:-DEV}
+      MONITOR_INTERVAL_MINUTES: ${MONITOR_INTERVAL_MINUTES:-30}
+
+      # ========== LLM / Copilot Model Configuration ==========
+      # See docs/MODEL-LLM-CONFIGURATION.md for complete guide
+      COPILOT_MODEL_PRIMARY: ${COPILOT_MODEL_PRIMARY:-gpt-4o}
+      COPILOT_MODEL_FALLBACK_1: ${COPILOT_MODEL_FALLBACK_1:-claude-3-5-sonnet-20241022}
+      COPILOT_MODEL_FALLBACK_2: ${COPILOT_MODEL_FALLBACK_2:-claude-3-opus-20240229}
+      
+      # OpenAI Configuration (if using GPT-4o)
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPENAI_ORG_ID: ${OPENAI_ORG_ID}
+      OPENAI_TEMPERATURE: ${OPENAI_TEMPERATURE:-0.2}
+      OPENAI_MAX_TOKENS: ${OPENAI_MAX_TOKENS:-4096}
+      
+      # Anthropic Configuration (if using Claude)
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      ANTHROPIC_TEMPERATURE: ${ANTHROPIC_TEMPERATURE:-0.3}
+      ANTHROPIC_MAX_TOKENS: ${ANTHROPIC_MAX_TOKENS:-2048}
+      
+      # Model Request Configuration
+      MODEL_REQUEST_TIMEOUT_SECONDS: ${MODEL_REQUEST_TIMEOUT_SECONDS:-60}
+      MODEL_RETRY_COUNT: ${MODEL_RETRY_COUNT:-3}
+      MODEL_RETRY_BACKOFF_SECONDS: ${MODEL_RETRY_BACKOFF_SECONDS:-5}
+      COPILOT_AGENT_MODE: ${COPILOT_AGENT_MODE:-production}
+
+      # Optional: Slack Notifications
+      SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL}
+
+      # Optional: Database (for metrics/dashboard)
+      DB_HOST: ${DB_HOST:-postgres}
+      DB_PORT: ${DB_PORT:-5432}
+      DB_NAME: ${DB_NAME:-qa_metrics}
+      DB_USER: ${DB_USER:-qa_admin}
+      DB_PASSWORD: ${DB_PASSWORD}
+    
+    ports:
+      - "9001:9001"  # Agent RPC (if implemented)
+    
+    volumes:
+      # Persistent storage for generated docs and evidence
+      - ./docs:/app/docs
+      - ./scripts:/app/scripts
+      - ./.github:/app/.github
+      - ./logs:/app/logs
+      - ./test-evidence:/app/test-evidence
+    
+    healthcheck:
+      test: ["CMD", "pwsh", "-Command", "Test-Path /app/scripts/monitor-state.json"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    
+    networks:
+      - qa-network
+    
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "10"
+
+  # Web UI Server - Registration Wizard & Setup
+  ui-server:
+    image: node:16-alpine
+    container_name: qa-ui-server
+    working_dir: /app
+    command: npx http-server ./setup-wizard -p 8080 -c-1 --gzip
+    ports:
+      - "8080:8080"  # Registration UI: http://localhost:8080
+    volumes:
+      - ./setup-wizard:/app/setup-wizard
+    restart: unless-stopped
+    networks:
+      - qa-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Monitoring Dashboard - Test Cycles, Sprint Metrics
+  dashboard:
+    build:
+      context: ./dashboard
+      dockerfile: Dockerfile
+    container_name: qa-dashboard
+    restart: unless-stopped
+    environment:
+      JIRA_URL: ${JIRA_URL:-https://jira.exampleqa.local}
+      JIRA_API_TOKEN: ${JIRA_API_TOKEN}
+      JIRA_PROJECT_KEY: ${JIRA_PROJECT_KEY:-OLAC}
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: qa_metrics
+      DB_USER: qa_admin
+      DB_PASSWORD: ${DB_PASSWORD}
+      PORT: 9000
+    
+    ports:
+      - "9000:9000"  # Monitoring Dashboard: http://localhost:9000
+    
+    volumes:
+      - ./docs:/app/docs:ro
+    
+    depends_on:
+      - postgres
+    
+    networks:
+      - qa-network
+    
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # PostgreSQL Database - Metrics, Test Results, Sprint Data
+  postgres:
+    image: postgres:14-alpine
+    container_name: qa-database
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-qa_metrics}
+      POSTGRES_USER: ${DB_USER:-qa_admin}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    
+    ports:
+      - "5432:5432"  # Internal only (comment out to hide from external)
+    
+    volumes:
+      - qa_db_data:/var/lib/postgresql/data
+      - ./dashboard/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./dashboard/init-data.sql:/docker-entrypoint-initdb.d/02-init-data.sql
+    
+    networks:
+      - qa-network
+    
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-qa_admin}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Optional: Monitoring & Logging Stack (Prometheus + Grafana)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: qa-prometheus
+    restart: unless-stopped
+    environment:
+      TZ: UTC
+    
+    ports:
+      - "9090:9090"
+    
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    
+    networks:
+      - qa-network
+    
+    depends_on:
+      - qa-framework
+    
+    profiles:
+      - monitoring  # Run with: docker-compose --profile monitoring up
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: qa-grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+      GF_INSTALL_PLUGINS: grafana-piechart-panel
+    
+    ports:
+      - "3000:3000"  # Grafana: http://localhost:3000
+    
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana-dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
+    
+    networks:
+      - qa-network
+    
+    depends_on:
+      - prometheus
+    
+    profiles:
+      - monitoring
+
+volumes:
+  qa_db_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+networks:
+  qa-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.25.0.0/16
+
+# Compose file info
+# ================
+# Build & start all services:
+#   docker-compose up -d
+#
+# Start with monitoring stack:
+#   docker-compose --profile monitoring up -d
+#
+# View logs:
+#   docker-compose logs -f qa-framework
+#   docker-compose logs -f dashboard
+#   docker-compose logs -f postgres
+#
+# Stop & remove:
+#   docker-compose down
+#
+# Cleanup volumes:
+#   docker-compose down -v
+#
+# Access:
+#   UI Registration:     http://localhost:8080
+#   Monitoring Dashboard: http://localhost:9000
+#   Grafana (optional):  http://localhost:3000
+#   Prometheus (optional): http://localhost:9090
+#   Database:            localhost:5432 (postgres/qa_metrics)

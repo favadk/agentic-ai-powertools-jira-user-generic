@@ -1,0 +1,18 @@
+{
+    "blockedStep":  null,
+    "storyKey":  "OLAC-7579",
+    "blockedReason":  null,
+    "commentText":  "Hi     I have merged the two stories and obsoleted the older one. I have kept A/C #4 about restoring to another unit, but reworded it to say that it must be possible. After all, that is exactly what manufacturing expects and will have to do. So, it is an acceptance criteria for the image. However, I will leave it to the dev/qa team to decide if a second physical unit needs to be actually tested or not. If restoring on the same box is enough to say that the image will work on another box with the exact same config, we may not need to test it.",
+    "changeType":  "PO_RESPONSE",
+    "commentId":  "2692470",
+    "tcDocPath":  "C:\\Agentic-AI\\agentic-ai-powertools-jira-user-new\\docs\\TestCases\\CID-Sprint-113\\TC_OLAC-7579.md",
+    "xrayTestKey":  "OLAC-7579",
+    "tcrDocPath":  "C:\\Agentic-AI\\agentic-ai-powertools-jira-user-new\\docs\\TestCaseReview\\TCR_OLAC-7579.md",
+    "poEmail":  null,
+    "sourceIssueKey":  "OLAC-7579",
+    "poDisplayName":  "REHMAN,SUNIL (GenericQA USA)",
+    "issueKey":  "OLAC-7579",
+    "resolutionIssueKey":  "OLAC-7579",
+    "sourceIssueType":  "STORY",
+    "detectedAt":  "2026-09-09T16:44:28.9575498Z"
+}

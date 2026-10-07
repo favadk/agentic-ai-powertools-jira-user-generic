@@ -1,0 +1,12 @@
+{
+    "storyKey":  "OLAC-7507",
+    "issueKey":  "OLAC-7507",
+    "newStatus":  "Ready for Dev",
+    "detectedAt":  "2026-07-29T18:27:31.3190090Z",
+    "xrayTestKey":  "",
+    "changedAt":  "2026-07-29T18:27:31.3190090Z",
+    "autoAdded":  true,
+    "changeType":  "STATUS_CHANGE",
+    "tcDocPath":  "C:\\Agentic-AI\\agentic-ai-powertools-jira-user-new\\docs\\TestCases\\TC_OLAC-7507.md",
+    "oldStatus":  null
+}

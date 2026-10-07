@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QA Metrics Dashboard — Agentic AI QA Framework</title>
+<style>
+  :root {
+    --brand:   #0066cc;
+    --brand2:  #004b99;
+    --accent:  #00a651;
+    --warn:    #e05a00;
+    --danger:  #d4380d;
+    --bg:      #f5f7fa;
+    --card:    #ffffff;
+    --border:  #d0d7de;
+    --text:    #1a1f2e;
+    --muted:   #586069;
+    --radius:  10px;
+    --shadow:  0 2px 12px rgba(0,0,0,.10);
+    --grid-gap: 20px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* ---- Header ---- */
+  header { background: var(--brand); color: #fff; padding: 20px 40px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 6px rgba(0,0,0,.2); }
+  header .logo { font-size: 22px; font-weight: 700; letter-spacing: -.3px; }
+  header .nav { display: flex; gap: 20px; font-size: 13px; }
+  header .nav a { color: #fff; text-decoration: none; opacity: .9; transition: opacity .2s; }
+  header .nav a:hover { opacity: 1; }
+  header .status-indicator { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); margin-right: 6px; display: inline-block; }
+
+  /* ---- Layout ---- */
+  .container { max-width: 1400px; margin: 20px auto; padding: 0 20px 40px; }
+
+  /* ---- Page Title ---- */
+  .page-title { display: flex; align-items: baseline; gap: 12px; margin-bottom: 24px; }
+  .page-title h1 { font-size: 28px; font-weight: 700; }
+  .page-title .subtitle { font-size: 14px; color: var(--muted); }
+
+  /* ---- Controls ---- */
+  .controls { display: flex; gap: 16px; margin-bottom: 24px; align-items: center; flex-wrap: wrap; }
+  .control-group { display: flex; gap: 8px; align-items: center; }
+  .control-group label { font-size: 13px; font-weight: 600; color: var(--text); }
+  .control-group select, .control-group input { padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; background: var(--card); }
+  .btn { padding: 8px 16px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; background: var(--card); color: var(--text); transition: background .2s, box-shadow .2s; }
+  .btn:hover { background: var(--bg); box-shadow: var(--shadow); }
+  .btn-primary { background: var(--brand); color: #fff; border-color: var(--brand2); }
+  .btn-primary:hover { background: var(--brand2); }
+
+  /* ---- Grid Layout ---- */
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--grid-gap); margin-bottom: 28px; }
+  .grid.wide { grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); }
+  .grid.full { grid-template-columns: 1fr; }
+
+  /* ---- Metric Card ---- */
+  .metric-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); }
+  .metric-card h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; margin-bottom: 8px; }
+  .metric-card .value { font-size: 32px; font-weight: 700; color: var(--brand); margin-bottom: 4px; }
+  .metric-card .subtext { font-size: 12px; color: var(--muted); }
+  .metric-card .badge { display: inline-block; background: #f0f4f8; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; margin-top: 8px; }
+  .metric-card.accent .value { color: var(--accent); }
+  .metric-card.warn .value { color: var(--warn); }
+  .metric-card.danger .value { color: var(--danger); }
+
+  /* ---- Table ---- */
+  .data-table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+  .data-table thead { background: #f5f7fa; border-bottom: 2px solid var(--border); }
+  .data-table th { padding: 14px; text-align: left; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--text); }
+  .data-table td { padding: 12px 14px; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .data-table tbody tr:hover { background: #f9fafb; }
+  .data-table tbody tr:last-child td { border-bottom: none; }
+
+  /* ---- Status Badge ---- */
+  .status { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+  .status.pass { background: #d4edda; color: #155724; }
+  .status.fail { background: #f8d7da; color: #721c24; }
+  .status.blocked { background: #fff3cd; color: #856404; }
+  .status.in-progress { background: #d1ecf1; color: #0c5460; }
+  .status.skip { background: #e2e3e5; color: #383d41; }
+
+  /* ---- Progress Bar ---- */
+  .progress-bar { width: 100%; height: 6px; background: #e9ecef; border-radius: 3px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; background: var(--accent); transition: width .3s; }
+  .progress-bar.warn .progress-bar-fill { background: var(--warn); }
+  .progress-bar.danger .progress-bar-fill { background: var(--danger); }
+
+  /* ---- Chart Container ---- */
+  .chart-container { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); }
+  .chart-container h3 { font-size: 14px; font-weight: 700; margin-bottom: 16px; }
+
+  /* ---- Sprint Card ---- */
+  .sprint-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+  .sprint-header { background: linear-gradient(135deg, var(--brand), var(--brand2)); color: #fff; padding: 16px 20px; }
+  .sprint-header h2 { font-size: 16px; font-weight: 700; margin-bottom: 2px; }
+  .sprint-header .date { font-size: 12px; opacity: .9; }
+  .sprint-body { padding: 20px; }
+  .sprint-body .row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .sprint-body .row:last-child { border-bottom: none; }
+  .sprint-body .label { font-size: 12px; color: var(--muted); font-weight: 600; }
+  .sprint-body .value { font-size: 16px; font-weight: 700; }
+
+  /* ---- Modal ---- */
+  .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,.5); z-index: 1000; }
+  .modal.active { display: flex; align-items: center; justify-content: center; }
+  .modal-content { background: var(--card); border-radius: var(--radius); padding: 28px; max-width: 600px; width: 90%; box-shadow: 0 20px 40px rgba(0,0,0,.2); max-height: 80vh; overflow-y: auto; }
+  .modal-header { font-size: 20px; font-weight: 700; margin-bottom: 16px; }
+  .modal-footer { display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px; }
+
+  /* ---- Footer ---- */
+  footer { background: #f5f7fa; border-top: 1px solid var(--border); padding: 20px 40px; text-align: center; font-size: 12px; color: var(--muted); margin-top: 40px; }
+
+  /* ---- Responsive ---- */
+  @media (max-width: 768px) {
+    header { flex-direction: column; gap: 12px; align-items: flex-start; }
+    header .nav { width: 100%; }
+    .grid { grid-template-columns: 1fr; }
+    .controls { flex-direction: column; align-items: flex-start; }
+    .data-table { font-size: 11px; }
+    .data-table th, .data-table td { padding: 8px; }
+  }
+
+  /* ---- Animations ---- */
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slideIn { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .metric-card { animation: fadeIn .3s ease-in; }
+  .sprint-card { animation: slideIn .3s ease-in; }
+
+  /* ---- Loading State ---- */
+  .loading { display: inline-block; width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--brand); border-radius: 50%; animation: spin .6s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ---- Empty State ---- */
+  .empty-state { text-align: center; padding: 40px 20px; color: var(--muted); }
+  .empty-state .icon { font-size: 48px; margin-bottom: 12px; opacity: .5; }
+
+  /* ---- Agent Updates ---- */
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .section-header h2 { font-size: 18px; font-weight: 700; }
+  .section-subtitle { font-size: 12px; color: var(--muted); }
+  .control-spacer { flex: 1; }
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #eef6ff;
+    border: 1px solid #bfdcff;
+    color: #174ea6;
+    border-radius: 999px;
+    padding: 6px 10px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .muted-note {
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .focus-note {
+    margin-top: 8px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: #eaf3ff;
+    border: 1px solid #c8dbff;
+    color: #184c8a;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .summary-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin-top: 12px;
+  }
+  .summary-item {
+    background: #f8fbff;
+    border: 1px solid #d7e6ff;
+    border-radius: 8px;
+    padding: 12px;
+  }
+  .summary-item .k {
+    color: var(--muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+  }
+  .summary-item .v {
+    color: var(--text);
+    font-size: 20px;
+    font-weight: 700;
+    margin-top: 4px;
+  }
+  .summary-item .s {
+    color: var(--muted);
+    font-size: 12px;
+    margin-top: 2px;
+  }
+  .action-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+  }
+  .action-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--warn);
+    border-radius: var(--radius);
+    padding: 16px;
+    box-shadow: var(--shadow);
+  }
+  .action-card.high { border-left-color: var(--danger); }
+  .action-card.medium { border-left-color: var(--warn); }
+  .action-card.low { border-left-color: #999; }
+  .action-card .meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .action-card h4 {
+    font-size: 15px;
+    margin-bottom: 8px;
+  }
+  .action-card p {
+    font-size: 13px;
+    line-height: 1.4;
+    margin-bottom: 10px;
+  }
+  .action-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+  }
+  .link-btn {
+    color: var(--brand2);
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 700;
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header>
+  <div style="display: flex; align-items: center; gap: 8px;">
+    <span class="status-indicator"></span>
+    <div class="logo">📊 QA Metrics Dashboard</div>
+  </div>
+  <div class="nav">
+    <a href="#overview">Overview</a>
+    <a href="#sprints">Sprints</a>
+    <a href="#stories">Stories</a>
+    <a href="#trends">Trends</a>
+    <a href="#agent-changelog">Agent Change Log</a>
+    <a href="#pending-actions">Pending User Actions</a>
+  </div>
+</header>
+
+<!-- Main Content -->
+<div class="container" id="overview">
+
+  <!-- Page Title -->
+  <div class="page-title">
+    <h1>QA Lifecycle Metrics</h1>
+    <div class="subtitle">Live dashboard for automated test cycles across all sprints</div>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <div class="control-group">
+      <label for="sprint-filter">Sprint:</label>
+      <select id="sprint-filter" onchange="filterBySprint()">
+        <option value="">All Sprints</option>
+      </select>
+    </div>
+    <div class="control-group">
+      <label for="scope-filter">Scope:</label>
+      <select id="scope-filter" onchange="onScopeChange()">
+        <option value="current">Current Sprint</option>
+        <option value="all">All History</option>
+      </select>
+    </div>
+    <div class="control-group">
+      <label for="project-filter">Project:</label>
+      <select id="project-filter" onchange="filterByProject()">
+        <option value="">All Projects</option>
+        <option value="OLAC">OLAC</option>
+        <option value="CDS2">CDS2</option>
+        <option value="CCPRO">CCPRO</option>
+      </select>
+    </div>
+    <div class="control-group">
+      <label for="agent-filter">Agent:</label>
+      <select id="agent-filter" onchange="renderAgentViews()">
+        <option value="">All Agents</option>
+        <option value="test_case_preparation">test_case_preparation</option>
+        <option value="test_case_review">test_case_review</option>
+        <option value="test_case_execution">test_case_execution</option>
+        <option value="test_case_evidence_review">test_case_evidence_review</option>
+        <option value="automation_code_preparation">automation_code_preparation</option>
+        <option value="automation_code_review">automation_code_review</option>
+        <option value="automation_run_publish">automation_run_publish</option>
+        <option value="story_monitor">story_monitor</option>
+      </select>
+    </div>
+    <div class="control-spacer"></div>
+    <span class="pill" id="data-source-pill">Data source: loading</span>
+    <button class="btn" onclick="openActivityFilePicker()">📁 Load Activity JSON</button>
+    <button class="btn btn-primary" onclick="refreshData()">🔄 Refresh Now</button>
+    <input type="file" id="activity-file-input" accept="application/json" style="display:none;" onchange="handleActivityFile(event)">
+  </div>
+
+  <div class="chart-container" style="margin-bottom: 20px;">
+    <h3>🎯 Current Sprint Details</h3>
+    <div class="focus-note" id="sprint-focus-note">Focus: detecting current sprint...</div>
+    <div class="summary-row">
+      <div class="summary-item">
+        <div class="k">Current Sprint</div>
+        <div class="v" id="current-sprint-name">-</div>
+        <div class="s">Derived from latest activity</div>
+      </div>
+      <div class="summary-item">
+        <div class="k">Stories in View</div>
+        <div class="v" id="current-sprint-stories">0</div>
+        <div class="s">Unique story keys</div>
+      </div>
+      <div class="summary-item">
+        <div class="k">Sprint Updates</div>
+        <div class="v" id="current-sprint-updates">0</div>
+        <div class="s">Filtered change log items</div>
+      </div>
+      <div class="summary-item">
+        <div class="k">Pending Actions</div>
+        <div class="v" id="current-sprint-pending">0</div>
+        <div class="s">User-side pending items</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Key Metrics -->
+  <div class="grid wide">
+    <div class="metric-card">
+      <h3>Total Test Cases</h3>
+      <div class="value" id="total-tc">48</div>
+      <div class="subtext">Across active sprints</div>
+      <span class="badge">+12 this sprint</span>
+    </div>
+    <div class="metric-card accent">
+      <h3>Tests Passed</h3>
+      <div class="value" id="tests-passed">38</div>
+      <div class="subtext">Pass rate: <strong>79%</strong></div>
+      <span class="badge">↑ 5% vs last sprint</span>
+    </div>
+    <div class="metric-card warn">
+      <h3>Tests Failed</h3>
+      <div class="value" id="tests-failed">8</div>
+      <div class="subtext">Defects raised: 6</div>
+      <span class="badge">🔴 In Dev</span>
+    </div>
+    <div class="metric-card">
+      <h3>Automation Coverage</h3>
+      <div class="value" id="automation-coverage">42%</div>
+      <div class="subtext">Test suites generated</div>
+      <span class="badge">18 / 42 stories</span>
+    </div>
+    <div class="metric-card accent">
+      <h3>Agent Updates Logged</h3>
+      <div class="value" id="agent-updates-count">0</div>
+      <div class="subtext">All change log entries</div>
+      <span class="badge" id="agent-updates-window">0 in last 7 days</span>
+    </div>
+    <div class="metric-card warn">
+      <h3>Pending User Actions</h3>
+      <div class="value" id="pending-user-actions-count">0</div>
+      <div class="subtext">Awaiting user input or approval</div>
+      <span class="badge" id="pending-high-priority">0 high priority</span>
+    </div>
+  </div>
+
+  <!-- Sprint Overview -->
+  <div id="sprints" style="margin-bottom: 28px;">
+    <h2 style="font-size: 18px; font-weight: 700; margin-bottom: 16px;">📋 Sprint Summary</h2>
+    <div class="grid">
+      <div class="sprint-card">
+        <div class="sprint-header">
+          <h2>CID Sprint 111</h2>
+          <div class="date">Aug 1–14, 2026</div>
+        </div>
+        <div class="sprint-body">
+          <div class="row">
+            <span class="label">Total Stories</span>
+            <span class="value">12</span>
+          </div>
+          <div class="row">
+            <span class="label">QA Complete</span>
+            <span class="value">9</span>
+          </div>
+          <div class="row">
+            <span class="label">Pass Rate</span>
+            <span class="value">79% <span style="font-size: 12px; margin-left: 8px;">✅</span></span>
+          </div>
+          <div class="row">
+            <span class="label">Automation Ready</span>
+            <span class="value">7 / 9</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sprint-card">
+        <div class="sprint-header" style="background: linear-gradient(135deg, var(--warn), #d97706);">
+          <h2>CID Sprint 110</h2>
+          <div class="date">Jul 18–Aug 1, 2026</div>
+        </div>
+        <div class="sprint-body">
+          <div class="row">
+            <span class="label">Total Stories</span>
+            <span class="value">14</span>
+          </div>
+          <div class="row">
+            <span class="label">QA Complete</span>
+            <span class="value">14</span>
+          </div>
+          <div class="row">
+            <span class="label">Pass Rate</span>
+            <span class="value">85% <span style="font-size: 12px; margin-left: 8px;">✅</span></span>
+          </div>
+          <div class="row">
+            <span class="label">Automation Ready</span>
+            <span class="value">12 / 14</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sprint-card">
+        <div class="sprint-header" style="background: linear-gradient(135deg, var(--accent), #059669);">
+          <h2>CID Sprint 109</h2>
+          <div class="date">Jul 4–18, 2026</div>
+        </div>
+        <div class="sprint-body">
+          <div class="row">
+            <span class="label">Total Stories</span>
+            <span class="value">11</span>
+          </div>
+          <div class="row">
+            <span class="label">QA Complete</span>
+            <span class="value">11</span>
+          </div>
+          <div class="row">
+            <span class="label">Pass Rate</span>
+            <span class="value">91% <span style="font-size: 12px; margin-left: 8px;">✅</span></span>
+          </div>
+          <div class="row">
+            <span class="label">Automation Ready</span>
+            <span class="value">11 / 11</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Test Execution Cycles -->
+  <div id="stories" style="margin-bottom: 28px;">
+    <h2 style="font-size: 18px; font-weight: 700; margin-bottom: 16px;">🧪 Recent Test Cycles</h2>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Story</th>
+          <th>Title</th>
+          <th>Cycle</th>
+          <th>Status</th>
+          <th>Steps</th>
+          <th>Pass Rate</th>
+          <th>Automation</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>OLAC-7502</strong></td>
+          <td>Consolidate Registration API to GenericQA domain</td>
+          <td>Cycle 1</td>
+          <td><span class="status in-progress">In Progress</span></td>
+          <td>40 steps</td>
+          <td>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <div class="progress-bar" style="flex: 1;">
+                <div class="progress-bar-fill" style="width: 75%;"></div>
+              </div>
+              <span>75%</span>
+            </div>
+          </td>
+          <td><span class="badge" style="background: #f0f4f8;">Pending</span></td>
+          <td>Aug 14, 10:30 AM</td>
+        </tr>
+        <tr>
+          <td><strong>OLAC-7456</strong></td>
+          <td>Health page consolidation + new domain tests</td>
+          <td>Cycle 2</td>
+          <td><span class="status pass">Passed</span></td>
+          <td>28 steps</td>
+          <td>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <div class="progress-bar" style="flex: 1;">
+                <div class="progress-bar-fill" style="width: 100%;"></div>
+              </div>
+              <span>100%</span>
+            </div>
+          </td>
+          <td><span class="badge" style="background: #d4edda; color: #155724;">✅ Done</span></td>
+          <td>Aug 13, 3:45 PM</td>
+        </tr>
+        <tr>
+          <td><strong>OLAC-7548</strong></td>
+          <td>Legacy hostname fallback support</td>
+          <td>Cycle 1</td>
+          <td><span class="status fail">Failed</span></td>
+          <td>15 steps</td>
+          <td>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <div class="progress-bar warn" style="flex: 1;">
+                <div class="progress-bar-fill" style="width: 60%;"></div>
+              </div>
+              <span>60%</span>
+            </div>
+          </td>
+          <td><span class="badge" style="background: #f8d7da; color: #721c24;">Blocked</span></td>
+          <td>Aug 12, 2:15 PM</td>
+        </tr>
+        <tr>
+          <td><strong>OLAC-7472</strong></td>
+          <td>TLS certificate validation for GenericQA domain</td>
+          <td>Cycle 1</td>
+          <td><span class="status pass">Passed</span></td>
+          <td>12 steps</td>
+          <td>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <div class="progress-bar" style="flex: 1;">
+                <div class="progress-bar-fill" style="width: 100%;"></div>
+              </div>
+              <span>100%</span>
+            </div>
+          </td>
+          <td><span class="badge" style="background: #d4edda; color: #155724;">✅ Done</span></td>
+          <td>Aug 11, 11:20 AM</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Test Results Breakdown -->
+  <div class="grid" id="trends">
+    <div class="chart-container">
+      <h3>📈 Pass Rate Trend (Last 4 Sprints)</h3>
+      <div style="height: 200px; background: #f9fafb; border-radius: 6px; display: flex; align-items: flex-end; justify-content: space-around; padding: 20px; gap: 8px;">
+        <div style="width: 60px; height: 60%; background: var(--accent); border-radius: 4px; display: flex; align-items: flex-end; justify-content: center; color: #fff; font-size: 11px; font-weight: 700;">88%</div>
+        <div style="width: 60px; height: 85%; background: var(--accent); border-radius: 4px; display: flex; align-items: flex-end; justify-content: center; color: #fff; font-size: 11px; font-weight: 700;">85%</div>
+        <div style="width: 60px; height: 78%; background: var(--warn); border-radius: 4px; display: flex; align-items: flex-end; justify-content: center; color: #fff; font-size: 11px; font-weight: 700;">79%</div>
+        <div style="width: 60px; height: 0%; background: #e9ecef; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 11px; font-weight: 700;">—</div>
+      </div>
+      <div style="display: flex; gap: 16px; margin-top: 16px; font-size: 11px;">
+        <div>📊 Sprint 109: 88%</div>
+        <div>📊 Sprint 110: 85%</div>
+        <div>📊 Sprint 111: 79% (in progress)</div>
+      </div>
+    </div>
+
+    <div class="chart-container">
+      <h3>🔄 Test Execution Status</h3>
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 12px;">
+            <span>Passed (38)</span>
+            <span style="color: var(--accent); font-weight: 700;">79%</span>
+          </div>
+          <div class="progress-bar"><div class="progress-bar-fill" style="width: 79%;"></div></div>
+        </div>
+        <div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 12px;">
+            <span>Failed (8)</span>
+            <span style="color: var(--warn); font-weight: 700;">17%</span>
+          </div>
+          <div class="progress-bar warn"><div class="progress-bar-fill" style="width: 17%;"></div></div>
+        </div>
+        <div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 12px;">
+            <span>Blocked (2)</span>
+            <span style="color: var(--muted); font-weight: 700;">4%</span>
+          </div>
+          <div class="progress-bar"><div class="progress-bar-fill" style="width: 4%; background: var(--muted);"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Agent Change Log -->
+  <div id="agent-changelog" style="margin-bottom: 28px;">
+    <div class="section-header">
+      <div>
+        <h2>🧾 Agent Change Log Updates</h2>
+        <div class="section-subtitle">Chronological updates performed by QA lifecycle agents</div>
+      </div>
+    </div>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Agent</th>
+          <th>Story</th>
+          <th>Change Type</th>
+          <th>Summary</th>
+          <th>Artifact</th>
+          <th>User Action</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="agent-change-log-body">
+        <tr>
+          <td colspan="8">
+            <div class="empty-state">
+              <div class="icon">🗂️</div>
+              <div>Loading change log updates...</div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="muted-note" id="agent-change-log-note">Only filtered records are shown.</div>
+  </div>
+
+  <!-- Pending User Actions -->
+  <div id="pending-actions" style="margin-bottom: 28px;">
+    <div class="section-header">
+      <div>
+        <h2>⏳ Pending User Actions</h2>
+        <div class="section-subtitle">Tasks that require user confirmation, environment setup, or manual evidence</div>
+      </div>
+    </div>
+    <div class="action-grid" id="pending-actions-grid">
+      <div class="empty-state" style="grid-column: 1 / -1;">
+        <div class="icon">✅</div>
+        <div>No pending user actions found.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Footer -->
+<footer>
+  <p>Agentic AI QA Framework v1.0 | Last updated: <span id="last-updated">now</span></p>
+  <p>For issues or support, contact: qa-framework@company.atlassian.net</p>
+</footer>
+
+<script>
+  const DEFAULT_ACTIVITY_DATA = {
+    generatedAt: '2026-08-27T16:00:00Z',
+    changeLogUpdates: [
+      {
+        id: 'chg-1001',
+        timestamp: '2026-08-19T19:30:00Z',
+        project: 'OLAC',
+        sprint: 'CID-sprint-112',
+        storyKey: 'OLAC-7502',
+        agent: 'test_case_review',
+        changeType: 'XRAY_SYNC',
+        summary: 'Replaced OLAC-7566 with 6 AC/QN-only steps; removed DN-only steps and posted blockers.',
+        artifact: 'docs/TestCaseReview/TCR_OLAC-7566_Comments.md',
+        status: 'COMPLETED',
+        requiresUserAction: true,
+        userActionId: 'ua-2001'
+      },
+      {
+        id: 'chg-1002',
+        timestamp: '2026-08-19T19:15:00Z',
+        project: 'OLAC',
+        sprint: 'CID-sprint-112',
+        storyKey: 'OLAC-7502',
+        agent: 'test_case_preparation',
+        changeType: 'TC_UPDATE',
+        summary: 'Updated Sprint 112 authoritative TC with portal-hostname evidence and FR1.4+ baseline.',
+        artifact: 'docs/TestCases/CID-sprint-112/TC_OLAC-7502.md',
+        status: 'COMPLETED',
+        requiresUserAction: true,
+        userActionId: 'ua-2001'
+      },
+      {
+        id: 'chg-1003',
+        timestamp: '2026-08-03T18:18:00Z',
+        project: 'OLAC',
+        sprint: 'CID-sprint-110',
+        storyKey: 'OLAC-7456',
+        agent: 'automation_run_publish',
+        changeType: 'AUTOMATION_RUN',
+        summary: 'Run 3 completed clean pass: 12/12 executed tests passed (TC-10 xit by design).',
+        artifact: 'docs/Automation/AUTRPT_OLAC-7456_Run1.md',
+        status: 'COMPLETED',
+        requiresUserAction: true,
+        userActionId: 'ua-2002'
+      },
+      {
+        id: 'chg-1004',
+        timestamp: '2026-07-30T09:10:00Z',
+        project: 'OLAC',
+        sprint: 'CID-sprint-110',
+        storyKey: 'OLAC-7456',
+        agent: 'test_case_evidence_review',
+        changeType: 'EVIDENCE_REVIEW',
+        summary: 'Execution evidence reviewed and approved for cycle 1.',
+        artifact: 'docs/EvidenceReview/ER_OLAC-7456_Cycle1.md',
+        status: 'COMPLETED',
+        requiresUserAction: false
+      }
+    ],
+    pendingUserActions: [
+      {
+        id: 'ua-2001',
+        project: 'OLAC',
+        sprint: 'CID-sprint-112',
+        storyKey: 'OLAC-7502',
+        title: 'Provide remaining AC evidence bundle for OLAC-7502',
+        requestedBy: 'test_case_review',
+        requestedAt: '2026-08-19T19:35:00Z',
+        dueDate: '2026-08-30',
+        priority: 'HIGH',
+        status: 'PENDING',
+        actionDetail: 'Provide API inventory mapping, TLS issuer/chain details, Linux Update matrix, and help-section URLs before execution can proceed.',
+        reference: 'docs/TestCaseReview/TCR_OLAC-7566_Comments.md'
+      },
+      {
+        id: 'ua-2002',
+        project: 'OLAC',
+        sprint: 'CID-sprint-110',
+        storyKey: 'OLAC-7456',
+        title: 'Publish automation run summary to Jira and Confluence',
+        requestedBy: 'automation_run_publish',
+        requestedAt: '2026-08-03T18:20:00Z',
+        dueDate: '2026-08-28',
+        priority: 'MEDIUM',
+        status: 'PENDING',
+        actionDetail: 'Approve posting the completed automation report to Jira story OLAC-7456 and linked Confluence page.',
+        reference: 'docs/Automation/AUTRPT_OLAC-7456_Run1.md'
+      }
+    ]
+  };
+
+  const DATA_STORAGE_KEY = 'qa-agent-activity-data';
+  const UNKNOWN_SPRINT = 'UNKNOWN';
+  const SPRINT_FORMAT_REGEX = /^.+-sprint-\d+$/i;
+  let activityData = {
+    generatedAt: null,
+    currentSprint: null,
+    changeLogUpdates: [],
+    pendingUserActions: []
+  };
+
+  // Initialize dashboard
+  document.addEventListener('DOMContentLoaded', function() {
+    updateLastUpdated();
+    loadDashboardData();
+    setInterval(updateLastUpdated, 60000); // Update timestamp every minute
+  });
+
+  function updateLastUpdated() {
+    const now = new Date();
+    document.getElementById('last-updated').textContent = now.toLocaleTimeString();
+  }
+
+  async function loadDashboardData() {
+    const savedData = readSavedData();
+    if (savedData) {
+      applyActivityData(savedData, 'browser cache');
+      return;
+    }
+
+    try {
+      const response = await fetch('scripts/agent-activity-log.json', { cache: 'no-store' });
+      if (!response.ok) {
+        throw new Error('Failed to load activity file');
+      }
+      const payload = await response.json();
+      applyActivityData(payload, 'scripts/agent-activity-log.json');
+    } catch (error) {
+      console.warn('Activity file load failed, using default data.', error);
+      applyActivityData(DEFAULT_ACTIVITY_DATA, 'embedded fallback');
+    }
+  }
+
+  function refreshData() {
+    const btn = event.target;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="loading"></span> Refreshing...';
+    
+    setTimeout(async () => {
+      await loadDashboardData();
+      btn.disabled = false;
+      btn.innerHTML = '🔄 Refresh Now';
+      console.log('Dashboard refreshed');
+    }, 1500);
+  }
+
+  function filterBySprint() {
+    renderAgentViews();
+  }
+
+  function filterByProject() {
+    renderAgentViews();
+  }
+
+  function onScopeChange() {
+    const scope = document.getElementById('scope-filter').value;
+    const sprintFilter = document.getElementById('sprint-filter');
+    if (scope === 'current' && activityData.currentSprint && activityData.currentSprint !== UNKNOWN_SPRINT) {
+      sprintFilter.value = activityData.currentSprint;
+    }
+    renderAgentViews();
+  }
+
+  function openActivityFilePicker() {
+    document.getElementById('activity-file-input').click();
+  }
+
+  function handleActivityFile(event) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) {
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(loadEvent) {
+      try {
+        const parsed = JSON.parse(loadEvent.target.result);
+        applyActivityData(parsed, 'manual upload');
+        saveData(parsed);
+      } catch (error) {
+        alert('Invalid JSON file format for activity log.');
+      }
+    };
+    reader.readAsText(file);
+    event.target.value = '';
+  }
+
+  function applyActivityData(payload, sourceLabel) {
+    const normalized = normalizeActivityData(payload);
+    activityData = normalized;
+    updateDataSourcePill(sourceLabel, normalized.generatedAt);
+    renderAgentViews();
+  }
+
+  function normalizeActivityData(payload) {
+    const updates = Array.isArray(payload && payload.changeLogUpdates) ? payload.changeLogUpdates : [];
+    const actions = Array.isArray(payload && payload.pendingUserActions) ? payload.pendingUserActions : [];
+    const currentSprint = deriveCurrentSprint(payload, updates, actions);
+    return {
+      generatedAt: payload && payload.generatedAt ? payload.generatedAt : null,
+      currentSprint: currentSprint,
+      changeLogUpdates: updates.slice().sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)),
+      pendingUserActions: actions
+    };
+  }
+
+  function renderAgentViews() {
+    syncSprintControls();
+    renderAgentMetrics();
+    renderChangeLogTable();
+    renderPendingActions();
+    renderCurrentSprintSummary();
+  }
+
+  function renderAgentMetrics() {
+    const filteredUpdates = getFilteredUpdates();
+    const filteredActions = getFilteredActions().filter(action => String(action.status || '').toUpperCase() === 'PENDING');
+    const highPriorityCount = filteredActions.filter(action => String(action.priority || '').toUpperCase() === 'HIGH').length;
+
+    const now = Date.now();
+    const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+    const recentCount = filteredUpdates.filter(update => {
+      const ts = new Date(update.timestamp).getTime();
+      return !Number.isNaN(ts) && (now - ts) <= sevenDaysMs;
+    }).length;
+
+    document.getElementById('agent-updates-count').textContent = filteredUpdates.length;
+    document.getElementById('agent-updates-window').textContent = recentCount + ' in last 7 days';
+    document.getElementById('pending-user-actions-count').textContent = filteredActions.length;
+    document.getElementById('pending-high-priority').textContent = highPriorityCount + ' high priority';
+  }
+
+  function renderChangeLogTable() {
+    const body = document.getElementById('agent-change-log-body');
+    const note = document.getElementById('agent-change-log-note');
+    const updates = getFilteredUpdates();
+
+    if (!updates.length) {
+      body.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="icon">🔎</div><div>No change log updates match the selected filters.</div></div></td></tr>';
+      note.textContent = 'No matching change log entries.';
+      return;
+    }
+
+    body.innerHTML = updates.map(update => {
+      const statusText = formatStatusText(update.status);
+      const userActionText = update.requiresUserAction ? 'Required' : 'None';
+      const statusClass = statusClassName(update.status);
+      const artifact = update.artifact || '-';
+
+      return '<tr>' +
+        '<td>' + escapeHtml(formatDateTime(update.timestamp)) + '</td>' +
+        '<td>' + escapeHtml(update.agent || '-') + '</td>' +
+        '<td><strong>' + escapeHtml(update.storyKey || '-') + '</strong></td>' +
+        '<td>' + escapeHtml(update.changeType || '-') + '</td>' +
+        '<td>' + escapeHtml(update.summary || '-') + '</td>' +
+        '<td>' + escapeHtml(artifact) + '</td>' +
+        '<td>' + escapeHtml(userActionText) + '</td>' +
+        '<td><span class="status ' + statusClass + '">' + escapeHtml(statusText) + '</span></td>' +
+      '</tr>';
+    }).join('');
+
+    note.textContent = updates.length + ' change log records shown.';
+  }
+
+  function renderPendingActions() {
+    const container = document.getElementById('pending-actions-grid');
+    const pending = getFilteredActions().filter(action => String(action.status || '').toUpperCase() === 'PENDING');
+
+    if (!pending.length) {
+      container.innerHTML = '<div class="empty-state" style="grid-column: 1 / -1;"><div class="icon">✅</div><div>No pending user actions for current filters.</div></div>';
+      return;
+    }
+
+    container.innerHTML = pending.map(action => {
+      const priority = String(action.priority || 'LOW').toUpperCase();
+      const priorityClass = priority === 'HIGH' ? 'high' : (priority === 'MEDIUM' ? 'medium' : 'low');
+      const dueLabel = action.dueDate ? formatDate(action.dueDate) : 'No due date';
+
+      return '<div class="action-card ' + priorityClass + '">' +
+        '<div class="meta"><span><strong>' + escapeHtml(action.storyKey || '-') + '</strong></span><span>' + escapeHtml(priority) + '</span></div>' +
+        '<h4>' + escapeHtml(action.title || 'Pending action') + '</h4>' +
+        '<p>' + escapeHtml(action.actionDetail || '-') + '</p>' +
+        '<div class="meta"><span>Requested by: ' + escapeHtml(action.requestedBy || '-') + '</span><span>Due: ' + escapeHtml(dueLabel) + '</span></div>' +
+        '<div class="action-footer">' +
+          '<span class="status in-progress">Pending User</span>' +
+          '<span class="link-btn">' + escapeHtml(action.reference || 'No reference') + '</span>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  function getFilteredUpdates() {
+    const sprintFilter = getEffectiveSprintFilter();
+    const projectFilter = document.getElementById('project-filter').value;
+    const agentFilter = document.getElementById('agent-filter').value;
+
+    return activityData.changeLogUpdates.filter(update => {
+      const sprintMatch = !sprintFilter || update.sprint === sprintFilter;
+      const projectMatch = !projectFilter || update.project === projectFilter;
+      const agentMatch = !agentFilter || update.agent === agentFilter;
+      return sprintMatch && projectMatch && agentMatch;
+    });
+  }
+
+  function getFilteredActions() {
+    const sprintFilter = getEffectiveSprintFilter();
+    const projectFilter = document.getElementById('project-filter').value;
+    const agentFilter = document.getElementById('agent-filter').value;
+
+    return activityData.pendingUserActions.filter(action => {
+      const sprintMatch = !sprintFilter || action.sprint === sprintFilter;
+      const projectMatch = !projectFilter || action.project === projectFilter;
+      const agentMatch = !agentFilter || action.requestedBy === agentFilter;
+      return sprintMatch && projectMatch && agentMatch;
+    });
+  }
+
+  function updateDataSourcePill(sourceLabel, generatedAt) {
+    const pill = document.getElementById('data-source-pill');
+    const stamp = generatedAt ? formatDateTime(generatedAt) : 'unknown time';
+    pill.textContent = 'Data source: ' + sourceLabel + ' (' + stamp + ')';
+  }
+
+  function deriveCurrentSprint(payload, updates, actions) {
+    const payloadSprint = payload && payload.currentSprint ? String(payload.currentSprint) : '';
+    if (isKnownSprint(payloadSprint)) {
+      return payloadSprint;
+    }
+
+    const fromUpdates = getLatestSprintByDate(updates, 'timestamp');
+    if (fromUpdates) {
+      return fromUpdates;
+    }
+
+    const fromActions = getLatestSprintByDate(actions, 'requestedAt');
+    if (fromActions) {
+      return fromActions;
+    }
+
+    return UNKNOWN_SPRINT;
+  }
+
+  function getLatestSprintByDate(items, dateField) {
+    const eligible = (items || []).filter(item => isKnownSprint(item && item.sprint));
+    if (!eligible.length) {
+      return null;
+    }
+
+    const sorted = eligible.slice().sort((a, b) => {
+      const da = new Date(a[dateField]).getTime();
+      const db = new Date(b[dateField]).getTime();
+      return (Number.isNaN(db) ? 0 : db) - (Number.isNaN(da) ? 0 : da);
+    });
+    return sorted[0].sprint;
+  }
+
+  function isKnownSprint(value) {
+    const sprint = String(value || '').trim();
+    if (!sprint || sprint === UNKNOWN_SPRINT) {
+      return false;
+    }
+    return SPRINT_FORMAT_REGEX.test(sprint) || sprint.toLowerCase().includes('sprint');
+  }
+
+  function syncSprintControls() {
+    const sprintFilter = document.getElementById('sprint-filter');
+    const currentValue = sprintFilter.value;
+
+    const sprints = collectSprints(activityData);
+    sprintFilter.innerHTML = '<option value="">All Sprints</option>' +
+      sprints.map(s => '<option value="' + escapeHtml(s) + '">' + escapeHtml(prettySprintLabel(s)) + '</option>').join('');
+
+    if (document.getElementById('scope-filter').value === 'current') {
+      if (isKnownSprint(activityData.currentSprint) && sprints.includes(activityData.currentSprint)) {
+        sprintFilter.value = activityData.currentSprint;
+      } else {
+        sprintFilter.value = '';
+      }
+    } else if (currentValue && sprints.includes(currentValue)) {
+      sprintFilter.value = currentValue;
+    }
+  }
+
+  function collectSprints(data) {
+    const set = new Set();
+    (data.changeLogUpdates || []).forEach(item => {
+      if (isKnownSprint(item.sprint)) {
+        set.add(item.sprint);
+      }
+    });
+    (data.pendingUserActions || []).forEach(item => {
+      if (isKnownSprint(item.sprint)) {
+        set.add(item.sprint);
+      }
+    });
+
+    return Array.from(set).sort((a, b) => sprintSortValue(b) - sprintSortValue(a));
+  }
+
+  function sprintSortValue(sprint) {
+    const m = String(sprint).match(/sprint-(\d+)/i);
+    if (m) {
+      return parseInt(m[1], 10);
+    }
+    return 0;
+  }
+
+  function prettySprintLabel(sprint) {
+    return String(sprint).replace(/-/g, ' ');
+  }
+
+  function getEffectiveSprintFilter() {
+    const scope = document.getElementById('scope-filter').value;
+    const manualSprint = document.getElementById('sprint-filter').value;
+    if (scope === 'current') {
+      if (isKnownSprint(activityData.currentSprint)) {
+        return activityData.currentSprint;
+      }
+    }
+    return manualSprint;
+  }
+
+  function renderCurrentSprintSummary() {
+    const scope = document.getElementById('scope-filter').value;
+    const effectiveSprint = getEffectiveSprintFilter();
+    const updates = getFilteredUpdates();
+    const pending = getFilteredActions().filter(action => String(action.status || '').toUpperCase() === 'PENDING');
+
+    const stories = new Set();
+    updates.forEach(item => { if (item.storyKey) { stories.add(item.storyKey); } });
+    pending.forEach(item => { if (item.storyKey) { stories.add(item.storyKey); } });
+
+    document.getElementById('current-sprint-name').textContent = effectiveSprint || 'All Sprints';
+    document.getElementById('current-sprint-stories').textContent = String(stories.size);
+    document.getElementById('current-sprint-updates').textContent = String(updates.length);
+    document.getElementById('current-sprint-pending').textContent = String(pending.length);
+
+    const note = document.getElementById('sprint-focus-note');
+    if (scope === 'current' && effectiveSprint) {
+      note.textContent = 'Focus: current sprint view is active (' + effectiveSprint + ').';
+    } else if (scope === 'current') {
+      note.textContent = 'Focus: current sprint view requested, but no sprint marker was detected in activity data.';
+    } else {
+      note.textContent = 'Focus: all-history view is active. Switch Scope to Current Sprint to narrow to active work.';
+    }
+  }
+
+  function statusClassName(status) {
+    const value = String(status || '').toUpperCase();
+    if (value === 'COMPLETED' || value === 'PASS' || value === 'PASSED' || value === 'DONE') {
+      return 'pass';
+    }
+    if (value === 'BLOCKED' || value === 'FAILED' || value === 'FAIL') {
+      return 'fail';
+    }
+    if (value === 'PENDING' || value === 'IN_PROGRESS' || value === 'IN-PROGRESS') {
+      return 'in-progress';
+    }
+    return 'skip';
+  }
+
+  function formatStatusText(status) {
+    if (!status) {
+      return 'Unknown';
+    }
+    return String(status).replaceAll('_', ' ');
+  }
+
+  function formatDateTime(value) {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return String(value || 'n/a');
+    }
+    return date.toLocaleString();
+  }
+
+  function formatDate(value) {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return String(value || 'n/a');
+    }
+    return date.toLocaleDateString();
+  }
+
+  function escapeHtml(value) {
+    return String(value)
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#039;');
+  }
+
+  function saveData(payload) {
+    try {
+      localStorage.setItem(DATA_STORAGE_KEY, JSON.stringify(payload));
+    } catch (error) {
+      console.warn('Unable to save activity data in localStorage.', error);
+    }
+  }
+
+  function readSavedData() {
+    try {
+      const raw = localStorage.getItem(DATA_STORAGE_KEY);
+      if (!raw) {
+        return null;
+      }
+      return JSON.parse(raw);
+    } catch (error) {
+      console.warn('Unable to parse saved activity data from localStorage.', error);
+      return null;
+    }
+  }
+</script>
+
+</body>
+</html>

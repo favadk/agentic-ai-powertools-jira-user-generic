@@ -1,0 +1,13 @@
+{
+    "storyKey":  "OLAC-7505",
+    "issueType":  "Story",
+    "issueKey":  "OLAC-7505",
+    "newStatus":  "Waiting for Verification",
+    "detectedAt":  "2026-09-22T18:22:04.0271261Z",
+    "xrayTestKey":  "",
+    "sprintSlug":  "CID-Sprint-114",
+    "changeType":  "STATUS_CHANGE",
+    "tcDocPath":  "C:\\Agentic-AI\\agentic-ai-powertools-jira-user-new\\docs\\TestCases\\CID-Sprint-114\\TC_OLAC-7505.md",
+    "changedAt":  "2026-09-22T17:42:48.832+0000",
+    "oldStatus":  "In Dev"
+}

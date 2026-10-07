@@ -1,0 +1,17 @@
+{
+    "storyKey":  "OLAC-7517",
+    "issueKey":  "OLAC-7517",
+    "newStatus":  "In Dev",
+    "detectedAt":  "2026-07-29T18:27:31.3190090Z",
+    "xrayTestKey":  "",
+    "changedAt":  "2026-07-29T18:27:31.3190090Z",
+    "autoAdded":  true,
+    "changeType":  "STATUS_CHANGE",
+    "tcDocPath":  "C:\\Agentic-AI\\agentic-ai-powertools-jira-user-new\\docs\\TestCases\\TC_OLAC-7517.md",
+    "oldStatus":  null,
+    "processed":  true,
+    "processedAt":  "2026-07-29T00:00:00Z",
+    "processedNote":  "TC stub created at docs/TestCases/TC_OLAC-7517.md. Jira MCP unavailable — ACs are placeholders. Tester must populate from Jira.",
+    "tcCompletedAt":  "2026-07-29T00:00:00Z",
+    "tcCompletedNote":  "Full TC document authored by test_case_preparation agent. 16 TCs covering all 10 ACs. Xray creation pending."
+}

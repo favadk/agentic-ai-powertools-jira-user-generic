@@ -42,7 +42,7 @@
 - Ideal time for RCA is after investigation is complete, but before fix is implemented as enough information is available to provide an accurate solution.
 - Team takes it up during a team meeting like sprint planning etc. (prior to this, it is expected that both engineer and test team member assigned to specific defect have done their investigation)
 - Root cause of the defect and mitigation plan (if any) are discussed
-- SparkLink Page updated by Scrum Master. (until JIRA fields are added)
+- Shared reference page updated by Scrum Master. (until JIRA fields are added)
   **Plan is to add RCA fields to JIRA.**
   **5**
 
@@ -185,7 +185,7 @@
 **Root cause analysis**
 
 - Root Cause Analysis (RCA) MUST be performed for each defect that is part of a Hotfix (aka Update)
-- RCA information needs to be entered in JIRA (and not on SparkLink). There are fields available in JIRA to record RCA.
+- RCA information needs to be entered in JIRA (and not on an external reference page). There are fields available in JIRA to record RCA.
 - Go to the defect in JIRA for which RCA information is to be entered
 - Switch to “Root Cause Analysis” Tab in edit mode
   **Choose Appropriate classification**

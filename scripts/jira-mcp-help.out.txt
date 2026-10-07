@@ -1,0 +1,228 @@
+
+อออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ
+  Jira MCP Server
+อออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ
+
+Model Context Protocol (MCP) server for Jira integration.
+
+USAGE
+  jira-mcp [--help]
+
+OPTIONS
+  --help            Show this help message and exit
+
+อออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ
+  INSTALLATION
+อออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ
+
+Install as a .NET Global Tool:
+
+  dotnet tool install --global Jira.Mcp --add-source ./nupkg
+
+Or from an internal NuGet feed:
+
+  dotnet tool install --global Jira.Mcp --add-source https://your-nuget-feed
+
+Update to latest version:
+
+  dotnet tool update --global Jira.Mcp
+
+Uninstall:
+
+  dotnet tool uninstall --global Jira.Mcp
+
+อออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ
+  CONFIGURATION
+อออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ
+
+Configuration is done through environment variables.
+
+REQUIRED ENVIRONMENT VARIABLES
+
+  JIRA_URL                        Jira instance URL (e.g., https://your-domain.atlassian.net)
+
+OPTIONAL ENVIRONMENT VARIABLES
+
+  JIRA_PERSONAL_TOKEN            Personal Access Token (recommended for server/DC)
+  JIRA_USERNAME                  Username/email for Basic auth (required for Cloud)
+  JIRA_TOKEN                     API token for Basic auth (required for Cloud)
+  JIRA_SSL_VERIFY                Set to 'false' to disable SSL verification (default: true)
+  JIRA_PROJECTS_FILTER           Comma-separated list of project keys to filter
+
+COMMON ENVIRONMENT VARIABLES
+
+  READ_ONLY_MODE                 Set to 'true' to disable write operations
+                                 Default: false
+
+  MCP_LOG_LEVEL                  Enable logging to stderr
+                                 Values: Trace, Debug, Information, Warning, Error, Critical, None
+                                 Default: None (disabled)
+
+อออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ
+  AUTHENTICATION
+อออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ
+
+This server supports multiple authentication methods:
+
+1. PERSONAL ACCESS TOKEN (Recommended)
+   - Set JIRA_PERSONAL_TOKEN environment variable
+   - Most secure method for server/data center deployments
+
+2. BASIC AUTHENTICATION
+   - Set JIRA_USERNAME and JIRA_TOKEN
+   - Use API token (not password) for JIRA_TOKEN
+   - Required for Atlassian Cloud deployments
+
+อออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ
+  LOGGING
+อออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ
+
+Logging is DISABLED by default to avoid interfering with the MCP protocol.
+
+To enable logging, set the MCP_LOG_LEVEL environment variable:
+
+  MCP_LOG_LEVEL=Debug jira-mcp
+
+Log Levels (from most to least verbose):
+  - Trace         Most detailed, includes all HTTP requests/responses
+  - Debug         Debugging information, useful for development
+  - Information   General informational messages
+  - Warning       Warning messages only
+  - Error         Error messages only
+  - Critical      Critical failures only
+  - None          Disable logging (default)
+
+Logs are written to STDERR to preserve MCP protocol integrity on STDOUT.
+
+อออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ
+  MCP CLIENT INTEGRATION
+อออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ
+
+OPTION 1: Using Installed .NET Tool (Recommended for Production)
+
+After installing the tool globally, configure your MCP client:
+
+Claude Desktop (claude_desktop_config.json):
+
+{
+  "mcpServers": {
+    "jira": {
+      "command": "jira-mcp",
+      "env": {
+        "JIRA_URL": "https://your-domain.atlassian.net",
+        "MCP_LOG_LEVEL": "Debug"
+      }
+    }
+  }
+}
+
+VS Code MCP Extension (.vscode/mcp.json):
+
+{
+  "servers": {
+    "jira": {
+      "type": "stdio",
+      "command": "jira-mcp",
+      "env": {
+        "JIRA_URL": "https://your-domain.atlassian.net",
+        "MCP_LOG_LEVEL": "Information"
+      }
+    }
+  }
+}
+
+OPTION 2: Using .NET Tool without Global Install (Local Development)
+
+If you haven't installed globally, you can use 'dotnet tool run':
+
+{
+  "servers": {
+    "jira": {
+      "type": "stdio",
+      "command": "dotnet",
+      "args": ["tool", "run", "jira-mcp"],
+      "env": {
+        "JIRA_URL": "https://your-domain.atlassian.net"
+      }
+    }
+  }
+}
+
+Note: This requires a .config/dotnet-tools.json manifest in the directory.
+Create one with: dotnet new tool-manifest
+
+OPTION 3: Using Source Code (Development Only)
+
+For active development on the MCP server code:
+
+{
+  "servers": {
+    "jira": {
+      "type": "stdio",
+      "command": "dotnet",
+      "args": ["run", "--project", "path/to/Jira.Mcp/Jira.Mcp.csproj"],
+      "env": {
+        "JIRA_URL": "https://your-domain.atlassian.net"
+      }
+    }
+  }
+}
+
+อออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ
+  COMMAND LINE USAGE
+อออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ
+
+Once installed as a global tool, you can run from any directory:
+
+Windows PowerShell:
+  $env:JIRA_URL="value"
+  $env:MCP_LOG_LEVEL="Debug"
+  jira-mcp
+
+Linux/macOS:
+  export JIRA_URL=value
+  export MCP_LOG_LEVEL=Debug
+  jira-mcp
+
+อออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ
+  TROUBLESHOOTING
+อออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ
+
+Problem: Command not found after installation
+Solution: Ensure ~/.dotnet/tools (or %USERPROFILE%\.dotnet\tools) is in your PATH
+
+Problem: "Authentication is not configured" error
+Solution: Ensure required environment variables are set with valid credentials
+
+Problem: SSL certificate errors
+Solution: Set JIRA_SSL_VERIFY=false (use with caution)
+
+Problem: No log output when MCP_LOG_LEVEL is set
+Solution: Check that logs are being captured from STDERR, not STDOUT
+
+Problem: MCP client shows parsing errors
+Solution: Disable logging (remove MCP_LOG_LEVEL) as it may interfere
+
+Problem: Tool installation fails
+Solution: Verify the package source is accessible and you have permissions
+
+อออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ
+  RESOURCES
+อออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ
+
+Documentation:  https://github.com/yourusername/McpServers
+MCP Protocol:   https://modelcontextprotocol.io/
+Atlassian APIs: https://developer.atlassian.com/
+.NET Tools:     https://docs.microsoft.com/en-us/dotnet/core/tools/global-tools
+
+อออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ
+  ABOUT
+อออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ
+
+Version:        1.0.0
+Maintainer:     GenericQA OpenLab Reporting Team
+Company:        GenericQA Technologies Inc.
+License:        Internal Use Only
+
+อออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ
+

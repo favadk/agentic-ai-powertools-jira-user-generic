@@ -1,0 +1,21 @@
+{
+    "issueType":  "Story",
+    "changeType":  "CREATE_TEST_CASE",
+    "subtaskKey":  "OLAC-7557",
+    "sprintSlug":  "CID-sprint-111",
+    "summary":  "Consolidate the Registration/Management API to Agilent domain, end-to-end",
+    "issueKey":  "OLAC-7502",
+    "detectedAt":  "2026-08-14T12:08:40.2976665-07:00",
+    "processingStartedAt":  "2026-08-14T00:00:00Z",
+    "processingStatus":  "PROCESSED_BY_STORY_MONITOR",
+    "processedAt":  "2026-08-17T00:00:00Z",
+    "executionScript":  "scripts/create-tc-olac-7502.ps1",
+    "outcome":  {
+                    "tcDocPath":  "docs/TestCases/CID-sprint-112/TC_OLAC-7502.md",
+                    "tcDocDetected":  true,
+                    "tcrDocPath":  "docs/TestCaseReview/TCR_OLAC-7502.md",
+                    "tcrDocDetected":  false,
+                    "jiraTeamDiscovery":  "PENDING_JIRA_MCP_UNAVAILABLE"
+                },
+    "agentNote":  "Jira MCP unavailable at trigger time. Sub-task OLAC-7557 in-dev transition and full Xray workflow delegated to create-tc-olac-7502.ps1. Run the script to complete."
+}

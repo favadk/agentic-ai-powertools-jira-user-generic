@@ -1,0 +1,22 @@
+{
+  "registrationHost": "hub-registration-api.tst.cid.GenericQA.com",
+  "registrationSubject": {
+    "CN": "*.tst.cid.GenericQA.com"
+  },
+  "registrationIssuer": {
+    "C": "US",
+    "O": "Amazon",
+    "CN": "Amazon RSA 2048 M04"
+  },
+  "registrationSubjectAltName": "DNS:*.tst.cid.GenericQA.com",
+  "managementHost": "hub-management-api.tst.cid.GenericQA.com",
+  "managementSubject": {
+    "CN": "*.tst.cid.GenericQA.com"
+  },
+  "managementIssuer": {
+    "C": "US",
+    "O": "Amazon",
+    "CN": "Amazon RSA 2048 M04"
+  },
+  "managementSubjectAltName": "DNS:*.tst.cid.GenericQA.com"
+}

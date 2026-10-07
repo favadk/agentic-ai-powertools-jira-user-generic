@@ -1,0 +1,20 @@
+{
+    "blockedStep":  null,
+    "storyKey":  "OLAC-7502",
+    "blockedReason":  null,
+    "commentText":  "  Please investigate and merge into the current test steps.  Test Case: End-to-End Registration \u0026 Management API Migration to GenericQA Domain ( tst-51 )        ??",
+    "changeType":  "PO_RESPONSE",
+    "commentId":  "2679485",
+    "tcDocPath":  "C:\\Agentic-AI\\agentic-ai-powertools-jira-user-new\\docs\\TestCases\\CID-sprint-112\\TC_OLAC-7502.md",
+    "xrayTestKey":  "OLAC-7566",
+    "tcrDocPath":  "C:\\Agentic-AI\\agentic-ai-powertools-jira-user-new\\docs\\TestCaseReview\\TCR_OLAC-7566_Comments.md",
+    "poEmail":  null,
+    "sourceIssueKey":  "OLAC-7566",
+    "poDisplayName":  "SHINDE,PRATIMA (Non-GenericQA USA)",
+    "issueKey":  "OLAC-7502",
+    "resolutionIssueKey":  "OLAC-7566",
+    "sourceIssueType":  "XRAY_TEST",
+    "detectedAt":  "2026-08-31T21:28:43.5598456Z",
+    "reviewCommentPosted":  true,
+    "reviewCommentPostedAt":  "2026-08-31T14:35:46.4372370-07:00"
+}

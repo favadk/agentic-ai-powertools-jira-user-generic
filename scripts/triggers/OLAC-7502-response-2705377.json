@@ -1,0 +1,18 @@
+{
+    "blockedStep":  null,
+    "storyKey":  "OLAC-7502",
+    "blockedReason":  null,
+    "commentText":  "We have deployed release FR1.4 to CID-HUB-TST-51 with commit hash c5d35139",
+    "changeType":  "PO_RESPONSE",
+    "commentId":  "2705377",
+    "tcDocPath":  "C:\\Agentic-AI\\agentic-ai-powertools-jira-user-new\\docs\\TestCases\\CID-Sprint-114\\TC_OLAC-7502.md",
+    "xrayTestKey":  "OLAC-7566",
+    "tcrDocPath":  "C:\\Agentic-AI\\agentic-ai-powertools-jira-user-new\\docs\\TestCaseReview\\TCR_OLAC-7566_Comments.md",
+    "poEmail":  null,
+    "sourceIssueKey":  "OLAC-7502",
+    "poDisplayName":  "MAHESHWARI,RADHIKA (GenericQA USA)",
+    "issueKey":  "OLAC-7502",
+    "resolutionIssueKey":  "OLAC-7502",
+    "sourceIssueType":  "STORY",
+    "detectedAt":  "2026-09-22T17:42:45.3128957Z"
+}
