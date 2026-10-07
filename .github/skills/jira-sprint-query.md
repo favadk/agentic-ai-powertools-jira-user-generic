@@ -6,7 +6,7 @@ description: Standard workflow for discovering the active Jira sprint, board, an
 
 ## Steps to Find the Active Sprint and User Stories
 
-1. **Identify the project key** (e.g., `OLAC`, `CDS2REP`). Ask the user if not provided.
+1. **Identify the project key** (e.g., `STORY`, `CDS2REP`). Ask the user if not provided.
 2. **List Agile boards** using `jira_get_agile_boards` — locate the team's primary board for the project.
 3. **Get active sprints** using `jira_get_sprints_from_board` — find the sprint with `state = "active"`.
 4. **Retrieve sprint issues** using `jira_get_sprint_issues` with the active sprint ID.

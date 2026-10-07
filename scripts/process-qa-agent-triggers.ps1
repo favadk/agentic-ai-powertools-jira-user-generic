@@ -92,7 +92,7 @@ function Invoke-XrayGraphQl([string]$token, [string]$query, [object]$variables =
 }
 
 function Get-AutomationEvidenceManifest([string]$storyKey) {
-    $manifestPath = Join-Path $repoRoot "docs\TestExecution\evidence\$storyKey\OLAC-7566-evidence-manifest.json"
+    $manifestPath = Join-Path $repoRoot "docs\TestExecution\evidence\$storyKey\STORY-7566-evidence-manifest.json"
     if (-not (Test-Path -LiteralPath $manifestPath -PathType Leaf)) {
         throw "Automation evidence manifest not found: $manifestPath"
     }

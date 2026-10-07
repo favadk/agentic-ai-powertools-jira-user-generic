@@ -21,7 +21,7 @@
     Jira Agile board ID (find it in the board URL: /jira/software/projects/PROJ/boards/123)
 
 .PARAMETER ProjectKey
-    Jira project key (e.g. OLAC, CDS2REP)
+    Jira project key (e.g. STORY, CDS2REP)
 
 .PARAMETER OllamaModel
     Ollama model to use for test case generation. Default: llama3.2
@@ -39,13 +39,13 @@
 
 .EXAMPLE
     # Normal run:
-    .\scripts\qa-automation-orchestrator.ps1 -BoardId 42 -ProjectKey OLAC
+    .\scripts\qa-automation-orchestrator.ps1 -BoardId 42 -ProjectKey STORY
 
     # Dry run (no Jira changes):
-    .\scripts\qa-automation-orchestrator.ps1 -BoardId 42 -ProjectKey OLAC -DryRun
+    .\scripts\qa-automation-orchestrator.ps1 -BoardId 42 -ProjectKey STORY -DryRun
 
     # Use a different model:
-    .\scripts\qa-automation-orchestrator.ps1 -BoardId 42 -ProjectKey OLAC -OllamaModel mistral
+    .\scripts\qa-automation-orchestrator.ps1 -BoardId 42 -ProjectKey STORY -OllamaModel mistral
 
 .NOTES
     Prerequisites:

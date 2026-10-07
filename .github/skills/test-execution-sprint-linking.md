@@ -169,7 +169,7 @@ Post a comment on the **Xray Test** (`$xrayTestKey`) using `jira_add_comment`, m
 ```powershell
 # Load project contacts from .vscode/mcp.local.json (accountIds are stored there, not here)
 $mcpLocal       = Get-Content ".vscode/mcp.local.json" -Raw | ConvertFrom-Json
-$contacts       = $mcpLocal.projectContacts.OLAC   # adjust project key as needed
+$contacts       = $mcpLocal.projectContacts.STORY   # adjust project key as needed
 
 $ManagerName      = $contacts.manager.name
 $ManagerAccountId = $contacts.manager.accountId     # read at runtime — never hardcoded
@@ -209,7 +209,7 @@ Please notify:
 ```
 
 > **Formatting rules**:
-> - OLAC/Jira issue keys must always include an explicit browse URL: `{KEY} ( {JIRA-BASE-URL}/browse/{KEY} )` — Jira auto-links the key AND the raw URL is clickable for reviewers.
+> - STORY/Jira issue keys must always include an explicit browse URL: `{KEY} ( {JIRA-BASE-URL}/browse/{KEY} )` — Jira auto-links the key AND the raw URL is clickable for reviewers.
 > - Email addresses must be prefixed with `@`: `@name@domain.com`
 > - No accountIds in comment body. Names and emails only.
 
@@ -373,14 +373,14 @@ Agents read contacts using this pattern:
 ```powershell
 # ── Read project contacts from mcp.local.json (sole source of accountIds) ──
 $mcpLocal         = Get-Content ".vscode/mcp.local.json" -Raw | ConvertFrom-Json
-$contacts         = $mcpLocal.projectContacts.OLAC
+$contacts         = $mcpLocal.projectContacts.STORY
 
 $ManagerAccountId = $contacts.manager.accountId       # never hardcoded here
 $PoAccountId      = $contacts.productOwner.accountId  # override by story reporter if present
 
 # ── Other Sprint TE config ─────────────────────────────────────────────────
-$ProjectKey       = "OLAC"          # Jira project key
-$SprintBoardName  = "OLAC Board"    # board name (used to resolve boardId)
+$ProjectKey       = "STORY"          # Jira project key
+$SprintBoardName  = "STORY Board"    # board name (used to resolve boardId)
 
 # Microsoft Teams incoming webhook URLs
 # Teams incoming webhooks are not available in this org (Connectors/Workflows restricted).
@@ -389,25 +389,25 @@ $SprintBoardName  = "OLAC Board"    # board name (used to resolve boardId)
 $TeamsWebhookUrls = @()   # Empty = Jira-only mode (active fallback)
 ```
 
-### OLAC Project — Current Contact Registry
+### STORY Project — Current Contact Registry
 
-Stored in `.vscode/mcp.local.json → projectContacts.OLAC`. AccountIds are **not** listed here.
+Stored in `.vscode/mcp.local.json → projectContacts.STORY`. AccountIds are **not** listed here.
 
 | Role | Name | Email |
 |------|------|-------|
 | Product Owner | REHMAN,SUNIL | sunil_rehman@exampleqa.local |
 | Manager / PM | KICINSKI,MIKE | mike.kicinski@exampleqa.local |
 
-> **Update contacts**: Edit `.vscode/mcp.local.json` → `projectContacts.OLAC` section. Agents pick up the new values automatically — no skill edit needed.
+> **Update contacts**: Edit `.vscode/mcp.local.json` → `projectContacts.STORY` section. Agents pick up the new values automatically — no skill edit needed.
 
-### OLAC Project — Notification Settings
+### STORY Project — Notification Settings
 
 | Setting | Value |
 |---------|-------|
-| Project Key | `OLAC` |
+| Project Key | `STORY` |
 | Teams Group 1 | **CID Scurm Team Chat** — webhook disabled (org restriction); Jira comment fallback active |
 | Teams Group 2 | **AC1 Daily Stand-up** — webhook disabled (org restriction); Jira comment fallback active |
-| Sprint TE naming pattern | `Sprint TE: {SPRINT-NAME} — OLAC` |
+| Sprint TE naming pattern | `Sprint TE: {SPRINT-NAME} — STORY` |
 | TE search scope | Active sprint only (`status != Done`) |
 | TE required status before execution | Status category = `indeterminate` (In Progress / In Dev / Active) |
 | Notification mode | **Jira comment @PO @Manager** (Teams webhooks disabled — `$TeamsWebhookUrls = @()`) |

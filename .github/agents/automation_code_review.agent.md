@@ -118,15 +118,15 @@ Save to `docs/Automation/AUTR_{STORY-KEY}.md`.
 1. Create the automation branch from the default branch:
 ```powershell
 cd "C:\automation\06102026\UI_Protractor_Tests"
-git checkout windows-olac-6457-new-release-fix-latest
-git pull origin windows-olac-6457-new-release-fix-latest
+git checkout windows-STORY-6457-new-release-fix-latest
+git pull origin windows-STORY-6457-new-release-fix-latest
 git checkout -b automation/{STORY-KEY}
 ```
 
 2. Run the new tests scoped to this story:
 ```powershell
 cd "C:\automation\06102026\UI_Protractor_Tests"
-npx protractor test.conf.js --specs "Tests/Feature tests/OLAC-{STORY-KEY}.spec.js"
+npx protractor test.conf.js --specs "Tests/Feature tests/STORY-{STORY-KEY}.spec.js"
 ```
 
 Present the run command to the user and ask them to execute it and paste the output.

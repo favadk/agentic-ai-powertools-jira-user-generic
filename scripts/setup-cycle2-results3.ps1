@@ -12,12 +12,12 @@ $creds    = Get-XrayCreds
 $jiraBase = $creds.Url
 $jHdrs    = $creds.Headers
 
-# Get numeric ID of OLAC-7534
-$resp = Invoke-RestMethod -Uri "$jiraBase/rest/api/2/issue/OLAC-7534?fields=id" -Headers $jHdrs
+# Get numeric ID of STORY-7534
+$resp = Invoke-RestMethod -Uri "$jiraBase/rest/api/2/issue/STORY-7534?fields=id" -Headers $jHdrs
 $numericId = $resp.id
-Write-Output "OLAC-7534 numeric ID: $numericId"
+Write-Output "STORY-7534 numeric ID: $numericId"
 
-# Get run for OLAC-7496 in this TE
+# Get run for STORY-7496 in this TE
 $qBody = '{"query":"{ getTestExecution(issueId: \"' + $numericId + '\") { testRuns(limit:5) { results { id test { issueId } steps { id status { name } } } } } }"}'
 $r = Invoke-Gql $qBody
 if ($r.errors) { Write-Output "GQL errors: $($r.errors | ConvertTo-Json)" }
@@ -50,7 +50,7 @@ $step4id = ($run.steps | Select-Object -Index 3).id
 Write-Output ""
 Write-Output "Step 4 ID: $step4id"
 if ($step4id) {
-    $ar = "AC-03 FIX VERIFIED: After navigating to /docs/security/ unauthenticated, signing in via Cognito, the docs-auth flow correctly redirected to /docs/security/ (the originally requested page). returnUrl parameter is now honoured. Sub-task OLAC-7531 resolved."
+    $ar = "AC-03 FIX VERIFIED: After navigating to /docs/security/ unauthenticated, signing in via Cognito, the docs-auth flow correctly redirected to /docs/security/ (the originally requested page). returnUrl parameter is now honoured. Sub-task STORY-7531 resolved."
     $mutAr = @{
         query     = "mutation upd(`$runId:String!, `$stepId:String!, `$ar:String!) { updateTestRunStep(testRunId:`$runId, stepId:`$stepId, updateData: { status: `"PASSED`", actualResult:`$ar }) { warnings } }"
         variables = @{ runId = $runId; stepId = $step4id; ar = $ar }
@@ -73,4 +73,4 @@ else { Write-Output "Run status: $($rStatus.data.updateTestRunStatus)" }
 "$runId`n$step4id" | Out-File "scripts\cycle2-runid.txt" -Encoding UTF8
 Write-Output ""
 Write-Output "=== Complete ==="
-Write-Output ("TE: OLAC-7534  RunID: " + $runId + "  Step4: " + $step4id)
+Write-Output ("TE: STORY-7534  RunID: " + $runId + "  Step4: " + $step4id)

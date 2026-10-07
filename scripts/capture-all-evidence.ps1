@@ -2,7 +2,7 @@ param()
 $ErrorActionPreference = "Stop"
 
 $workspace = "c:\Agentic-AI\agentic-ai-powertools-jira-user-new"
-$evidenceDir = "$workspace\docs\TestExecution\evidence\OLAC-7456-FullRun"
+$evidenceDir = "$workspace\docs\TestExecution\evidence\STORY-7456-FullRun"
 New-Item -ItemType Directory -Force -Path $evidenceDir | Out-Null
 
 # Write a Node.js Playwright script

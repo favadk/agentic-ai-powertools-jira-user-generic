@@ -1,11 +1,11 @@
-﻿. .\scripts\xray-api.ps1
+. .\scripts\xray-api.ps1
 $tok  = Get-XrayCloudToken
 $gql  = "https://us.xray.cloud.getxray.app/api/v2/graphql"
 $hdrs = @{ Authorization = "Bearer $tok"; "Content-Type" = "application/json" }
 
 $runId = "6a5ff87b72d5b592fbee751e"
 $step4 = "2cb9dfec-5f85-4d8c-aaa7-fb885b7a7c78"
-$base  = "C:\Agentic-AI\agentic-ai-powertools-jira-user-new\docs\TestExecution\evidence\OLAC-7456-Cycle1"
+$base  = "C:\Agentic-AI\agentic-ai-powertools-jira-user-new\docs\TestExecution\evidence\STORY-7456-Cycle1"
 
 $evidenceFiles = @(
     @{ Name = "evidence-step4-01-cognito-signin.png";             Mime = "image/png" },

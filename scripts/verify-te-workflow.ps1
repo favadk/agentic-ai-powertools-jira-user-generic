@@ -4,7 +4,7 @@ $j = [System.IO.File]::ReadAllText($JsonPath) | ConvertFrom-Json
 
 Write-Host ""
 Write-Host "============================================================"
-Write-Host " TE VERIFICATION WORKFLOW -- OLAC CID sprint 110 (ID 78391)"
+Write-Host " TE VERIFICATION WORKFLOW -- STORY CID sprint 110 (ID 78391)"
 Write-Host "============================================================"
 Write-Host " Board  : Acquisition Controller Scrum Board (ID 440)"
 Write-Host " Sprint : CID sprint 110  |  Jul 15-28, 2026"
@@ -26,7 +26,7 @@ if ($activeTe) {
     }
     $teKey = ($activeTe | Select-Object -First 1).key
 } else {
-    Write-Host "  [NO ACTIVE TE] -- OLAC-7473 is Closed (statusCategory=done)"
+    Write-Host "  [NO ACTIVE TE] -- STORY-7473 is Closed (statusCategory=done)"
     Write-Host "  FILTER WORKING CORRECTLY -- Closed TE excluded as expected"
     Write-Host "  WORKFLOW DECISION => Section 3 (auto-create + notify) would trigger"
     $teKey = $null
@@ -93,7 +93,7 @@ Write-Host "============================================================"
 if (-not $teKey) {
     Write-Host "  1. [NO ACTIVE TE] Sprint has no active Test Execution"
     Write-Host "  2. [SECTION 3] Auto-create TE would trigger:"
-    Write-Host "       - Create TE: Sprint TE: CID sprint 110 -- OLAC"
+    Write-Host "       - Create TE: Sprint TE: CID sprint 110 -- STORY"
     Write-Host "       - Move TE to sprint ID 78391"
     Write-Host "       - Post Jira comment at PO / PM with TE key"
     Write-Host "       - Post Teams: CID Scurm Team Chat + AC1 Daily Stand-up"

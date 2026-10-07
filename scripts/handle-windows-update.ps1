@@ -6,7 +6,7 @@
 .DESCRIPTION
     Triggered by monitor-story-changes.ps1 when it writes a WINDOWS_UPDATE trigger file.
     Executes the following steps automatically:
-        1. Link Xray Test OLAC-6457 to the story
+        1. Link Xray Test STORY-6457 to the story
         2. Create branch qualify/monthly-windows-update-<Month-YYYY> from master
         3. Fetch latest cumulative KB article IDs from Microsoft Update Catalog
         4. Update SoftwareManager.js (kbArticles, softwareVersions, softwareDependencies,
@@ -23,7 +23,7 @@
 
 .EXAMPLE
     . .\scripts\xray-api.ps1
-    .\scripts\handle-windows-update.ps1 -TriggerFile scripts/triggers/OLAC-7548-windows-update.json
+    .\scripts\handle-windows-update.ps1 -TriggerFile scripts/triggers/STORY-7548-windows-update.json
 #>
 param(
     [Parameter(Mandatory)][string]$TriggerFile,
@@ -93,20 +93,20 @@ $branchName= "qualify/monthly-windows-update-$monthFull-$year"
 Write-Host ""
 Write-Host "  Month: $monthFull $year  ->  Branch: $branchName"
 
-# --- STEP 1: Link OLAC-6457 to the story -------------------------------------
+# --- STEP 1: Link STORY-6457 to the story -------------------------------------
 Write-Host ""
-Write-Host "STEP 1 -- Linking OLAC-6457 to $storyKey..."
+Write-Host "STEP 1 -- Linking STORY-6457 to $storyKey..."
 $existingLinks = Invoke-RestMethod -Uri "$jiraBase/rest/api/3/issue/$storyKey`?fields=issuelinks" `
     -Headers @{Authorization=$encoded;Accept="application/json"}
-$alreadyLinked = $existingLinks.fields.issuelinks | Where-Object { $_.inwardIssue.key -eq 'OLAC-6457' }
+$alreadyLinked = $existingLinks.fields.issuelinks | Where-Object { $_.inwardIssue.key -eq 'STORY-6457' }
 if ($alreadyLinked) {
-    Write-Host "  OLAC-6457 already linked. Skipping."
+    Write-Host "  STORY-6457 already linked. Skipping."
 } else {
-    $linkBody = '{"type":{"name":"Test"},"inwardIssue":{"key":"OLAC-6457"},"outwardIssue":{"key":"' + $storyKey + '"}}'
+    $linkBody = '{"type":{"name":"Test"},"inwardIssue":{"key":"STORY-6457"},"outwardIssue":{"key":"' + $storyKey + '"}}'
     $r = Invoke-WebRequest -Uri "$jiraBase/rest/api/3/issueLink" -Method POST `
         -Headers @{Authorization=$encoded;Accept="application/json"} `
         -Body $linkBody -ContentType "application/json" -UseBasicParsing
-    Write-Host "  Linked OLAC-6457 -> $storyKey (HTTP $($r.StatusCode))"
+    Write-Host "  Linked STORY-6457 -> $storyKey (HTTP $($r.StatusCode))"
 }
 
 # --- STEP 2: Create branch from master ---------------------------------------
@@ -200,8 +200,8 @@ if (-not $lastWinLine) {
     $lastWinLine = [regex]::Match($smContent, "$lastWinIdx\s*:\s*'[^']+'\s*(?:\r?\n|$)").Value
 }
 $newWinLines = $lastWinLine.TrimEnd() + "`n" +
-    "            $nextWin10Idx`: '$win10Ver', // OLAC-7548-pattern: $monthShort'$yearShort Windows update (win10)`n" +
-    "            $nextWin11Idx`: '$win11Ver'  // OLAC-7548-pattern: $monthShort'$yearShort Windows update (win11)"
+    "            $nextWin10Idx`: '$win10Ver', // STORY-7548-pattern: $monthShort'$yearShort Windows update (win10)`n" +
+    "            $nextWin11Idx`: '$win11Ver'  // STORY-7548-pattern: $monthShort'$yearShort Windows update (win11)"
 $smContent = $smContent -replace [regex]::Escape($lastWinLine.TrimEnd()), $newWinLines
 
 # 2. Update softwareDependencies[windows] -- replace each CDS entry with new indices
@@ -255,11 +255,11 @@ try {
 Write-Host ""
 Write-Host "STEP 6 -- Ensuring single Test Execution then triggering Jenkins..."
 
-# Reuse existing TE linked to this story+OLAC-6457. Create one only if none exists.
+# Reuse existing TE linked to this story+STORY-6457. Create one only if none exists.
 $existingLinks = Invoke-RestMethod -Uri "$jiraBase/rest/api/3/issue/$storyKey`?fields=issuelinks" `
     -Headers @{Authorization=$encoded;Accept="application/json"}
 $existingTE = $existingLinks.fields.issuelinks |
-    Where-Object { $_.outwardIssue.key -match "^OLAC-" } |
+    Where-Object { $_.outwardIssue.key -match "^STORY-" } |
     ForEach-Object { $_.outwardIssue.key } |
     Where-Object {
         try {
@@ -274,8 +274,8 @@ if ($existingTE) {
     $teKey = $existingTE
 } else {
     Write-Host "  No existing TE found -- creating one..."
-    $teKey = New-XrayTestExecution -ProjectKey "OLAC" -StoryKey $storyKey `
-        -TestKeys @("OLAC-6457") `
+    $teKey = New-XrayTestExecution -ProjectKey "STORY" -StoryKey $storyKey `
+        -TestKeys @("STORY-6457") `
         -Summary "TE: $storyKey $summary - Cycle 1" `
         -Environment "TST-51"
     Write-Host "  Created: $teKey"
@@ -291,7 +291,7 @@ $resolvedJobPath = if ($JenkinsJobPath) { $JenkinsJobPath }
 if (-not $resolvedJobPath) {
     Write-Warning "  Jenkins job path not configured (set runTestsJobPath in constantData.json or pass -JenkinsJobPath)."
     Write-Warning "  Manual run command:"
-    Write-Host    "  BRANCH=origin/$branchName SPEC='./Tests/Story tests/OLAC-6457.spec.js' BASE_URL=https://hub.tst-51.aws.GenericQA.com OLS_NAME=scs-perfPhy-SRV.scs.GenericQA.com"
+    Write-Host    "  BRANCH=origin/$branchName SPEC='./Tests/Story tests/STORY-6457.spec.js' BASE_URL=https://hub.tst-51.aws.GenericQA.com OLS_NAME=scs-perfPhy-SRV.scs.GenericQA.com"
 } else {
     $jenkinsUser  = $env:JENKINS_USER
     $jenkinsToken = $env:JENKINS_TOKEN
@@ -301,7 +301,7 @@ if (-not $resolvedJobPath) {
     } else {
         $bp1 = "BRANCH=$([Uri]::EscapeDataString('origin/' + $branchName))"
         $bp2 = "CONF=storyTests"
-        $bp3 = "SPEC=$([Uri]::EscapeDataString('./Tests/Story tests/OLAC-6457.spec.js'))"
+        $bp3 = "SPEC=$([Uri]::EscapeDataString('./Tests/Story tests/STORY-6457.spec.js'))"
         $bp4 = "BASE_URL=$([Uri]::EscapeDataString('https://hub.tst-51.aws.GenericQA.com'))"
         $bp5 = 'OLS_NAME=' + [Uri]::EscapeDataString('scs-perfPhy-SRV.scs.GenericQA.com')
         $buildParams = "$bp1&$bp2&$bp3&$bp4&$bp5"

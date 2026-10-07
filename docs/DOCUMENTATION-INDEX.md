@@ -237,7 +237,7 @@ This guide provides a single reference point for all project documentation, orga
 **Triggers**: Auto-trigger after evidence review APPROVED  
 **Output**:
 - docs/Automation/AUT_{STORY-KEY}.md (local)
-- Automation spec file (e.g., OLAC-7502.spec.js)
+- Automation spec file (e.g., STORY-7502.spec.js)
 **Handles**:
 - Protractor spec generation from test steps
 - Page object mapping

@@ -7,7 +7,7 @@ function Invoke-Gql($body) {
     Invoke-RestMethod -Uri $gql -Method POST -Headers $hdrs -Body $body
 }
 
-# Get numeric ID of OLAC-7534
+# Get numeric ID of STORY-7534
 $jira = [System.Net.WebClient]::new()
 $jira.Headers.Add("Authorization", "Basic " + [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("$($env:JIRA_USERNAME):$($env:JIRA_API_TOKEN)")))
 $jira.Headers.Add("Accept", "application/json")
@@ -19,12 +19,12 @@ $jiraUser  = $mcpConfig.servers."jira-mcp-server".env.JIRA_USERNAME
 $jiraToken = $mcpConfig.servers."jira-mcp-server".env.JIRA_API_TOKEN
 
 $b64  = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("${jiraUser}:${jiraToken}"))
-$resp = Invoke-RestMethod -Uri "$jiraBase/rest/api/2/issue/OLAC-7534?fields=id" `
+$resp = Invoke-RestMethod -Uri "$jiraBase/rest/api/2/issue/STORY-7534?fields=id" `
     -Headers @{ Authorization = "Basic $b64"; Accept = "application/json" }
 $te7534NumericId = $resp.id
-Write-Output "OLAC-7534 numeric ID: $te7534NumericId"
+Write-Output "STORY-7534 numeric ID: $te7534NumericId"
 
-# Get run ID for OLAC-7496 in this TE
+# Get run ID for STORY-7496 in this TE
 $qGetRun = '{"query":"{ getTestExecution(issueId: \"' + $te7534NumericId + '\") { testRuns(limit:5) { results { id test { issueId } steps { id status { name } } } } } }"}'
 $r = Invoke-Gql $qGetRun
 $run = $r.data.getTestExecution.testRuns.results | Select-Object -First 1
@@ -50,7 +50,7 @@ foreach ($step in $run.steps) {
 Write-Output ""
 Write-Output "=== Setting actualResult for step 4 ==="
 $step4 = ($run.steps | Select-Object -Index 3).id   # 0-based index 3 = step 4
-$ar = "AC-03 FIX VERIFIED: After navigating to /docs/security/ unauthenticated, signing in via Cognito, the docs-auth flow correctly redirected to /docs/security/ (the originally requested page). returnUrl parameter is now honoured. OLAC-7531 resolved."
+$ar = "AC-03 FIX VERIFIED: After navigating to /docs/security/ unauthenticated, signing in via Cognito, the docs-auth flow correctly redirected to /docs/security/ (the originally requested page). returnUrl parameter is now honoured. STORY-7531 resolved."
 $mutAr = @{
     query     = "mutation upd(`$runId:String!, `$stepId:String!, `$ar:String!) { updateTestRunStep(testRunId:`$runId, stepId:`$stepId, updateData: { status: `"PASSED`", actualResult:`$ar }) { warnings } }"
     variables = @{ runId = $runId; stepId = $step4; ar = $ar }

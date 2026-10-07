@@ -82,7 +82,7 @@ $newSlide = $newSlide -replace "<a:t>Sprint TE is auto-transitioned to 'In Dev' 
 
 # Replace footer/note lines
 $newSlide = $newSlide -replace [regex]::Escape('Skill: test-execution-sprint-linking.md  |  Applied in: test_case_preparation (step 7e) + test_case_execution (step 0B)'), 'State file: scripts/monitor-state.json  |  Trigger dir: scripts/triggers/  |  Agent: .github/agents/story_monitor.agent.md'
-$newSlide = $newSlide -replace [regex]::Escape('OLAC Teams channels:  CID Scurm Team Chat   |   AC1 Daily Stand-up'), 'Setup: VS Code Task Runner  &#x2192;  QA: Setup Scheduled Tasks  |  Or: .\scripts\setup-story-monitor-scheduler.ps1'
+$newSlide = $newSlide -replace [regex]::Escape('STORY Teams channels:  CID Scurm Team Chat   |   AC1 Daily Stand-up'), 'Setup: VS Code Task Runner  &#x2192;  QA: Setup Scheduled Tasks  |  Or: .\scripts\setup-story-monitor-scheduler.ps1'
 $newSlide = $newSlide -replace [regex]::Escape('Bulk-add: all active sprint tests are added to the TE in a single call  |  Fallback: Jira comment @PO @PM if Teams unavailable'), 'changeType: PO_RESPONSE | DESCRIPTION_CHANGE | STATUS_CHANGE  |  SHA-256 fingerprinting prevents duplicate triggers'
 $newSlide = $newSlide -replace [regex]::Escape("TE must be in 'In Dev' status  |  Framework auto-transitions if needed  |  Jira get_transitions + transition_issue"), 'Sprint rollover: sprintName/sprintId auto-updated in monitor-state.json; no manual intervention needed'
 $newSlide = $newSlide -replace [regex]::Escape('If test not in sprint TE: BLOCKED message shown with remediation steps  |  Run test_case_preparation to resolve'), 'Installation-related stories run smoke then smoke-install before feature steps; failures block execution'

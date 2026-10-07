@@ -695,10 +695,10 @@ Write-Host "Xray Test created: $testKey"
 ### 7c — Record the Xray Test key
 
 After the script runs:
-1. Note the returned Xray Test issue key (e.g., `OLAC-7461`)
+1. Note the returned Xray Test issue key (e.g., `STORY-7461`)
 2. Add it to the local TC document header table:
    ```
-   | **Xray Test Key** | OLAC-7461 |
+   | **Xray Test Key** | STORY-7461 |
    ```
 3. Tell the user: "Xray Test **{KEY}** created in Jira with all {N} steps. Linked to {STORY-KEY}. View at: https://jira.exampleqa.local/browse/{KEY}"
 
@@ -872,12 +872,12 @@ Example:
 ```powershell
 $newSteps = @(
     @{
-        Action   = "[IMPACT OLAC-7600][AC-03]: Auth redirect — Verify unauthenticated user is redirected to login"
+        Action   = "[IMPACT STORY-7600][AC-03]: Auth redirect — Verify unauthenticated user is redirected to login"
         Data     = "User: not logged in; URL: /help"
         Expected = "User is redirected to /login?returnUrl=/help. Login page is displayed."
     },
     @{
-        Action   = "[IMPACT OLAC-7600][COMMENT-01]: Mid-sprint enhancement — Verify redirect preserves returnUrl parameter"
+        Action   = "[IMPACT STORY-7600][COMMENT-01]: Mid-sprint enhancement — Verify redirect preserves returnUrl parameter"
         Data     = "User not authenticated; direct URL access to /help"
         Expected = "After login, user is returned to /help (returnUrl is preserved)"
     }
@@ -910,7 +910,7 @@ $result = Update-XrayTestForStory `
     -StoryKey   "{IMPACTING-STORY-KEY}" `
     -TestKey    "{EXISTING-TEST-KEY}" `
     -NewSteps   $newSteps `
-    -ProjectKey "OLAC"
+    -ProjectKey "STORY"
 
 Write-Host "Result: $($result | ConvertTo-Json)"
 ```
@@ -964,5 +964,5 @@ Wait for the review agent to return before proceeding to Step 9.
 **Mode A:** "Prepare test cases for story CDS2REP-1234."  
 Agent: fetches story → parses AC → generates full TC document → saves locally → creates Xray Test issue → links to story → reports key and coverage matrix.
 
-**Mode C:** "Resolve impact review findings from `docs/TestCaseReview/TCR_OLAC-7496_Impact_OLAC-7600.md`. Test key: OLAC-7496. Impacting story: OLAC-7600."  
+**Mode C:** "Resolve impact review findings from `docs/TestCaseReview/TCR_STORY-7496_Impact_STORY-7600.md`. Test key: STORY-7496. Impacting story: STORY-7600."  
 Agent: reads review findings → loads full story context including comments → generates delta steps → updates local TC doc → runs `Update-XrayTestForStory` → reports outcome.

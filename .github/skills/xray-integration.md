@@ -115,4 +115,4 @@ For bulk import via the Xray Cloud REST API, use the `XrayImportTestSteps` tool 
 - Auth endpoint: `POST https://xray.cloud.getxray.app/api/v2/authenticate`
 - Import endpoint: `POST https://us.xray.cloud.getxray.app/api/v2/import/test`
 - Credentials: set `XRAY_CLIENT_ID` and `XRAY_CLIENT_SECRET` in `.vscode/mcp.local.json` under the `xray` server entry.
-- Example payload: see `scripts/xray-import-OLAC-7456.json`.
+- Example payload: see `scripts/xray-import-STORY-7456.json`.

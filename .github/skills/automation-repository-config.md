@@ -18,7 +18,7 @@ This skill defines **where the automation code lives** in Bitbucket. All automat
 | **Project Key**        | `SIDDEV`                                                                                      |
 | **Repository Slug**    | `ac_portal_e2e`                                                                               |
 | **Browse URL**         | `https://bitbucket.exampleqa.local/projects/SIDDEV/repos/ac_portal_e2e/browse`   |
-| **Default Branch**     | `windows-olac-6457-new-release-fix-latest`                          |
+| **Default Branch**     | `windows-STORY-6457-new-release-fix-latest`                          |
 | **PR Target Branch**   | `release-fr1.4`                                                     |
 
 > These values are confirmed — no user input required. Automation branches always follow the pattern `automation/{STORY-KEY}` and PRs always target `release-fr1.4`.
@@ -29,7 +29,7 @@ This skill defines **where the automation code lives** in Bitbucket. All automat
 
 | Folder path (relative to repo root)          | Contents                                            |
 |----------------------------------------------|-----------------------------------------------------|
-| `Tests/Feature tests/`                       | **Feature test specs** — `OLAC-{KEY}.spec.js`       |
+| `Tests/Feature tests/`                       | **Feature test specs** — `STORY-{KEY}.spec.js`       |
 | `Tests/Epic tests/`                          | Epic-level test specs                               |
 | `Tests/Installation Tests/`                  | Installation test specs                             |
 | `Pages/`                                     | Page Object classes (`*Page.js`)                    |
@@ -50,7 +50,7 @@ Use these Bitbucket tools with the coordinates above (Bitbucket Server uses `pro
 
 ```
 bitbucket_browse_repository(projectKey: "SIDDEV", repoSlug: "ac_portal_e2e", path: "Tests/Feature tests")
-bitbucket_get_file_content(projectKey: "SIDDEV", repoSlug: "ac_portal_e2e", path: "{file_path}", branch: "windows-olac-6457-new-release-fix-latest")
+bitbucket_get_file_content(projectKey: "SIDDEV", repoSlug: "ac_portal_e2e", path: "{file_path}", branch: "windows-STORY-6457-new-release-fix-latest")
 bitbucket_search(projectKey: "SIDDEV", repoSlug: "ac_portal_e2e", query: "{search_term}")
 ```
 
@@ -78,8 +78,8 @@ Before creating any automation code, pull the latest from the default branch:
 
 ```powershell
 cd "C:\automation\06102026\UI_Protractor_Tests"
-git checkout windows-olac-6457-new-release-fix-latest
-git pull origin windows-olac-6457-new-release-fix-latest
+git checkout windows-STORY-6457-new-release-fix-latest
+git pull origin windows-STORY-6457-new-release-fix-latest
 ```
 
 ### Step 2 — Create an Automation Branch
@@ -90,7 +90,7 @@ Create a dedicated branch for this story's automation work:
 git checkout -b automation/{STORY-KEY}
 ```
 
-**Branch naming convention:** `automation/{STORY-KEY}` (e.g., `automation/OLAC-7456`)
+**Branch naming convention:** `automation/{STORY-KEY}` (e.g., `automation/STORY-7456`)
 
 ### Step 3 — Write Automation Code
 

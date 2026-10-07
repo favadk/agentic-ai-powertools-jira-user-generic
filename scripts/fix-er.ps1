@@ -1,4 +1,4 @@
-﻿$f = "C:\Agentic-AI\agentic-ai-powertools-jira-user-new\docs\EvidenceReview\ER_OLAC-7456_Cycle1.md"
+$f = "C:\Agentic-AI\agentic-ai-powertools-jira-user-new\docs\EvidenceReview\ER_STORY-7456_Cycle1.md"
 $content = [System.IO.File]::ReadAllLines($f)
 Write-Host ("Current lines: " + $content.Length)
 $keep = $content[0..181]

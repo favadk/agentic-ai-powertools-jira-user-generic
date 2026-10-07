@@ -41,6 +41,6 @@ All QA artifacts are stored under `docs/` in the workspace root.
 
 - Create the target directory if it does not already exist.
 - Do **NOT** publish documents to Jira or Confluence automatically. All outputs are local unless the user explicitly requests publishing.
-- Replace `{STORY-KEY}` with the Jira issue key (e.g., `OLAC-7456`).
+- Replace `{STORY-KEY}` with the Jira issue key (e.g., `STORY-7456`).
 - Replace `{N}` with the cycle or run number, starting at 1.
-- Replace `{TC-KEY}` with the Xray Test issue key (e.g., `OLAC-7496`).
+- Replace `{TC-KEY}` with the Xray Test issue key (e.g., `STORY-7496`).

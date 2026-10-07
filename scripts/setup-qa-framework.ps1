@@ -431,7 +431,7 @@ Write-Host 'Copying copilot-instructions.md...' -ForegroundColor Cyan
 $ciSrc  = Join-Path $sourceRoot '.github\copilot-instructions.md'
 $ciDest = Join-Path $TargetPath '.github\copilot-instructions.md'
 if (Test-Path $ciSrc) {
-    $ciContent = (Get-Content $ciSrc -Raw) -replace '\bOLAC\b', $JiraProjectKey
+    $ciContent = (Get-Content $ciSrc -Raw) -replace '\bSTORY\b', $JiraProjectKey
     Write-Utf8 -Path $ciDest -Content $ciContent
     Write-Host ('  Written: copilot-instructions.md (project key: ' + $JiraProjectKey + ')') -ForegroundColor DarkGray
 }

@@ -12,18 +12,18 @@ graph TD
     
     B3 -->|No| B2
     B3 -->|Yes| B4["✅ Create Xray Test<br/>Add all test steps"]
-    B4 -->|Set status| B5["🎯 Xray Test → Ready for Test Review<br/>Close OLAC-7557 (Create TC sub-task)"]
+    B4 -->|Set status| B5["🎯 Xray Test → Ready for Test Review<br/>Close STORY-7557 (Create TC sub-task)"]
     
     B5 -->|Auto-trigger| C["🟩 Step 2: Test Case Review<br/>Agent: test_case_review"]
     
-    C -->|1a: Transition sub-task| C1["🔄 OLAC-7558 → In Dev<br/>(Review Test Case)"]
+    C -->|1a: Transition sub-task| C1["🔄 STORY-7558 → In Dev<br/>(Review Test Case)"]
     C1 -->|Review steps<br/>against ACs| C2{{"High/Medium/Low<br/>Gaps Found?"}}
     
     C2 -->|Yes - High/Med gaps| C3["❌ Update Xray Test → Open<br/>Post comments on test"]
     C3 -->|Notify test_case_prep| B2
     
     C2 -->|No gaps found| C4["✅ Add approval comment<br/>Request QA to set test to Active"]
-    C4 -->|Notify QA Engineer| C5["🎯 Xray Test → Active<br/>Close OLAC-7558 (Review TC sub-task)"]
+    C4 -->|Notify QA Engineer| C5["🎯 Xray Test → Active<br/>Close STORY-7558 (Review TC sub-task)"]
     
     C5 -->|Auto-trigger on Active| D["🟨 Step 6: Test Case Execution<br/>Agent: test_case_execution"]
     
@@ -43,7 +43,7 @@ graph TD
     D7 -->|No| D8["⛔ BLOCKED<br/>Test not ready"]
     D8 --> END3["❌ Stop"]
     
-    D7 -->|Yes| D9["🔄 6a: Transition OLAC-7559<br/>(Execute Test Case) → In Dev"]
+    D7 -->|Yes| D9["🔄 6a: Transition STORY-7559<br/>(Execute Test Case) → In Dev"]
     D9 -->|Discover story team| D10["👥 PO, Dev, Tester, Reviewer"]
     
     D10 -->|Execute each step| D11["📸 Step 4a-4f: Execute & Capture Evidence<br/>• Record actual result<br/>• Set pass/fail status<br/>• Attach screenshot per step<br/>• Log defects on failure"]
@@ -54,7 +54,7 @@ graph TD
     D13 -->|Notify tester| D14["⏸️ Awaiting re-test<br/>or defect fix"]
     D14 --> END4["⏸️ Pause"]
     
-    D12 -->|All PASS| D15["✅ 6d: Transition OLAC-7560<br/>(Test Results Review) → Ready for Verification"]
+    D12 -->|All PASS| D15["✅ 6d: Transition STORY-7560<br/>(Test Results Review) → Ready for Verification"]
     D15 -->|Save report| D13
     D13 -->|Auto-chain| E["🟧 Step 7: Evidence Review<br/>Agent: test_case_evidence_review"]
     
@@ -62,10 +62,10 @@ graph TD
     E1 -->|Rejected| E2["❌ Post comment on TE<br/>List gaps + request re-run"]
     E2 -->|Tester re-executes| D11
     
-    E1 -->|Approved| E3["✅ Post comment on sub-task<br/>Evidence approved<br/>Close OLAC-7560"]
+    E1 -->|Approved| E3["✅ Post comment on sub-task<br/>Evidence approved<br/>Close STORY-7560"]
     E3 -->|Auto-chain| F["🟪 Step 8: Automation Code Prep<br/>Agent: automation_code_preparation"]
     
-    F -->|Generate automation| F1["💻 Create automation spec<br/>e.g., OLAC-7502.spec.js"]
+    F -->|Generate automation| F1["💻 Create automation spec<br/>e.g., STORY-7502.spec.js"]
     F1 -->|Save| F2["📄 docs/Automation/AUT_{KEY}.md<br/>Automation test plan"]
     F2 -->|Auto-chain| G["🟣 Step 9a: Automation Review<br/>Agent: automation_code_review"]
     
@@ -133,10 +133,10 @@ graph TD
 
 | Sub-task | Initial Status | Step 1a | Step 6a | Step 6d | Step 7a | Final Status |
 |----------|---|---|---|---|---|---|
-| **OLAC-7557**<br/>Create Test Case | Ready for Dev | — | — | — | — | ✅ **Closed** (Step 1 complete) |
-| **OLAC-7558**<br/>Review Test Case | Ready for Dev | 🔄 In Dev | — | — | — | ✅ **Closed** (Step 2 complete) |
-| **OLAC-7559**<br/>Execute Test Case | Ready for Dev | — | 🔄 In Dev | — | — | ⏳ In Dev (Step 6 running) |
-| **OLAC-7560**<br/>Test Results Review | Ready for Dev | — | — | 🔄 Ready for Verification | 🔄 Closed | ✅ **Closed** (Step 7 complete) |
+| **STORY-7557**<br/>Create Test Case | Ready for Dev | — | — | — | — | ✅ **Closed** (Step 1 complete) |
+| **STORY-7558**<br/>Review Test Case | Ready for Dev | 🔄 In Dev | — | — | — | ✅ **Closed** (Step 2 complete) |
+| **STORY-7559**<br/>Execute Test Case | Ready for Dev | — | 🔄 In Dev | — | — | ⏳ In Dev (Step 6 running) |
+| **STORY-7560**<br/>Test Results Review | Ready for Dev | — | — | 🔄 Ready for Verification | 🔄 Closed | ✅ **Closed** (Step 7 complete) |
 
 ---
 

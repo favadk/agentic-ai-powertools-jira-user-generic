@@ -1,10 +1,10 @@
-# Fix TC-11 (add Step 5) and rewrite TC-12 in TC_OLAC-7456.md
-$file = 'c:\Agentic-AI\agentic-ai-powertools-jira-user-new\docs\TestCases\TC_OLAC-7456.md'
+# Fix TC-11 (add Step 5) and rewrite TC-12 in TC_STORY-7456.md
+$file = 'c:\Agentic-AI\agentic-ai-powertools-jira-user-new\docs\TestCases\TC_STORY-7456.md'
 $content = [System.IO.File]::ReadAllText($file, [System.Text.Encoding]::UTF8)
 
 # Find boundaries
 $s1 = $content.IndexOf('| 4    | Scroll the already-open help page')
-$s2 = $content.IndexOf('### TC-OLAC-7456-13')
+$s2 = $content.IndexOf('### TC-STORY-7456-13')
 
 if ($s1 -lt 0) { Write-Error "TC-11 step 4 not found"; exit 1 }
 if ($s2 -lt 0) { Write-Error "TC-13 marker not found"; exit 1 }
@@ -19,11 +19,11 @@ $newBlock = @'
 
 ---
 
-### TC-OLAC-7456-12 -- Docs blocked when browser session ends after logout (close all windows / machine restart)
+### TC-STORY-7456-12 -- Docs blocked when browser session ends after logout (close all windows / machine restart)
 
 | Field           | Value                         |
 |-----------------|-------------------------------|
-| **TC ID**       | TC-OLAC-7456-12               |
+| **TC ID**       | TC-STORY-7456-12               |
 | **AC Reference**| AC-02, AC-05                  |
 | **Title**       | Docs access blocked once browser session ends after logout -- close all windows or machine restart |
 | **Type**        | Negative                      |

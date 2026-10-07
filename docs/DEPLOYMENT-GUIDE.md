@@ -62,7 +62,7 @@ The **Agentic AI QA Framework** is a fully automated, trigger-driven QA lifecycl
 **Required:**
 - Jira Cloud or Server (API v3 access)
 - Xray Cloud (test management plugin)
-- Project key assigned (e.g., `OLAC`, `CID`)
+- Project key assigned (e.g., `STORY`, `CID`)
 - Active sprint with board configured
 
 **Service Account:**
@@ -162,7 +162,7 @@ cd agentic-ai-powertools-jira-user-new
 JIRA_URL=https://jira.exampleqa.local
 JIRA_USER=qa-automation@company.atlassian.net
 JIRA_API_TOKEN=<paste-your-api-token-here>
-JIRA_PROJECT_KEY=OLAC
+JIRA_PROJECT_KEY=STORY
 
 # ========== Xray Cloud Configuration ==========
 XRAY_CLOUD_CLIENT_ID=<from-xray-admin>
@@ -380,7 +380,7 @@ services:
 export JIRA_URL=https://jira.exampleqa.local
 export JIRA_USER=qa-automation@company.atlassian.net
 export JIRA_API_TOKEN=<token>
-export JIRA_PROJECT_KEY=OLAC
+export JIRA_PROJECT_KEY=STORY
 export XRAY_CLOUD_CLIENT_ID=<id>
 export XRAY_CLOUD_CLIENT_SECRET=<secret>
 export GITHUB_TOKEN=<token>
@@ -477,7 +477,7 @@ az container create \
   --registry-password <password> \
   --environment-variables \
     JIRA_URL=https://jira.exampleqa.local \
-    JIRA_PROJECT_KEY=OLAC \
+    JIRA_PROJECT_KEY=STORY \
   --secure-environment-variables \
     JIRA_API_TOKEN=$JIRA_API_TOKEN \
     XRAY_CLOUD_CLIENT_SECRET=$XRAY_CLOUD_CLIENT_SECRET \
@@ -519,7 +519,7 @@ aws ecs create-service \
     "enabled": true,
     "boardId": 440,           // Your board ID
     "sprintName": "CID sprint 111",
-    "projectKey": "OLAC"      // Your project key
+    "projectKey": "STORY"      // Your project key
   },
   "qaTeamGroupEmail": "qa-team@company.atlassian.net",
   "slackWebhookUrl": "https://hooks.slack.com/services/...",  // Optional
@@ -636,7 +636,7 @@ docker-compose logs -f --tail=100 qa-framework | grep -i error
 # Check which triggers were processed
 Get-ChildItem .\scripts\triggers\*.processed
 # Re-process a failed trigger
-Copy-Item .\scripts\triggers\OLAC-7502-create-tc.json.processed .\scripts\triggers\OLAC-7502-create-tc.json
+Copy-Item .\scripts\triggers\STORY-7502-create-tc.json.processed .\scripts\triggers\STORY-7502-create-tc.json
 ```
 
 ---

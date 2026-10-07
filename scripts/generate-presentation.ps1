@@ -336,7 +336,7 @@ foreach ($f in $teFeatures) {
 
 Add-Rect $s9 $LTBLUE 30 372 ($SW-60) 128 | Out-Null
 Add-TextBox $s9 "Skill: test-execution-sprint-linking.md  |  Applied in: test_case_preparation (step 7e) + test_case_execution (step 0B)" 50 378 ($SW-90) 26 11 $false $NAVY 1 | Out-Null
-Add-TextBox $s9 "OLAC Teams channels:  CID Scurm Team Chat   |   AC1 Daily Stand-up" 50 408 ($SW-90) 20 11 $true $DARK 1 | Out-Null
+Add-TextBox $s9 "STORY Teams channels:  CID Scurm Team Chat   |   AC1 Daily Stand-up" 50 408 ($SW-90) 20 11 $true $DARK 1 | Out-Null
 Add-TextBox $s9 "Bulk-add: all active sprint tests are added to the TE in a single call  |  Fallback: Jira comment @PO @PM if Teams unavailable" 50 432 ($SW-90) 20 11 $false $DGRAY 1 | Out-Null
 Add-TextBox $s9 "TE must be in 'In Dev' status  |  Framework auto-transitions if needed  |  Jira get_transitions + transition_issue" 50 456 ($SW-90) 20 11 $false $DGRAY 1 | Out-Null
 Add-TextBox $s9 "If test not in sprint TE: BLOCKED message shown with remediation steps  |  Run test_case_preparation to resolve" 50 478 ($SW-90) 20 11 $false $DGRAY 1 | Out-Null

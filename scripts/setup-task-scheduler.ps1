@@ -12,7 +12,7 @@
     Jira Agile board ID (from your board URL: /jira/software/projects/PROJ/boards/123)
 
 .PARAMETER ProjectKey
-    Jira project key (e.g. OLAC)
+    Jira project key (e.g. STORY)
 
 .PARAMETER OllamaModel
     Ollama model to use. Default: llama3.2  (run: ollama pull llama3.2 first)
@@ -22,10 +22,10 @@
 
 .EXAMPLE
     # Run as Administrator:
-    .\scripts\setup-task-scheduler.ps1 -BoardId 42 -ProjectKey OLAC
+    .\scripts\setup-task-scheduler.ps1 -BoardId 42 -ProjectKey STORY
 
     # Poll every 10 minutes using mistral model:
-    .\scripts\setup-task-scheduler.ps1 -BoardId 42 -ProjectKey OLAC -OllamaModel mistral -IntervalMinutes 10
+    .\scripts\setup-task-scheduler.ps1 -BoardId 42 -ProjectKey STORY -OllamaModel mistral -IntervalMinutes 10
 #>
 
 [CmdletBinding()]

@@ -6,7 +6,7 @@ function Invoke-Gql($b) { Invoke-RestMethod -Uri $gql -Method POST -Headers $hdr
 
 $runId   = "6a6134f372d5b592fbf526e9"
 $step4id = "2cb9dfec-5f85-4d8c-aaa7-fb885b7a7c78"
-$evDir   = "docs\TestExecution\evidence\OLAC-7456-Cycle2"
+$evDir   = "docs\TestExecution\evidence\STORY-7456-Cycle2"
 
 $files = @(
     @{ Name = "cycle2-step4-01-unauthenticated-cognito-redirect.png"; Mime = "image/png"; Path = "$evDir\step4-01-unauthenticated-cognito-redirect.png" },

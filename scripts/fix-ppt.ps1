@@ -37,8 +37,8 @@ $c9 = $c9 -replace '>Teams Notification<', '>Jira Comment Notification (Default)
 $c9 = $c9 -replace [regex]::Escape("Posts to 'CID Scurm Team Chat' and 'AC1 Daily Stand-up' with TE key for PO/PM action."),
     'Posts a Jira comment tagging @PO and @PM with the new TE key. Teams webhook is optional (configure in automation-repository-config.md).'
 
-# Footer: remove OLAC-specific Teams channel names
-$c9 = $c9 -replace [regex]::Escape('OLAC Teams channels:  CID Scurm Team Chat   |   AC1 Daily Stand-up'),
+# Footer: remove STORY-specific Teams channel names
+$c9 = $c9 -replace [regex]::Escape('STORY Teams channels:  CID Scurm Team Chat   |   AC1 Daily Stand-up'),
     'Default: Jira comment  |  Optional: Teams webhook URL configured in automation-repository-config.md'
 
 # Footer: simplify fallback line

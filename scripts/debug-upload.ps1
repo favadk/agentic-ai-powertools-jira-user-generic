@@ -1,9 +1,9 @@
-﻿cd "C:\Agentic-AI\agentic-ai-powertools-jira-user-new"
+cd "C:\Agentic-AI\agentic-ai-powertools-jira-user-new"
 . ".\scripts\xray-api.ps1"
 $token = Get-XrayCloudToken
 $ep = "https://us.xray.cloud.getxray.app/api/v2/graphql"
 $hdrs = @{ Authorization = "Bearer $token"; "Content-Type" = "application/json" }
-$b64 = [Convert]::ToBase64String([IO.File]::ReadAllBytes(".\docs\TestExecution\evidence\OLAC-7456-FullRun\step1-01-hub-redirects-to-cognito-unauth.png"))
+$b64 = [Convert]::ToBase64String([IO.File]::ReadAllBytes(".\docs\TestExecution\evidence\STORY-7456-FullRun\step1-01-hub-redirects-to-cognito-unauth.png"))
 # First introspect to see the correct field names
 $iq = '{"query":"{__type(name:\"AttachmentDataInput\"){name inputFields{name type{name kind ofType{name kind}}}}}"}'
 $ir = Invoke-RestMethod -Uri $ep -Method Post -Headers $hdrs -Body $iq -ContentType "application/json"

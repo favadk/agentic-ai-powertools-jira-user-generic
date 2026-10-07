@@ -298,7 +298,7 @@
       <label for="project-filter">Project:</label>
       <select id="project-filter" onchange="filterByProject()">
         <option value="">All Projects</option>
-        <option value="OLAC">OLAC</option>
+        <option value="STORY">STORY</option>
         <option value="CDS2">CDS2</option>
         <option value="CCPRO">CCPRO</option>
       </select>
@@ -490,7 +490,7 @@
       </thead>
       <tbody>
         <tr>
-          <td><strong>OLAC-7502</strong></td>
+          <td><strong>STORY-7502</strong></td>
           <td>Consolidate Registration API to GenericQA domain</td>
           <td>Cycle 1</td>
           <td><span class="status in-progress">In Progress</span></td>
@@ -507,7 +507,7 @@
           <td>Aug 14, 10:30 AM</td>
         </tr>
         <tr>
-          <td><strong>OLAC-7456</strong></td>
+          <td><strong>STORY-7456</strong></td>
           <td>Health page consolidation + new domain tests</td>
           <td>Cycle 2</td>
           <td><span class="status pass">Passed</span></td>
@@ -524,7 +524,7 @@
           <td>Aug 13, 3:45 PM</td>
         </tr>
         <tr>
-          <td><strong>OLAC-7548</strong></td>
+          <td><strong>STORY-7548</strong></td>
           <td>Legacy hostname fallback support</td>
           <td>Cycle 1</td>
           <td><span class="status fail">Failed</span></td>
@@ -541,7 +541,7 @@
           <td>Aug 12, 2:15 PM</td>
         </tr>
         <tr>
-          <td><strong>OLAC-7472</strong></td>
+          <td><strong>STORY-7472</strong></td>
           <td>TLS certificate validation for GenericQA domain</td>
           <td>Cycle 1</td>
           <td><span class="status pass">Passed</span></td>
@@ -672,13 +672,13 @@
       {
         id: 'chg-1001',
         timestamp: '2026-08-19T19:30:00Z',
-        project: 'OLAC',
+        project: 'STORY',
         sprint: 'CID-sprint-112',
-        storyKey: 'OLAC-7502',
+        storyKey: 'STORY-7502',
         agent: 'test_case_review',
         changeType: 'XRAY_SYNC',
-        summary: 'Replaced OLAC-7566 with 6 AC/QN-only steps; removed DN-only steps and posted blockers.',
-        artifact: 'docs/TestCaseReview/TCR_OLAC-7566_Comments.md',
+        summary: 'Replaced STORY-7566 with 6 AC/QN-only steps; removed DN-only steps and posted blockers.',
+        artifact: 'docs/TestCaseReview/TCR_STORY-7566_Comments.md',
         status: 'COMPLETED',
         requiresUserAction: true,
         userActionId: 'ua-2001'
@@ -686,13 +686,13 @@
       {
         id: 'chg-1002',
         timestamp: '2026-08-19T19:15:00Z',
-        project: 'OLAC',
+        project: 'STORY',
         sprint: 'CID-sprint-112',
-        storyKey: 'OLAC-7502',
+        storyKey: 'STORY-7502',
         agent: 'test_case_preparation',
         changeType: 'TC_UPDATE',
         summary: 'Updated Sprint 112 authoritative TC with portal-hostname evidence and FR1.4+ baseline.',
-        artifact: 'docs/TestCases/CID-sprint-112/TC_OLAC-7502.md',
+        artifact: 'docs/TestCases/CID-sprint-112/TC_STORY-7502.md',
         status: 'COMPLETED',
         requiresUserAction: true,
         userActionId: 'ua-2001'
@@ -700,13 +700,13 @@
       {
         id: 'chg-1003',
         timestamp: '2026-08-03T18:18:00Z',
-        project: 'OLAC',
+        project: 'STORY',
         sprint: 'CID-sprint-110',
-        storyKey: 'OLAC-7456',
+        storyKey: 'STORY-7456',
         agent: 'automation_run_publish',
         changeType: 'AUTOMATION_RUN',
         summary: 'Run 3 completed clean pass: 12/12 executed tests passed (TC-10 xit by design).',
-        artifact: 'docs/Automation/AUTRPT_OLAC-7456_Run1.md',
+        artifact: 'docs/Automation/AUTRPT_STORY-7456_Run1.md',
         status: 'COMPLETED',
         requiresUserAction: true,
         userActionId: 'ua-2002'
@@ -714,13 +714,13 @@
       {
         id: 'chg-1004',
         timestamp: '2026-07-30T09:10:00Z',
-        project: 'OLAC',
+        project: 'STORY',
         sprint: 'CID-sprint-110',
-        storyKey: 'OLAC-7456',
+        storyKey: 'STORY-7456',
         agent: 'test_case_evidence_review',
         changeType: 'EVIDENCE_REVIEW',
         summary: 'Execution evidence reviewed and approved for cycle 1.',
-        artifact: 'docs/EvidenceReview/ER_OLAC-7456_Cycle1.md',
+        artifact: 'docs/EvidenceReview/ER_STORY-7456_Cycle1.md',
         status: 'COMPLETED',
         requiresUserAction: false
       }
@@ -728,31 +728,31 @@
     pendingUserActions: [
       {
         id: 'ua-2001',
-        project: 'OLAC',
+        project: 'STORY',
         sprint: 'CID-sprint-112',
-        storyKey: 'OLAC-7502',
-        title: 'Provide remaining AC evidence bundle for OLAC-7502',
+        storyKey: 'STORY-7502',
+        title: 'Provide remaining AC evidence bundle for STORY-7502',
         requestedBy: 'test_case_review',
         requestedAt: '2026-08-19T19:35:00Z',
         dueDate: '2026-08-30',
         priority: 'HIGH',
         status: 'PENDING',
         actionDetail: 'Provide API inventory mapping, TLS issuer/chain details, Linux Update matrix, and help-section URLs before execution can proceed.',
-        reference: 'docs/TestCaseReview/TCR_OLAC-7566_Comments.md'
+        reference: 'docs/TestCaseReview/TCR_STORY-7566_Comments.md'
       },
       {
         id: 'ua-2002',
-        project: 'OLAC',
+        project: 'STORY',
         sprint: 'CID-sprint-110',
-        storyKey: 'OLAC-7456',
+        storyKey: 'STORY-7456',
         title: 'Publish automation run summary to Jira and Confluence',
         requestedBy: 'automation_run_publish',
         requestedAt: '2026-08-03T18:20:00Z',
         dueDate: '2026-08-28',
         priority: 'MEDIUM',
         status: 'PENDING',
-        actionDetail: 'Approve posting the completed automation report to Jira story OLAC-7456 and linked Confluence page.',
-        reference: 'docs/Automation/AUTRPT_OLAC-7456_Run1.md'
+        actionDetail: 'Approve posting the completed automation report to Jira story STORY-7456 and linked Confluence page.',
+        reference: 'docs/Automation/AUTRPT_STORY-7456_Run1.md'
       }
     ]
   };

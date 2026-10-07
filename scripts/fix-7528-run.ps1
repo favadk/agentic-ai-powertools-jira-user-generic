@@ -4,12 +4,12 @@ $gql  = "https://us.xray.cloud.getxray.app/api/v2/graphql"
 $hdrs = @{ Authorization = "Bearer $tok"; "Content-Type" = "application/json" }
 function Invoke-Gql($b) { Invoke-RestMethod -Uri $gql -Method POST -Headers $hdrs -Body $b }
 
-# Cycle 1 run in OLAC-7528
+# Cycle 1 run in STORY-7528
 $runId   = "6a5ff87b72d5b592fbee751e"
 $step4id = "2cb9dfec-5f85-4d8c-aaa7-fb885b7a7c78"
 
 # --- Update step 4: PASSED + fix-verification actualResult ---
-$ar = "PASSED after fix (re-verified 2026-07-22): After navigating to /docs/security/ unauthenticated and completing Cognito sign-in, docs-auth correctly redirected to /docs/security/. returnUrl is now honoured. OLAC-7531 resolved."
+$ar = "PASSED after fix (re-verified 2026-07-22): After navigating to /docs/security/ unauthenticated and completing Cognito sign-in, docs-auth correctly redirected to /docs/security/. returnUrl is now honoured. STORY-7531 resolved."
 $mutStep4 = @{
     query     = "mutation upd(`$r:String!, `$s:String!, `$ar:String!) { updateTestRunStep(testRunId:`$r, stepId:`$s, updateData: { status: `"PASSED`", actualResult:`$ar }) { warnings } }"
     variables = @{ r = $runId; s = $step4id; ar = $ar }
@@ -18,14 +18,14 @@ $r4 = Invoke-Gql $mutStep4
 if ($r4.errors) { Write-Output ("ERROR step4: " + $r4.errors[0].message) }
 else { Write-Output "Step 4 updated to PASSED." }
 
-# --- Upload Cycle 2 evidence screenshots to OLAC-7528 step 4 ---
-$evDir = "docs\TestExecution\evidence\OLAC-7456-Cycle2"
+# --- Upload Cycle 2 evidence screenshots to STORY-7528 step 4 ---
+$evDir = "docs\TestExecution\evidence\STORY-7456-Cycle2"
 $files = @(
     @{ Name = "fixverif-step4-01-cognito-redirect.png"; Mime = "image/png"; Path = "$evDir\step4-01-unauthenticated-cognito-redirect.png" },
     @{ Name = "fixverif-step4-02-credentials.png";      Mime = "image/png"; Path = "$evDir\step4-02-credentials-entered.png" },
     @{ Name = "fixverif-step4-03-pass-docs-security.png"; Mime = "image/png"; Path = "$evDir\step4-03-post-signin-correct-redirect-PASS.png" }
 )
-Write-Output "=== Uploading fix-verification evidence to OLAC-7528 step 4 ==="
+Write-Output "=== Uploading fix-verification evidence to STORY-7528 step 4 ==="
 foreach ($ev in $files) {
     if (-not (Test-Path $ev.Path)) { Write-Output ("MISSING: " + $ev.Path); continue }
     $bytes = [System.IO.File]::ReadAllBytes((Resolve-Path $ev.Path))
@@ -46,4 +46,4 @@ if ($rS.errors) { Write-Output ("ERROR run status: " + $rS.errors[0].message) }
 else { Write-Output ("Run status set to: " + $rS.data.updateTestRunStatus) }
 
 Write-Output ""
-Write-Output "=== OLAC-7528 run updated to PASSED ==="
+Write-Output "=== STORY-7528 run updated to PASSED ==="

@@ -30,7 +30,7 @@ You are a **QA Story Monitor**. You watch for PO (Product Owner) responses on bl
 ## Trigger
 
 You are invoked in two ways:
-1. **Manual** — user says `@story_monitor process OLAC-7496` (or similar)
+1. **Manual** — user says `@story_monitor process STORY-7496` (or similar)
 2. **Automatic** — after `monitor-po-responses.ps1` or `monitor-story-changes.ps1` detects a change and writes a trigger file
 
 ---
@@ -40,8 +40,8 @@ You are invoked in two ways:
 Trigger files follow different naming conventions depending on source. Check in priority order:
 
 ```powershell
-# Priority 1 — explicit invocation key supplied (e.g., "OLAC-7456")
-$issueKey = "OLAC-7456"   # from user command or parameter
+# Priority 1 — explicit invocation key supplied (e.g., "STORY-7456")
+$issueKey = "STORY-7456"   # from user command or parameter
 
 # Check all three trigger file patterns for the issue
 $triggerPaths = @(
@@ -57,12 +57,12 @@ $trigger = Get-Content $triggerFile -Raw | ConvertFrom-Json
 If no explicit issue key was supplied, scan `scripts/triggers/` for any `.json` file and process the oldest unprocessed one first.
 
 Extract:
-- `$trigger.issueKey` — the user story (e.g., OLAC-7456) — this is where PO responses are monitored
-- `$trigger.xrayTestKey` — the Xray Test issue (e.g., OLAC-7496)
+- `$trigger.issueKey` — the user story (e.g., STORY-7456) — this is where PO responses are monitored
+- `$trigger.xrayTestKey` — the Xray Test issue (e.g., STORY-7496)
 - `$trigger.sourceIssueKey` — the issue where the comment was posted
 - `$trigger.sourceIssueType` — `STORY` or `XRAY_TEST`; absent means `STORY` for backward compatibility
 - `$trigger.resolutionIssueKey` — the issue that must receive the resolution comment; use `sourceIssueKey` when absent
-- `$trigger.storyKey` — same as issueKey (e.g., OLAC-7456)
+- `$trigger.storyKey` — same as issueKey (e.g., STORY-7456)
 - `$trigger.tcDocPath` — local TC document path
 - `$trigger.tcrDocPath` — local TCR document path
 - `$trigger.blockedStep` — which Xray step was blocked (e.g., "Xray Step 7")
@@ -123,7 +123,7 @@ When `changeType == "DESCRIPTION_CHANGE"`, the story description (ACs, scope, ac
 Fetch the story via `jira_get_issue` with `fields: description,summary,status`. Extract the current description as plain text (parse ADF content nodes). This is the authoritative source — `$trigger.newDescription` is a snapshot from detection time.
 
 ### 2B-2 — Load the existing TC document
-Read `$trigger.tcDocPath` (e.g., `docs/TestCases/TC_OLAC-7456.md`). Parse out each AC section header and the test cases mapped to it.
+Read `$trigger.tcDocPath` (e.g., `docs/TestCases/TC_STORY-7456.md`). Parse out each AC section header and the test cases mapped to it.
 
 ### 2B-3 — Identify affected test cases
 Compare the current story description against the TC document's documented ACs. Flag test cases where:
@@ -269,10 +269,10 @@ When status changes to `Done` / `Closed` / `Released`:
      cd "C:\Agentic-AI\agentic-ai-powertools-jira-user-new"
      . .\scripts\xray-api.ps1
      $teKey = New-XrayTestExecution `
-         -ProjectKey  "OLAC" `
+         -ProjectKey  "STORY" `
          -StoryKey    "{storyKey}" `
          -TestKeys    @("{xrayTestKey}") `
-         -Summary     "Sprint TE: {sprintName} — OLAC" `
+         -Summary     "Sprint TE: {sprintName} — STORY" `
          -Environment "SIT"
      ```
      Then move into sprint: `jira_move_issues_to_sprint(sprintId: $sprintId, issueKeys: @($teKey))`
@@ -366,7 +366,7 @@ Use the Xray GraphQL API to update the action/expected-result of the blocked ste
 . .\scripts\xray-api.ps1
 $token = Get-XrayCloudToken
 
-# Update Xray Step 7 (id: 0238d135-84fe-4ea0-850f-1ddd35640e10) on OLAC-7496
+# Update Xray Step 7 (id: 0238d135-84fe-4ea0-850f-1ddd35640e10) on STORY-7496
 $mutation = @{
     query = 'mutation { updateTestStep(issueId: "1400561", step: { id: "0238d135-84fe-4ea0-850f-1ddd35640e10", action: "<updated action>", result: "<confirmed expected result>" }) { id action result } }'
 } | ConvertTo-Json
@@ -390,9 +390,9 @@ For an `XRAY_TEST` source, post the structured resolution comment to `$trigger.r
 Comment from {poDisplayName}: "{summary of response}"
 
 Actions taken:
-- TC-OLAC-7456-12 expected result: UPDATED / CONFIRMED
-- Xray Step 7 on OLAC-7496: UNBLOCKED — BLOCKED notice removed
-- TC document updated: docs/TestCases/TC_OLAC-7456.md
+- TC-STORY-7456-12 expected result: UPDATED / CONFIRMED
+- Xray Step 7 on STORY-7496: UNBLOCKED — BLOCKED notice removed
+- TC document updated: docs/TestCases/TC_STORY-7456.md
 
 Routing to: test_case_review (Mode C Post-Update Validation)
 ```
@@ -464,12 +464,12 @@ The script performs:
 
 | Step | Action |
 |------|--------|
-| 1 | Links Xray Test **OLAC-6457** to the story |
+| 1 | Links Xray Test **STORY-6457** to the story |
 | 2 | Creates branch `qualify/monthly-windows-update-<Month-YYYY>` from `master` |
 | 3 | Fetches cumulative KB article IDs for Windows 10 21H2 and Windows 11 24H2 from the Microsoft Update Catalog |
 | 4 | Updates `softwareManager.js`: `softwareVersions`, `softwareDependencies`, `kbArticles`, `softwareVersionsReleaseDates` |
 | 5 | Commits and pushes the branch |
-| 6 | Triggers Jenkins job with: `BRANCH=qualify/monthly-windows-update-<Month>-<YYYY>`, `SPEC=./Tests/Story tests/OLAC-6457.spec.js`, `BASE_URL=https://hub.tst-51.aws.GenericQA.com`, `OLS_NAME=scs-perfPhy-SRV.scs.GenericQA.com` |
+| 6 | Triggers Jenkins job with: `BRANCH=qualify/monthly-windows-update-<Month>-<YYYY>`, `SPEC=./Tests/Story tests/STORY-6457.spec.js`, `BASE_URL=https://hub.tst-51.aws.GenericQA.com`, `OLS_NAME=scs-perfPhy-SRV.scs.GenericQA.com` |
 
 **After the script completes**, post a Jira comment on `$trigger.issueKey`:
 
@@ -477,9 +477,9 @@ The script performs:
 [QA Automation Agent] Windows update automation triggered for <issueKey>.
 
 Branch created: qualify/monthly-windows-update-<Month-YYYY>
-Xray Test linked: OLAC-6457
+Xray Test linked: STORY-6457
 SoftwareManager updated with KB articles for win10 (<KB>) and win11 (<KB>)
-Jenkins job triggered with spec OLAC-6457.spec.js on tst-51.
+Jenkins job triggered with spec STORY-6457.spec.js on tst-51.
 
 Results will appear in the linked Test Execution once the Jenkins run completes.
 ```
@@ -523,11 +523,11 @@ The script performs:
 
 | Step | Action |
 |------|--------|
-| 1 | Links Xray Test OLAC-6457 to the story |
+| 1 | Links Xray Test STORY-6457 to the story |
 | 2 | Creates branch qualify/monthly-windows-update-Month-YYYY from master |
 | 3 | Fetches KB article IDs for Windows 10 21H2 and Windows 11 24H2 from Microsoft Update Catalog |
 | 4 | Updates softwareManager.js (softwareVersions, softwareDependencies, kbArticles, releaseDates) |
 | 5 | Commits and pushes the branch |
-| 6 | Triggers Jenkins job: BRANCH=qualify/..., SPEC=OLAC-6457.spec.js, BASE_URL=https://hub.tst-51.aws.GenericQA.com, OLS_NAME=scs-perfPhy-SRV.scs.GenericQA.com |
+| 6 | Triggers Jenkins job: BRANCH=qualify/..., SPEC=STORY-6457.spec.js, BASE_URL=https://hub.tst-51.aws.GenericQA.com, OLS_NAME=scs-perfPhy-SRV.scs.GenericQA.com |
 
 After script completes, post a Jira comment on the story with branch name, KB articles, and Jenkins run link.

@@ -1,0 +1,18 @@
+{
+    "blockedStep":  null,
+    "storyKey":  "STORY-7505",
+    "blockedReason":  null,
+    "commentText":  "We have deployed release FR1.4 to CID-HUB-TST-51 with commit hash c5d35139",
+    "changeType":  "PO_RESPONSE",
+    "commentId":  "2705378",
+    "tcDocPath":  "C:\\Agentic-AI\\agentic-ai-powertools-jira-user-new\\docs\\TestCases\\CID-Sprint-114\\TC_STORY-7505.md",
+    "xrayTestKey":  "STORY-7505",
+    "tcrDocPath":  "C:\\Agentic-AI\\agentic-ai-powertools-jira-user-new\\docs\\TestCaseReview\\TCR_STORY-7505.md",
+    "poEmail":  null,
+    "sourceIssueKey":  "STORY-7505",
+    "poDisplayName":  "MAHESHWARI,RADHIKA (GenericQA USA)",
+    "issueKey":  "STORY-7505",
+    "resolutionIssueKey":  "STORY-7505",
+    "sourceIssueType":  "STORY",
+    "detectedAt":  "2026-09-22T17:42:45.3128957Z"
+}

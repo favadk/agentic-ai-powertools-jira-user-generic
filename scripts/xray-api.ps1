@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     Xray REST API helper functions for the QA lifecycle agents.
     Supports: creating Test issues, adding steps, creating Test Executions,
@@ -112,7 +112,7 @@ function Invoke-XrayApi {
 }
 
 # ---------------------------------------------------------------------------
-# Story status gate — only allow "In Dev" or "Ready for Dev" stories
+# Story status gate � only allow "In Dev" or "Ready for Dev" stories
 # ---------------------------------------------------------------------------
 
 function Get-StoryStatus {
@@ -120,11 +120,11 @@ function Get-StoryStatus {
     .SYNOPSIS
         Returns the Jira status name for a given issue (story OR Xray Test).
         Strategy 1: Jira API v3 GET (works when Browse permission is granted).
-        Strategy 2: Xray Cloud GraphQL jira(fields:["status"]) — fallback for
+        Strategy 2: Xray Cloud GraphQL jira(fields:["status"]) � fallback for
                     Test issues or issues where the REST API returns 404/403.
         Returns $null only when both strategies fail.
-    .PARAMETER IssueKey   Any Jira issue key (e.g. OLAC-7456, OLAC-7496)
-    .PARAMETER StoryKey   Alias for IssueKey — kept for backwards compatibility
+    .PARAMETER IssueKey   Any Jira issue key (e.g. STORY-7456, STORY-7496)
+    .PARAMETER StoryKey   Alias for IssueKey � kept for backwards compatibility
     #>
     param(
         [string]$IssueKey  = "",
@@ -133,7 +133,7 @@ function Get-StoryStatus {
     if (-not $IssueKey) { $IssueKey = $StoryKey }
     if (-not $IssueKey) { throw "Get-StoryStatus: IssueKey is required." }
 
-    # ── Strategy 1: Jira REST API v3 ────────────────────────────────────────
+    # -- Strategy 1: Jira REST API v3 ----------------------------------------
     $creds   = Get-XrayCreds
     $uri     = "$($creds.Url)/rest/api/3/issue/$IssueKey`?fields=status"
     $headers = @{ Authorization = $creds.Headers.Authorization; Accept = "application/json" }
@@ -145,7 +145,7 @@ function Get-StoryStatus {
         Write-Verbose "[Get-StoryStatus] Jira REST failed for $IssueKey ($(($_.Exception.Message -split '\n')[0])). Trying Xray GraphQL fallback..."
     }
 
-    # ── Strategy 2: Xray Cloud GraphQL fallback ──────────────────────────────
+    # -- Strategy 2: Xray Cloud GraphQL fallback ------------------------------
     try {
         $token    = Get-XrayCloudToken
         $headers2 = @{ Authorization = "Bearer $token"; "Content-Type" = "application/json" }
@@ -177,7 +177,7 @@ function Assert-StoryInDev {
         Returns $true when the story is in an allowed status ("In Dev" or "Ready for Dev").
         Returns $false and writes a warning when the story is in a non-qualifying status.
         Fails open (returns $true with a warning) when status cannot be determined.
-    .PARAMETER StoryKey   User Story key to check (e.g. OLAC-7456)
+    .PARAMETER StoryKey   User Story key to check (e.g. STORY-7456)
     .PARAMETER Allowed    Override the default allowed status names.
     #>
     param(
@@ -188,12 +188,12 @@ function Assert-StoryInDev {
     $status = Get-StoryStatus -StoryKey $StoryKey
 
     if ($null -eq $status) {
-        Write-Warning "[Status Gate] Could not verify status for $StoryKey (no permission or issue not found). Proceeding with caution — verify manually."
+        Write-Warning "[Status Gate] Could not verify status for $StoryKey (no permission or issue not found). Proceeding with caution � verify manually."
         return $true   # fail-open: allow when status is unreadable
     }
 
     if ($Allowed -contains $status) {
-        Write-Host "  [Status Gate] $StoryKey is '$status' — allowed. Proceeding." -ForegroundColor Green
+        Write-Host "  [Status Gate] $StoryKey is '$status' � allowed. Proceeding." -ForegroundColor Green
         return $true
     }
 
@@ -210,14 +210,14 @@ function New-XrayTest {
     .SYNOPSIS
         Creates an Xray Test issue and populates its test steps.
 
-    .PARAMETER ProjectKey  Jira project key (e.g. "OLAC")
-    .PARAMETER Summary     Test issue summary (e.g. "TC OLAC-7456: Restrict help to auth users")
+    .PARAMETER ProjectKey  Jira project key (e.g. "STORY")
+    .PARAMETER Summary     Test issue summary (e.g. "TC STORY-7456: Restrict help to auth users")
     .PARAMETER StoryKey    User Story key to link via "Tests" link
     .PARAMETER Steps       Array of hashtables: @{ Action="..."; Data="..."; Expected="..." }
     .PARAMETER Description Optional description / preconditions text
     .PARAMETER AssigneeAccountId  Optional Jira accountId to assign the test to after creation
 
-    .OUTPUTS   The created Test issue key (e.g. "OLAC-7461")
+    .OUTPUTS   The created Test issue key (e.g. "STORY-7461")
     #>
     param(
         [Parameter(Mandatory)][string]$ProjectKey,
@@ -232,7 +232,7 @@ function New-XrayTest {
 
     # --- Story status gate ---
     if (-not (Assert-StoryInDev -StoryKey $StoryKey)) {
-        Write-Warning "New-XrayTest aborted for $StoryKey — story is not In Dev or Ready for Dev."
+        Write-Warning "New-XrayTest aborted for $StoryKey � story is not In Dev or Ready for Dev."
         return $null
     }
 
@@ -324,8 +324,8 @@ function New-XrayTestExecution {
         and links the execution back to the User Story.
 
     .PARAMETER ProjectKey   Jira project key
-    .PARAMETER StoryKey     User Story key (e.g. OLAC-7456)
-    .PARAMETER TestKeys     Array of Test issue keys to include (e.g. @("OLAC-7461"))
+    .PARAMETER StoryKey     User Story key (e.g. STORY-7456)
+    .PARAMETER TestKeys     Array of Test issue keys to include (e.g. @("STORY-7461"))
     .PARAMETER Summary      Optional summary override. Defaults to "Test Execution: {StoryKey}"
     .PARAMETER Environment  Test environment label (e.g. "SIT", "UAT")
 
@@ -436,7 +436,7 @@ function New-XrayTestExecution {
         }
     }
 
-    # NOTE: Sprint TEs are containers for Xray Tests — no issue link to the story is created here.
+    # NOTE: Sprint TEs are containers for Xray Tests � no issue link to the story is created here.
     # The Xray Test (not the TE) holds the "Tests" relationship to the story.
     return $execKey
 }
@@ -673,14 +673,14 @@ function Import-XrayCloudTestSteps {
         using the Xray Cloud REST API v2. Does NOT require BULK_CHANGE permission.
 
     .PARAMETER JsonFilePath   Path to a Xray JSON import file (array of test objects).
-                              Use scripts/xray-import-OLAC-7456.json for OLAC-7496.
+                              Use scripts/xray-import-STORY-7456.json for STORY-7496.
     .PARAMETER XrayToken      Bearer token from Get-XrayCloudToken. If omitted,
                               Get-XrayCloudToken is called automatically.
     .PARAMETER Region         Xray Cloud region base URL. Defaults to US region.
 
     .EXAMPLE
         $tok = Get-XrayCloudToken
-        Import-XrayCloudTestSteps -JsonFilePath "scripts\xray-import-OLAC-7456.json" -XrayToken $tok
+        Import-XrayCloudTestSteps -JsonFilePath "scripts\xray-import-STORY-7456.json" -XrayToken $tok
     #>
     param(
         [Parameter(Mandatory)][string]$JsonFilePath,
@@ -728,9 +728,9 @@ function Set-XrayCloudTestSteps {
         addTestStep GraphQL mutation (Xray Cloud API v2).
         Returns $true on success, $false if any steps failed.
 
-    .PARAMETER TestKey      Existing Xray Test issue key (e.g. "OLAC-7421")
-    .PARAMETER ProjectKey   Jira project key (e.g. "OLAC") — used to look up numeric ID
-    .PARAMETER Summary      Unused — kept for signature compatibility
+    .PARAMETER TestKey      Existing Xray Test issue key (e.g. "STORY-7421")
+    .PARAMETER ProjectKey   Jira project key (e.g. "STORY") � used to look up numeric ID
+    .PARAMETER Summary      Unused � kept for signature compatibility
     .PARAMETER Steps        Array of hashtables: @{ Action; Data; Expected }
     .PARAMETER Region       Xray Cloud region. Defaults to US.
     #>
@@ -793,7 +793,7 @@ function Find-ExistingXrayTest {
         Returns the first Xray Test issue key linked to the given User Story,
         or $null if none is found.
 
-    .PARAMETER StoryKey   User Story key to check (e.g. OLAC-7328)
+    .PARAMETER StoryKey   User Story key to check (e.g. STORY-7328)
 
     .OUTPUTS   String: existing Test issue key, or $null
     #>
@@ -849,7 +849,7 @@ function Get-XrayTestStepCount {
         Returns the number of steps on an existing Xray Test issue.
         Returns -1 if the Xray step API is unavailable (Jira Cloud).
 
-    .PARAMETER TestKey   Xray Test issue key (e.g. OLAC-7510)
+    .PARAMETER TestKey   Xray Test issue key (e.g. STORY-7510)
     #>
     param([Parameter(Mandatory)][string]$TestKey)
 
@@ -881,7 +881,7 @@ function Ensure-XrayTest {
               adds steps and returns existing key.
         4. If no Test exists: creates a new one and returns the new key.
 
-    .OUTPUTS   Hashtable @{ Key = "OLAC-XXXX"; Action = "created"|"updated"|"skipped" }
+    .OUTPUTS   Hashtable @{ Key = "STORY-XXXX"; Action = "created"|"updated"|"skipped" }
     #>
     param(
         [Parameter(Mandatory)][string]$ProjectKey,
@@ -895,7 +895,7 @@ function Ensure-XrayTest {
 
     # --- Story status gate ---
     if (-not (Assert-StoryInDev -StoryKey $StoryKey)) {
-        Write-Warning "Ensure-XrayTest aborted for $StoryKey — story is not In Dev or Ready for Dev."
+        Write-Warning "Ensure-XrayTest aborted for $StoryKey � story is not In Dev or Ready for Dev."
         return @{ Key = $null; Action = "blocked" }
     }
 
@@ -963,14 +963,14 @@ function Ensure-XrayTest {
 
 # ---------------------------------------------------------------------------
 # Workflow: update an Active Xray Test when a new story impacts it
-#   Active → [review] → Open → [prep resolves findings + story context] → Ready for Test Review
+#   Active ? [review] ? Open ? [prep resolves findings + story context] ? Ready for Test Review
 # ---------------------------------------------------------------------------
 
 function Get-JiraStoryDetail {
     <#
     .SYNOPSIS
         Fetches the full detail of a Jira story including description, acceptance criteria,
-        and ALL comments — so the prep agent can detect mid-sprint enhancements.
+        and ALL comments � so the prep agent can detect mid-sprint enhancements.
         Returns a structured hashtable. Falls back to $null on auth/404 failure.
 
     .PARAMETER StoryKey   Any Jira issue key (story, task, test, etc.)
@@ -981,7 +981,7 @@ function Get-JiraStoryDetail {
     $creds   = Get-XrayCreds
     $headers = @{ Authorization = $creds.Headers.Authorization; Accept = "application/json" }
 
-    # ── Issue fields ─────────────────────────────────────────────────────────
+    # -- Issue fields ---------------------------------------------------------
     $detail = $null
     try {
         $uri  = "$($creds.Url)/rest/api/3/issue/$StoryKey`?fields=summary,description,comment,customfield_10014,customfield_10016"
@@ -992,7 +992,7 @@ function Get-JiraStoryDetail {
         return $null
     }
 
-    # ── Extract plain text from ADF description ───────────────────────────────
+    # -- Extract plain text from ADF description -------------------------------
     function ConvertFrom-AdfToText($node) {
         if (-not $node) { return "" }
         Set-StrictMode -Off
@@ -1009,7 +1009,7 @@ function Get-JiraStoryDetail {
     $acText   = ConvertFrom-AdfToText $detail.fields.customfield_10014
     if (-not $acText.Trim()) { $acText = ConvertFrom-AdfToText $detail.fields.customfield_10016 }
 
-    # ── Extract comments ──────────────────────────────────────────────────────
+    # -- Extract comments ------------------------------------------------------
     $comments = @()
     foreach ($c in $detail.fields.comment.comments) {
         $author  = $c.author.displayName
@@ -1054,7 +1054,7 @@ function Invoke-JiraTransition {
     .SYNOPSIS
         Executes a named workflow transition on a Jira issue.
         Returns $true on success, $false on failure.
-    .PARAMETER IssueKey        Jira issue key to transition (e.g. OLAC-7496)
+    .PARAMETER IssueKey        Jira issue key to transition (e.g. STORY-7496)
     .PARAMETER TransitionName  Exact name of the target transition (e.g. "Open", "Ready for Test Review")
     #>
     param(
@@ -1083,7 +1083,7 @@ function Invoke-JiraTransition {
 
     try {
         Invoke-WebRequest -Method POST -Uri $uri -Headers $headers -Body $body -UseBasicParsing -ErrorAction Stop | Out-Null
-        Write-Host "  [Transition] $IssueKey  →  '$TransitionName'" -ForegroundColor Cyan
+        Write-Host "  [Transition] $IssueKey  ?  '$TransitionName'" -ForegroundColor Cyan
         return $true
     } catch {
         Write-Warning "  [Invoke-JiraTransition] Transition failed for $IssueKey to '$TransitionName': $_"
@@ -1096,7 +1096,7 @@ function Get-XrayCloudTestSteps {
     .SYNOPSIS
         Retrieves the current steps from an existing Xray Cloud Test issue via GraphQL.
         Returns an array of @{ Action; Data; Expected } hashtables (empty array if none).
-    .PARAMETER TestKey   Xray Test issue key (e.g. OLAC-7496)
+    .PARAMETER TestKey   Xray Test issue key (e.g. STORY-7496)
     .PARAMETER Region    Xray Cloud region. Defaults to US.
     #>
     param(
@@ -1128,14 +1128,14 @@ function Update-XrayTestForStory {
         by a new or impacting User Story.
 
         Workflow enforced:
-          Active  →  Open  →  [append new steps to existing steps]  →  Ready for Test Review
+          Active  ?  Open  ?  [append new steps to existing steps]  ?  Ready for Test Review
 
     .PARAMETER StoryKey         The NEW/impacting User Story key (used in audit comment)
     .PARAMETER TestKey          Existing Xray Test issue key to update.
                                 If omitted, Find-ExistingXrayTest is called using LinkedStoryKey.
     .PARAMETER LinkedStoryKey   Story that currently owns the Test (used only when TestKey is omitted).
     .PARAMETER NewSteps         Array of @{ Action="..."; Data="..."; Expected="..." } to APPEND.
-    .PARAMETER ProjectKey       Jira project key. Default "OLAC".
+    .PARAMETER ProjectKey       Jira project key. Default "STORY".
     .PARAMETER Region           Xray Cloud region. Default US.
 
     .OUTPUTS   Hashtable: @{ TestKey; StoryKey; StepsAdded; TotalSteps; FinalStatus }
@@ -1145,18 +1145,18 @@ function Update-XrayTestForStory {
         $steps = @(
             @{ Action="Navigate to Help"; Data=""; Expected="Help page loads" }
         )
-        Update-XrayTestForStory -StoryKey "OLAC-7600" -TestKey "OLAC-7496" -NewSteps $steps
+        Update-XrayTestForStory -StoryKey "STORY-7600" -TestKey "STORY-7496" -NewSteps $steps
     #>
     param(
         [Parameter(Mandatory)][string]$StoryKey,
         [string]$TestKey         = "",
         [string]$LinkedStoryKey  = "",
         [Parameter(Mandatory)][array]$NewSteps,
-        [string]$ProjectKey      = "OLAC",
+        [string]$ProjectKey      = "STORY",
         [string]$Region          = "https://us.xray.cloud.getxray.app"
     )
 
-    # ── 1. Resolve TestKey ──────────────────────────────────────────────────
+    # -- 1. Resolve TestKey --------------------------------------------------
     if (-not $TestKey) {
         $lookupKey = if ($LinkedStoryKey) { $LinkedStoryKey } else { $StoryKey }
         Write-Host "  [Update] Finding existing Test for $lookupKey..."
@@ -1169,7 +1169,7 @@ function Update-XrayTestForStory {
     }
     Write-Host "  [Update] Target Test issue: $TestKey"
 
-    # ── 2. Verify status is Active ──────────────────────────────────────────
+    # -- 2. Verify status is Active ------------------------------------------
     $currentStatus = Get-StoryStatus -StoryKey $TestKey
     Write-Host "  [Update] $TestKey current status: '$currentStatus'"
 
@@ -1179,22 +1179,22 @@ function Update-XrayTestForStory {
         return $null
     }
 
-    # ── 3. Transition  Active → Open ────────────────────────────────────────
-    Write-Host "  [Update] Transitioning $TestKey Active → Open..." -ForegroundColor Yellow
+    # -- 3. Transition  Active ? Open ----------------------------------------
+    Write-Host "  [Update] Transitioning $TestKey Active ? Open..." -ForegroundColor Yellow
     if (-not (Invoke-JiraTransition -IssueKey $TestKey -TransitionName "Open")) {
         Write-Warning "  [Update-XrayTestForStory] Cannot transition $TestKey to 'Open'. Aborting."
         return $null
     }
 
-    # ── 4. Fetch existing steps ──────────────────────────────────────────────
+    # -- 4. Fetch existing steps ----------------------------------------------
     Write-Host "  [Update] Fetching existing steps from $TestKey..."
     $existingSteps = Get-XrayCloudTestSteps -TestKey $TestKey -Region $Region
     Write-Host "  [Update] Existing steps: $(@($existingSteps).Count)  |  New steps to append: $(@($NewSteps).Count)"
 
-    # ── 5. Merge existing + new ──────────────────────────────────────────────
+    # -- 5. Merge existing + new ----------------------------------------------
     $mergedSteps = @($existingSteps) + @($NewSteps)
 
-    # ── 6. Upload merged steps ───────────────────────────────────────────────
+    # -- 6. Upload merged steps -----------------------------------------------
     Write-Host "  [Update] Uploading $(@($mergedSteps).Count) merged step(s) to $TestKey..."
     $uploaded = Set-XrayCloudTestSteps `
         -TestKey    $TestKey `
@@ -1204,11 +1204,11 @@ function Update-XrayTestForStory {
         -Region     $Region
 
     if (-not $uploaded) {
-        Write-Warning "  [Update-XrayTestForStory] Step upload FAILED. $TestKey left in 'Open' — review and transition manually."
+        Write-Warning "  [Update-XrayTestForStory] Step upload FAILED. $TestKey left in 'Open' � review and transition manually."
         return $null
     }
 
-    # ── 7. Add audit comment ─────────────────────────────────────────────────
+    # -- 7. Add audit comment -------------------------------------------------
     $creds = Get-XrayCreds
     $commentBody = @{
         body = @{
@@ -1233,8 +1233,8 @@ function Update-XrayTestForStory {
         Write-Warning "  [Update-XrayTestForStory] Could not add audit comment: $_"
     }
 
-    # ── 8. Transition  Open → Ready for Test Review ──────────────────────────
-    Write-Host "  [Update] Transitioning $TestKey Open → 'Ready for Test Review'..." -ForegroundColor Yellow
+    # -- 8. Transition  Open ? Ready for Test Review --------------------------
+    Write-Host "  [Update] Transitioning $TestKey Open ? 'Ready for Test Review'..." -ForegroundColor Yellow
     $finalOk = Invoke-JiraTransition -IssueKey $TestKey -TransitionName "Ready for Test Review"
     if (-not $finalOk) {
         Write-Warning "  [Update-XrayTestForStory] Steps uploaded but transition to 'Ready for Test Review' failed."
@@ -1242,7 +1242,7 @@ function Update-XrayTestForStory {
     }
 
     $finalStatus = if ($finalOk) { "Ready for Test Review" } else { "Open (manual transition required)" }
-    Write-Host "  [Update-XrayTestForStory] COMPLETE: $TestKey → '$finalStatus'  ($(@($mergedSteps).Count) total steps)" -ForegroundColor Green
+    Write-Host "  [Update-XrayTestForStory] COMPLETE: $TestKey ? '$finalStatus'  ($(@($mergedSteps).Count) total steps)" -ForegroundColor Green
 
     return @{
         TestKey     = $TestKey
@@ -1263,7 +1263,7 @@ Write-Host "  Get-StoryStatus, Assert-StoryInDev  [status gate: In Dev | Ready f
 Write-Host "  Get-JiraIssueTransitions, Invoke-JiraTransition  [workflow transition helpers]"
 Write-Host "  Get-XrayCloudTestSteps  [read existing steps via GraphQL]"
 Write-Host "  Get-JiraStoryDetail  [fetch description + comments + AC for agent context]"
-Write-Host "  Update-XrayTestForStory  [Active→Open→append steps→Ready for Test Review]"
+Write-Host "  Update-XrayTestForStory  [Active?Open?append steps?Ready for Test Review]"
 
 
 

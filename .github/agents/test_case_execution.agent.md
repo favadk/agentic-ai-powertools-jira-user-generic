@@ -236,8 +236,8 @@ Run Story Team Discovery (see `.github/skills/story-team-discovery.md`) on the s
 ### Step 2 — Gather Context
 
 Load `docs/TestCases/{sprint-slug}/TC_{STORY-KEY}.md` and extract:
-- **Story Key** (e.g., OLAC-7456)
-- **Xray Test Key** (e.g., OLAC-7461) — the `Xray Test Key` field in the doc header
+- **Story Key** (e.g., STORY-7456)
+- **Xray Test Key** (e.g., STORY-7461) — the `Xray Test Key` field in the doc header
 - **All test steps** — every step row across all TCs, in order
 - **Total step count**
 
@@ -598,5 +598,5 @@ Save to `docs/TestExecution/{sprint-slug}/TE_{STORY-KEY}_Cycle{N}.md`:
 
 ## Example Usage
 
-- User: "Execute test cases for OLAC-7456 in SIT, Cycle 1, build 5.2.1."
+- User: "Execute test cases for STORY-7456 in SIT, Cycle 1, build 5.2.1."
 - Agent: loads TC doc → reads Xray Test key → creates Test Execution in Jira → adds Test → for each step: presents step, records actual result, updates Xray step status, prompts for screenshot, attaches to Xray → logs defects on failures → sets overall status → saves local execution report.

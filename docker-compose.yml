@@ -13,7 +13,7 @@ services:
       JIRA_URL: ${JIRA_URL:-https://jira.exampleqa.local}
       JIRA_USER: ${JIRA_USER:-qa-automation@company.atlassian.net}
       JIRA_API_TOKEN: ${JIRA_API_TOKEN}
-      JIRA_PROJECT_KEY: ${JIRA_PROJECT_KEY:-OLAC}
+      JIRA_PROJECT_KEY: ${JIRA_PROJECT_KEY:-STORY}
 
       # Xray Cloud Configuration
       XRAY_CLOUD_CLIENT_ID: ${XRAY_CLOUD_CLIENT_ID}
@@ -118,7 +118,7 @@ services:
     environment:
       JIRA_URL: ${JIRA_URL:-https://jira.exampleqa.local}
       JIRA_API_TOKEN: ${JIRA_API_TOKEN}
-      JIRA_PROJECT_KEY: ${JIRA_PROJECT_KEY:-OLAC}
+      JIRA_PROJECT_KEY: ${JIRA_PROJECT_KEY:-STORY}
       DB_HOST: postgres
       DB_PORT: 5432
       DB_NAME: qa_metrics
