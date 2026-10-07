@@ -6,33 +6,33 @@ tools:
     "edit/createDirectory",
     "edit/editFiles",
     "search",
-    "bitbucket/bitbucket_browse_repository",
-    "bitbucket/bitbucket_get_activities",
-    "bitbucket/bitbucket_get_comments",
-    "bitbucket/bitbucket_get_diff",
-    "bitbucket/bitbucket_get_file_content",
-    "bitbucket/bitbucket_get_pull_request",
-    "bitbucket/bitbucket_get_reviews",
-    "bitbucket/bitbucket_list_projects",
-    "bitbucket/bitbucket_list_repositories",
-    "bitbucket/bitbucket_search",
-    "jira/jira_get_agile_boards",
-    "jira/jira_get_all_projects",
-    "jira/jira_get_backlog_issues",
-    "jira/jira_get_board_issues",
-    "jira/jira_get_development_information",
-    "jira/jira_get_issue",
-    "jira/jira_get_link_types",
-    "jira/jira_get_project",
-    "jira/jira_get_project_issues",
-    "jira/jira_get_project_versions",
-    "jira/jira_get_sprint_issues",
-    "jira/jira_get_sprints_from_board",
-    "jira/jira_get_transitions",
-    "jira/jira_get_user_profile",
-    "jira/jira_get_worklog",
-    "jira/jira_search",
-    "jira/jira_search_fields",
+    "source-control/source-control_browse_repository",
+    "source-control/source-control_get_activities",
+    "source-control/source-control_get_comments",
+    "source-control/source-control_get_diff",
+    "source-control/source-control_get_file_content",
+    "source-control/source-control_get_pull_request",
+    "source-control/source-control_get_reviews",
+    "source-control/source-control_list_projects",
+    "source-control/source-control_list_repositories",
+    "source-control/source-control_search",
+    "issue-tracker/issue-tracker_get_agile_boards",
+    "issue-tracker/issue-tracker_get_all_projects",
+    "issue-tracker/issue-tracker_get_backlog_issues",
+    "issue-tracker/issue-tracker_get_board_issues",
+    "issue-tracker/issue-tracker_get_development_information",
+    "issue-tracker/issue-tracker_get_issue",
+    "issue-tracker/issue-tracker_get_link_types",
+    "issue-tracker/issue-tracker_get_project",
+    "issue-tracker/issue-tracker_get_project_issues",
+    "issue-tracker/issue-tracker_get_project_versions",
+    "issue-tracker/issue-tracker_get_sprint_issues",
+    "issue-tracker/issue-tracker_get_sprints_from_board",
+    "issue-tracker/issue-tracker_get_transitions",
+    "issue-tracker/issue-tracker_get_user_profile",
+    "issue-tracker/issue-tracker_get_worklog",
+    "issue-tracker/issue-tracker_search",
+    "issue-tracker/issue-tracker_search_fields",
     "todos",
     "runSubagent",
   ]
@@ -123,14 +123,14 @@ When asked to create an RCA for a defect:
 
 ### Step 1: Gather Defect Information
 
-- Use `jira_get_issue` to get issue details, changelog, and comments
-- Use `jira_get_worklog` for worklog entries
-- Use `jira_get_development_information` for linked commits, branches, and pull requests
+- Use `issue-tracker_get_issue` to get issue details, changelog, and comments
+- Use `issue-tracker_get_worklog` for worklog entries
+- Use `issue-tracker_get_development_information` for linked commits, branches, and pull requests
 
 ### Step 2: Gather Code Changes
 
-- Use `bitbucket_get_pull_request` for PR metadata
-- Use `bitbucket_get_diff` for code diffs and review comments
+- Use `source-control_get_pull_request` for PR metadata
+- Use `source-control_get_diff` for code diffs and review comments
 
 Extract key information: issue metadata, history, attachments, code changes, and impact
 
@@ -194,7 +194,7 @@ Create a structured markdown document in `docs/` directory:
    - Specific, actionable recommendations
 
 8. **References**
-   - Links to Jira issue
+   - Links to issue-tracker issue
    - Links to pull requests and commits
    - Related documentation
 

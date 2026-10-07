@@ -1,37 +1,37 @@
-{
+﻿{
   "inputs": [],
   "servers": {
-    "jira": {
+    "issue-tracker": {
       "type": "stdio",
-      "command": "${workspaceFolder}/.tools/Jira.Mcp.exe",
+      "command": "${workspaceFolder}/.tools/IssueTracker.Mcp.exe",
       "env": {
-        "JIRA_URL": "https://app.example.com
-        "JIRA_PERSONAL_TOKEN": "DUMMY_JIRA_TOKEN_FOR_LOCAL_TESTING_ONLY",
-        "JIRA_SSL_VERIFY": "false"
+        "ISSUE_TRACKER_URL": "https://app.example.com",
+        "ISSUE_TRACKER_TOKEN": "DUMMY_ISSUE_TRACKER_TOKEN_FOR_LOCAL_TESTING_ONLY",
+        "ISSUE_TRACKER_SSL_VERIFY": "false"
       }
     },
-    "bitbucket": {
+    "source-control": {
       "type": "stdio",
-      "command": "${workspaceFolder}/.tools/Bitbucket.Mcp.exe",
+      "command": "${workspaceFolder}/.tools/SourceControl.Mcp.exe",
       "env": {
-        "BITBUCKET_URL": "https://app.example.com
-        "BITBUCKET_TOKEN": "DUMMY_BITBUCKET_TOKEN_FOR_LOCAL_TESTING_ONLY",
-        "BITBUCKET_DEFAULT_PROJECT": "DEMO"
+        "SOURCE_CONTROL_URL": "https://app.example.com",
+        "SOURCE_CONTROL_TOKEN": "DUMMY_SOURCE_CONTROL_TOKEN_FOR_LOCAL_TESTING_ONLY",
+        "SOURCE_CONTROL_DEFAULT_PROJECT": "DEMO"
       }
     },
-    "confluence": {
+    "knowledge-base": {
       "type": "stdio",
-      "command": "${workspaceFolder}/.tools/Confluence.Mcp.exe",
+      "command": "${workspaceFolder}/.tools/KnowledgeBase.Mcp.exe",
       "env": {
-        "CONFLUENCE_URL": "https://app.example.com
-        "CONFLUENCE_PERSONAL_TOKEN": "DUMMY_CONFLUENCE_TOKEN_FOR_LOCAL_TESTING_ONLY",
-        "CONFLUENCE_SSL_VERIFY": "false"
+        "KNOWLEDGE_BASE_URL": "https://app.example.com",
+        "KNOWLEDGE_BASE_TOKEN": "DUMMY_KNOWLEDGE_BASE_TOKEN_FOR_LOCAL_TESTING_ONLY",
+        "KNOWLEDGE_BASE_SSL_VERIFY": "false"
       }
     },
-  "lc-asssisthub": {
-    "url": "https://app.example.com
-		"type": "https",
-    "comment": "Replace URL with your own AssistHub URL for your environment"
-	}
+    "assist-hub": {
+      "type": "https",
+      "url": "https://app.example.com",
+      "comment": "Replace URL with your own environment endpoint"
+    }
   }
 }

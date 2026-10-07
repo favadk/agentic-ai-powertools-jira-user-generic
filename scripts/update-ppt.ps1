@@ -1,8 +1,8 @@
 # Update-PPT.ps1 — Patches Agentic-AI-QA-Framework-Presentation.pptx with latest changes
 # Session changes: dynamic sprint detection, dual monitors, Agile endpoint fix, bootstrapper update
 
-$pptSrc  = 'c:\Agentic-AI\agentic-ai-powertools-jira-user-generic\docs\Agentic-AI-QA-Framework-Presentation.pptx'
-$pptDest = 'c:\Agentic-AI\agentic-ai-powertools-jira-user-generic\docs\Agentic-AI-QA-Framework-Presentation.pptx'
+$pptSrc  = 'c:\Agentic-AI\agentic-ai-powertools-issue-tracker-user-generic\docs\Agentic-AI-QA-Framework-Presentation.pptx'
+$pptDest = 'c:\Agentic-AI\agentic-ai-powertools-issue-tracker-user-generic\docs\Agentic-AI-QA-Framework-Presentation.pptx'
 $work    = "$env:TEMP\pptx_edit"
 
 Add-Type -AssemblyName System.IO.Compression.FileSystem
@@ -63,8 +63,8 @@ $newSlide = $newSlide -replace '(?s)<a:t>Sprint TE Management - Auto-Link, Gate 
 # Simplest approach: replace the subtitle/overview paragraph, then set body shapes
 
 # Replace the large description paragraph
-$oldDesc = 'Every Xray Test must be linked to a Sprint Test Execution (TE) before execution begins. The framework automates TE creation, notification, and gating end-to-end.'
-$newDesc = 'Three Windows Scheduled Tasks poll Jira every 30 minutes — detecting comments, AC edits, and status changes, then automatically reviewing linked Xray test comments.'
+$oldDesc = 'Every test-management Test must be linked to a Sprint Test Execution (TE) before execution begins. The framework automates TE creation, notification, and gating end-to-end.'
+$newDesc = 'Three Windows Scheduled Tasks poll issue-tracker every 30 minutes — detecting comments, AC edits, and status changes, then automatically reviewing linked test-management test comments.'
 $newSlide = $newSlide -replace [regex]::Escape($oldDesc), $newDesc
 
 # Replace bullet group titles and bodies
@@ -78,13 +78,13 @@ $newSlide = $newSlide -replace '<a:t>Hard Execution Gate</a:t>', '<a:t>Dynamic S
 $newSlide = $newSlide -replace '<a:t>Step 0B in test_case_execution: fully blocked if test is not linked to a sprint TE\.</a:t>', '<a:t>Queries /rest/agile/1.0/board/{id}/sprint at each run; auto-enrolls new sprint stories — zero manual config between sprints.</a:t>'
 
 $newSlide = $newSlide -replace '<a:t>In Dev Required</a:t>', '<a:t>story_monitor Agent Routing</a:t>'
-$newSlide = $newSlide -replace "<a:t>Sprint TE is auto-transitioned to 'In Dev' status before execution steps can run\.</a:t>", '<a:t>QA-Process-Test-Comment-Reviews classifies linked Xray comments, writes a review record, and posts a verdict or evidence request on the test.</a:t>'
+$newSlide = $newSlide -replace "<a:t>Sprint TE is auto-transitioned to 'In Dev' status before execution steps can run\.</a:t>", '<a:t>QA-Process-Test-Comment-Reviews classifies linked test-management comments, writes a review record, and posts a verdict or evidence request on the test.</a:t>'
 
 # Replace footer/note lines
 $newSlide = $newSlide -replace [regex]::Escape('Skill: test-execution-sprint-linking.md  |  Applied in: test_case_preparation (step 7e) + test_case_execution (step 0B)'), 'State file: scripts/monitor-state.json  |  Trigger dir: scripts/triggers/  |  Agent: .github/agents/story_monitor.agent.md'
 $newSlide = $newSlide -replace [regex]::Escape('STORY Teams channels:  CID Scurm Team Chat   |   AC1 Daily Stand-up'), 'Setup: VS Code Task Runner  &#x2192;  QA: Setup Scheduled Tasks  |  Or: .\scripts\setup-story-monitor-scheduler.ps1'
-$newSlide = $newSlide -replace [regex]::Escape('Bulk-add: all active sprint tests are added to the TE in a single call  |  Fallback: Jira comment @PO @PM if Teams unavailable'), 'changeType: PO_RESPONSE | DESCRIPTION_CHANGE | STATUS_CHANGE  |  SHA-256 fingerprinting prevents duplicate triggers'
-$newSlide = $newSlide -replace [regex]::Escape("TE must be in 'In Dev' status  |  Framework auto-transitions if needed  |  Jira get_transitions + transition_issue"), 'Sprint rollover: sprintName/sprintId auto-updated in monitor-state.json; no manual intervention needed'
+$newSlide = $newSlide -replace [regex]::Escape('Bulk-add: all active sprint tests are added to the TE in a single call  |  Fallback: issue-tracker comment @PO @PM if Teams unavailable'), 'changeType: PO_RESPONSE | DESCRIPTION_CHANGE | STATUS_CHANGE  |  SHA-256 fingerprinting prevents duplicate triggers'
+$newSlide = $newSlide -replace [regex]::Escape("TE must be in 'In Dev' status  |  Framework auto-transitions if needed  |  issue-tracker get_transitions + transition_issue"), 'Sprint rollover: sprintName/sprintId auto-updated in monitor-state.json; no manual intervention needed'
 $newSlide = $newSlide -replace [regex]::Escape('If test not in sprint TE: BLOCKED message shown with remediation steps  |  Run test_case_preparation to resolve'), 'Installation-related stories run smoke then smoke-install before feature steps; failures block execution'
 
 Set-Content $newSlideFile $newSlide -Encoding UTF8

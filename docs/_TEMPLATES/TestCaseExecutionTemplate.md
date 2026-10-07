@@ -9,7 +9,7 @@
 | **Filename**         | TE_{STORY-KEY}_Cycle{N}.md                  |
 |----------------------|---------------------------------------------|
 | **Story Key**        | `{STORY-KEY}`                               |
-| **Story Summary**    | `{Story Summary from Jira}`                 |
+| **Story Summary**    | `{Story Summary from issue-tracker}`                 |
 | **Sprint**           | `{Sprint Name}`                             |
 | **Execution Cycle**  | Cycle `{N}`                                 |
 | **Environment**      | `{DEV / SIT / UAT / STAGING}`               |

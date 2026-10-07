@@ -1,12 +1,12 @@
 ---
-description: Bitbucket repository coordinates for the automation codebase — project key, repo slug, default branch, and test folder paths used by automation agents
+description: source-control repository coordinates for the automation codebase — project key, repo slug, default branch, and test folder paths used by automation agents
 ---
 
 # Automation Repository Configuration
 
-This skill defines **where the automation code lives** in Bitbucket. All automation agents must load this skill before browsing, reading, or writing any automation code.
+This skill defines **where the automation code lives** in source-control. All automation agents must load this skill before browsing, reading, or writing any automation code.
 
-> **Bitbucket Server** (self-hosted) — base URL: `https://app.example.com
+> **source-control Server** (self-hosted) — base URL: `https://app.example.com
 
 ---
 
@@ -14,7 +14,7 @@ This skill defines **where the automation code lives** in Bitbucket. All automat
 
 | Setting                | Value                                                                                         |
 |------------------------|-----------------------------------------------------------------------------------------------|
-| **Bitbucket Server**   | `source-control.example.com`                                                       |
+| **source-control Server**   | `source-control.example.com`                                                       |
 | **Project Key**        | `SIDDEV`                                                                                      |
 | **Repository Slug**    | `ac_portal_e2e`                                                                               |
 | **Browse URL**         | `https://app.example.com   |
@@ -46,12 +46,12 @@ This skill defines **where the automation code lives** in Bitbucket. All automat
 
 ## How to Browse the Repository
 
-Use these Bitbucket tools with the coordinates above (Bitbucket Server uses `projectKey` not `workspace`):
+Use these source-control tools with the coordinates above (source-control Server uses `projectKey` not `workspace`):
 
 ```
-bitbucket_browse_repository(projectKey: "SIDDEV", repoSlug: "ac_portal_e2e", path: "Tests/Feature tests")
-bitbucket_get_file_content(projectKey: "SIDDEV", repoSlug: "ac_portal_e2e", path: "{file_path}", branch: "windows-STORY-0000-new-release-fix-latest")
-bitbucket_search(projectKey: "SIDDEV", repoSlug: "ac_portal_e2e", query: "{search_term}")
+source-control_browse_repository(projectKey: "SIDDEV", repoSlug: "ac_portal_e2e", path: "Tests/Feature tests")
+source-control_get_file_content(projectKey: "SIDDEV", repoSlug: "ac_portal_e2e", path: "{file_path}", branch: "windows-STORY-0000-new-release-fix-latest")
+source-control_search(projectKey: "SIDDEV", repoSlug: "ac_portal_e2e", query: "{search_term}")
 ```
 
 ---
@@ -95,7 +95,7 @@ git checkout -b automation/{STORY-KEY}
 ### Step 3 — Write Automation Code
 
 - Generate and save automation scripts following the framework conventions in `automation-code-standards.md`
-- Read existing test files from the default branch via Bitbucket tools to match patterns
+- Read existing test files from the default branch via source-control tools to match patterns
 - Write generated files directly to `C:\automation\06102026\UI_Protractor_Tests\Tests\Feature tests\` using `run_in_terminal` or `edit/createFile`
 
 ### Step 4 — Run and Verify Locally
@@ -126,7 +126,7 @@ git commit -m "automation({STORY-KEY}): add E2E tests for {Story Summary}"
 
 ### Step 6 — Raise a Pull Request
 
-> **Explicit user confirmation required before raising a PR.** Present the PR details first and ask: "Shall I raise this PR in Bitbucket?"
+> **Explicit user confirmation required before raising a PR.** Present the PR details first and ask: "Shall I raise this PR in source-control?"
 
 PR details to confirm with user:
 
@@ -164,7 +164,7 @@ cd "C:\automation\06102026\UI_Protractor_Tests"
 git push origin automation/{STORY-KEY}
 ```
 
-Then use Bitbucket tools (`bitbucket_create_pull_request` if available) or provide the PR URL for the user to raise manually.
+Then use source-control tools (`source-control_create_pull_request` if available) or provide the PR URL for the user to raise manually.
 
 ---
 
@@ -176,7 +176,7 @@ Before writing any new automation scripts, the `automation_code_preparation` age
 2. Read the **Step Results Summary** table.
 3. Check that:
    - Every step result is `PASS` — no `FAIL`, `BLOCKED`, or blank results exist
-   - The overall Xray test run status is `PASS`
+   - The overall test-management test run status is `PASS`
 4. If **any step is not PASS**:
    - Report: "Test execution for `{STORY-KEY}` has incomplete or failing results. Automation code preparation requires all manual test steps to pass. Resolve the following before proceeding: `{list of non-PASS steps}`"
    - **Stop. Do not write any automation code.**

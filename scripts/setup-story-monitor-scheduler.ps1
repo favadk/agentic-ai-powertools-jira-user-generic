@@ -60,7 +60,7 @@ Register-ScheduledTask -TaskName "QA-Monitor-Story-Changes" `
     -RunLevel Highest -Force | Out-Null
 Write-Host "[OK] QA-Monitor-Story-Changes registered (every $IntervalMinutes min)"
 
-# --- Task 3: Xray Test Comment Review Processor ---
+# --- Task 3: test-management Test Comment Review Processor ---
 $triggerReviewProcessor = New-ScheduledTaskTrigger `
     -RepetitionInterval (New-TimeSpan -Minutes $IntervalMinutes) `
     -Once -At (Get-Date).AddMinutes(3)
@@ -101,7 +101,7 @@ Register-ScheduledTask -TaskName "QA-Monitor-HealthCheck" `
     -Action $a4 -Trigger $triggerHealth -Settings $settings `
     -RunLevel Highest -Force | Out-Null
 Write-Host "[OK] QA-Monitor-HealthCheck registered (every 60 min)"
-Write-Host "     Sends Teams + Jira + EventLog notifications on workflow failures."
+Write-Host "     Sends Teams + issue-tracker + EventLog notifications on workflow failures."
 Write-Host "     Set env var TEAMS_WEBHOOK_URL to enable Teams alerts."
 
 Write-Host ""

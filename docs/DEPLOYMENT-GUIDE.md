@@ -26,7 +26,7 @@ The **Agentic AI QA Framework** is a fully automated, trigger-driven QA lifecycl
 - ✅ Automatically detects story status/AC changes via continuous monitoring
 - ✅ Invokes 9 specialized GitHub Copilot agents in sequence (test case prep → review → execution → evidence → automation)
 - ✅ Executes manual + automated tests with full screenshot evidence per step
-- ✅ Manages sub-task lifecycle and team coordination via Jira @mentions
+- ✅ Manages sub-task lifecycle and team coordination via issue-tracker @mentions
 - ✅ Builds regression suite incrementally with every passing story
 - ✅ Requires **zero manual invocation** after setup
 
@@ -57,22 +57,22 @@ The **Agentic AI QA Framework** is a fully automated, trigger-driven QA lifecycl
 
 **Action**: Read DOCUMENTATION-INDEX.md to understand your role and find relevant docs.
 
-### 2. Jira & Xray Setup
+### 2. issue-tracker & test-management Setup
 
 **Required:**
-- Jira Cloud or Server (API v3 access)
-- Xray Cloud (test management plugin)
+- issue-tracker Cloud or Server (API v3 access)
+- test-management Cloud (test management plugin)
 - Project key assigned (e.g., `STORY`, `CID`)
 - Active sprint with board configured
 
 **Service Account:**
-- Jira API token (user with QA permissions)
-- Xray Cloud API credentials
-- Jira GraphQL endpoint access
+- issue-tracker API token (user with QA permissions)
+- test-management Cloud API credentials
+- issue-tracker GraphQL endpoint access
 
 **Create a service account:**
 ```bash
-# In Jira Administration → Users
+# In issue-tracker Administration → Users
 Email:        qa-automation@company.atlassian.net
 Display Name: QA Automation Service
 Permissions:  Browse Projects, Create Issues, Comment on Issues, Transition Issues, Link Issues
@@ -112,7 +112,7 @@ Permissions:  Browse Projects, Create Issues, Comment on Issues, Transition Issu
 ### 4. Network Access
 
 **Required outbound:**
-- `issue-tracker.example.com` (Jira Cloud)
+- `issue-tracker.example.com` (issue-tracker Cloud)
 - `api.github.com` (GitHub Copilot)
 - Your CID/product test environment (for network tests)
 
@@ -129,14 +129,14 @@ Permissions:  Browse Projects, Create Issues, Comment on Issues, Transition Issu
 If you want guided setup after cloning, run:
 
 ```powershell
-cd C:\Projects\agentic-ai-powertools-jira-user-generic
+cd C:\Projects\agentic-ai-powertools-issue-tracker-user-generic
 .\setup-wizard\Start-SetupWizard.ps1
 ```
 
 This opens `http://localhost:7420` and provides a UI for:
-1. Target project path and Jira board/project values
-2. Jira/Xray credentials
-3. Bitbucket repo settings (server, project, repo, branch targets)
+1. Target project path and issue-tracker board/project values
+2. issue-tracker/test-management credentials
+3. source-control repo settings (server, project, repo, branch targets)
 4. Documentation/integration links
 5. LLM provider and model setup (Ollama/OpenAI/Anthropic)
 6. Optional scheduler registration
@@ -147,8 +147,8 @@ Use the step-by-step CLI flow below if you prefer manual setup.
 
 ```powershell
 cd C:\Projects  # or your workspace location
-git clone https://github.com/your-org/agentic-ai-powertools-jira-user-generic.git
-cd agentic-ai-powertools-jira-user-generic
+git clone https://github.com/your-org/agentic-ai-powertools-issue-tracker-user-generic.git
+cd agentic-ai-powertools-issue-tracker-user-generic
 ```
 
 ### Step 2: Configure Credentials
@@ -158,15 +158,15 @@ cd agentic-ai-powertools-jira-user-generic
 ```bash
 # .env (do NOT commit to git)
 
-# ========== Jira Configuration ==========
-JIRA_URL=https://app.example.com
-JIRA_USER=qa-automation@company.atlassian.net
-JIRA_API_TOKEN=<paste-your-api-token-here>
-JIRA_PROJECT_KEY=STORY
+# ========== issue-tracker Configuration ==========
+issue-tracker_URL=https://app.example.com
+issue-tracker_USER=qa-automation@company.atlassian.net
+issue-tracker_API_TOKEN=<paste-your-api-token-here>
+issue-tracker_PROJECT_KEY=STORY
 
-# ========== Xray Cloud Configuration ==========
-XRAY_CLOUD_CLIENT_ID=<from-xray-admin>
-XRAY_CLOUD_CLIENT_SECRET=<from-xray-admin>
+# ========== test-management Cloud Configuration ==========
+test-management_CLOUD_CLIENT_ID=<from-test-management-admin>
+test-management_CLOUD_CLIENT_SECRET=<from-test-management-admin>
 
 # ========== GitHub Integration ==========
 GITHUB_TOKEN=<your-github-personal-access-token>
@@ -205,8 +205,8 @@ Refer to [docs/MODEL-LLM-CONFIGURATION.md](MODEL-LLM-CONFIGURATION.md) for:
 **Store in secure location:**
 ```powershell
 # Windows Credential Manager
-cmdkey /add:Jira /user:qa-automation@company.atlassian.net /pass:<token>
-cmdkey /add:XrayCloud /user:<client-id> /pass:<client-secret>
+cmdkey /add:issue-tracker /user:qa-automation@company.atlassian.net /pass:<token>
+cmdkey /add:test-managementCloud /user:<client-id> /pass:<client-secret>
 ```
 
 ### Step 3: Install Dependencies
@@ -229,7 +229,7 @@ cd ..
 
 ```powershell
 # Right-click PowerShell → "Run as Administrator"
-cd C:\Projects\agentic-ai-powertools-jira-user-generic
+cd C:\Projects\agentic-ai-powertools-issue-tracker-user-generic
 .\scripts\setup-story-monitor-scheduler.ps1
 ```
 
@@ -257,19 +257,19 @@ QA-Monitor-PO-Responses  Enabled 2026-08-14 13:15:00
 
 ### Step 5: Verify Setup
 
-**Test Jira API connectivity:**
+**Test issue-tracker API connectivity:**
 
 ```powershell
-. .\scripts\xray-api.ps1
-$creds = Get-XrayCreds
-$r = Invoke-RestMethod -Uri "$env:JIRA_URL/rest/api/3/projects/$env:JIRA_PROJECT_KEY" -Headers $creds.Headers
-Write-Host "✅ Connected to Jira project: $($r.name)"
+. .\scripts\test-management-api.ps1
+$creds = Get-test-managementCreds
+$r = Invoke-RestMethod -Uri "$env:issue-tracker_URL/rest/api/3/projects/$env:issue-tracker_PROJECT_KEY" -Headers $creds.Headers
+Write-Host "✅ Connected to issue-tracker project: $($r.name)"
 ```
 
 **Test monitor execution (manual trigger):**
 
 ```powershell
-. .\scripts\xray-api.ps1
+. .\scripts\test-management-api.ps1
 .\scripts\monitor-story-changes.ps1 -PostAck
 # Check scripts/triggers/ for generated JSON files
 ```
@@ -284,9 +284,9 @@ Write-Host "✅ Connected to Jira project: $($r.name)"
 ```
 
 **Complete the setup wizard screens:**
-1. Project path and Jira board/project
-2. Jira and Xray credentials
-3. Bitbucket repository settings
+1. Project path and issue-tracker board/project
+2. issue-tracker and test-management credentials
+3. source-control repository settings
 4. Documentation and integration references
 5. LLM provider/model configuration
 6. Review and generate setup
@@ -325,7 +325,7 @@ HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
     CMD pwsh -Command "Test-Path /app/scripts/monitor-state.json"
 
 # Start monitors
-CMD ["pwsh", "-Command", "& {. ./scripts/xray-api.ps1; ./scripts/monitor-story-changes.ps1 -PostAck; ./scripts/monitor-po-responses.ps1 -PostAck; while($true) { Start-Sleep -Seconds 1800; & ./scripts/monitor-story-changes.ps1 -PostAck; & ./scripts/monitor-po-responses.ps1 -PostAck }}"]
+CMD ["pwsh", "-Command", "& {. ./scripts/test-management-api.ps1; ./scripts/monitor-story-changes.ps1 -PostAck; ./scripts/monitor-po-responses.ps1 -PostAck; while($true) { Start-Sleep -Seconds 1800; & ./scripts/monitor-story-changes.ps1 -PostAck; & ./scripts/monitor-po-responses.ps1 -PostAck }}"]
 ```
 
 **Create `docker-compose.yml`:**
@@ -339,12 +339,12 @@ services:
     container_name: agentic-qa-framework
     restart: unless-stopped
     environment:
-      JIRA_URL: ${JIRA_URL}
-      JIRA_USER: ${JIRA_USER}
-      JIRA_API_TOKEN: ${JIRA_API_TOKEN}
-      JIRA_PROJECT_KEY: ${JIRA_PROJECT_KEY}
-      XRAY_CLOUD_CLIENT_ID: ${XRAY_CLOUD_CLIENT_ID}
-      XRAY_CLOUD_CLIENT_SECRET: ${XRAY_CLOUD_CLIENT_SECRET}
+      issue-tracker_URL: ${issue-tracker_URL}
+      issue-tracker_USER: ${issue-tracker_USER}
+      issue-tracker_API_TOKEN: ${issue-tracker_API_TOKEN}
+      issue-tracker_PROJECT_KEY: ${issue-tracker_PROJECT_KEY}
+      test-management_CLOUD_CLIENT_ID: ${test-management_CLOUD_CLIENT_ID}
+      test-management_CLOUD_CLIENT_SECRET: ${test-management_CLOUD_CLIENT_SECRET}
       GITHUB_TOKEN: ${GITHUB_TOKEN}
       SPRINT_SLUG: ${SPRINT_SLUG}
     ports:
@@ -377,12 +377,12 @@ services:
 
 ```bash
 # Set environment variables
-export JIRA_URL=https://app.example.com
-export JIRA_USER=qa-automation@company.atlassian.net
-export JIRA_API_TOKEN=<token>
-export JIRA_PROJECT_KEY=STORY
-export XRAY_CLOUD_CLIENT_ID=<id>
-export XRAY_CLOUD_CLIENT_SECRET=<secret>
+export issue-tracker_URL=https://app.example.com
+export issue-tracker_USER=qa-automation@company.atlassian.net
+export issue-tracker_API_TOKEN=<token>
+export issue-tracker_PROJECT_KEY=STORY
+export test-management_CLOUD_CLIENT_ID=<id>
+export test-management_CLOUD_CLIENT_SECRET=<secret>
 export GITHUB_TOKEN=<token>
 export SPRINT_SLUG=sample-sprint
 
@@ -430,7 +430,7 @@ services:
     ports:
       - "9000:9000"
     environment:
-      JIRA_URL: ${JIRA_URL}
+      issue-tracker_URL: ${issue-tracker_URL}
       DB_HOST: postgres
     depends_on:
       - postgres
@@ -476,11 +476,11 @@ az container create \
   --registry-username <username> \
   --registry-password <password> \
   --environment-variables \
-    JIRA_URL=https://app.example.com \
-    JIRA_PROJECT_KEY=STORY \
+    issue-tracker_URL=https://app.example.com \
+    issue-tracker_PROJECT_KEY=STORY \
   --secure-environment-variables \
-    JIRA_API_TOKEN=$JIRA_API_TOKEN \
-    XRAY_CLOUD_CLIENT_SECRET=$XRAY_CLOUD_CLIENT_SECRET \
+    issue-tracker_API_TOKEN=$issue-tracker_API_TOKEN \
+    test-management_CLOUD_CLIENT_SECRET=$test-management_CLOUD_CLIENT_SECRET \
   --ports 8080 9000 \
   --ip-address public
 ```
@@ -546,7 +546,7 @@ instructions:
 **Add skill references** (`.github/skills/*.md`):
 - `qa-artifact-naming.md` — document naming conventions
 - `story-execution-readiness.md` — gates and prerequisites
-- `xray-integration.md` — Xray-specific logic
+- `test-management-integration.md` — test-management-specific logic
 - `evidence-quality-standards.md` — screenshot/log standards
 
 ### Customize Monitor Triggers
@@ -595,12 +595,12 @@ Get-ChildItem .\scripts\triggers\*.json | Measure-Object
 # If count > 50, monitors may be falling behind
 ```
 
-**Validate Jira connectivity:**
+**Validate issue-tracker connectivity:**
 
 ```powershell
-. .\scripts\xray-api.ps1
-$creds = Get-XrayCreds
-$r = Invoke-RestMethod -Uri "$env:JIRA_URL/rest/api/3/projects/$env:JIRA_PROJECT_KEY/recent" -Headers $creds.Headers
+. .\scripts\test-management-api.ps1
+$creds = Get-test-managementCreds
+$r = Invoke-RestMethod -Uri "$env:issue-tracker_URL/rest/api/3/projects/$env:issue-tracker_PROJECT_KEY/recent" -Headers $creds.Headers
 Write-Host "Recent issues: $($r.Length)"
 ```
 
@@ -609,9 +609,9 @@ Write-Host "Recent issues: $($r.Length)"
 | Issue | Symptom | Fix |
 |-------|---------|-----|
 | **Monitors not running** | No triggers written to `scripts/triggers/` | Run `setup-story-monitor-scheduler.ps1` again; check Task Scheduler |
-| **Jira API 401** | "Unauthorized" error in logs | Regenerate JIRA_API_TOKEN; verify service account has QA permissions |
+| **issue-tracker API 401** | "Unauthorized" error in logs | Regenerate issue-tracker_API_TOKEN; verify service account has QA permissions |
 | **Agents not auto-chaining** | story_monitor agent not invoked | Verify `.github/agents/story_monitor.agent.md` exists; check GitHub Copilot logs |
-| **Evidence upload fails** | Screenshots not attaching to Xray | Verify Xray Cloud API credentials; check file path permissions |
+| **Evidence upload fails** | Screenshots not attaching to test-management | Verify test-management Cloud API credentials; check file path permissions |
 | **Docker build fails** | Node packages missing | Add `npm install` to Dockerfile post-copy |
 
 ### Logging & Debugging
@@ -669,7 +669,7 @@ Enable-ScheduledTask -TaskName "QA-Monitor-PO-Responses"
 |------|---------|----------|
 | QA Framework Owner | qa-framework@company.atlassian.net | PST |
 | GitHub Copilot Admin | copilot-admin@company.atlassian.net | PST |
-| Jira Admin | jira-admin@company.atlassian.net | PST |
+| issue-tracker Admin | issue-tracker-admin@company.atlassian.net | PST |
 | DevOps | devops@company.atlassian.net | PST |
 
 ### Documentation & Training
@@ -677,7 +677,7 @@ Enable-ScheduledTask -TaskName "QA-Monitor-PO-Responses"
 - **Framework Overview**: `docs/FRAMEWORK-ARCHITECTURE.md`
 - **Workflow Diagram**: `docs/QA-WORKFLOW-COMPLETE.md` (this file)
 - **Agent Skills**: `.github/skills/`
-- **PowerShell Modules**: `scripts/xray-api.ps1`
+- **PowerShell Modules**: `scripts/test-management-api.ps1`
 
 **Training sessions:**
 - Weekly: "QA Framework Q&A" (1 hour)
@@ -694,9 +694,9 @@ Enable-ScheduledTask -TaskName "QA-Monitor-PO-Responses"
 - [ ] Bookmark agent files in `.github/agents/` for workflow reference
 
 **Infrastructure & Credentials:**
-- [ ] Prerequisites met (Jira, Xray, Copilot, PowerShell)
-- [ ] `.env` file created with all credentials (Jira, Xray, OpenAI/Anthropic)
-- [ ] Jira API credentials tested
+- [ ] Prerequisites met (issue-tracker, test-management, Copilot, PowerShell)
+- [ ] `.env` file created with all credentials (issue-tracker, test-management, OpenAI/Anthropic)
+- [ ] issue-tracker API credentials tested
 - [ ] LLM API keys verified (OpenAI and/or Anthropic)
 
 **Deployment Execution:**
@@ -720,9 +720,9 @@ Enable-ScheduledTask -TaskName "QA-Monitor-PO-Responses"
 
 ## Deployment Checklist
 
-- [ ] Prerequisites met (Jira, Xray, Copilot, PowerShell)
+- [ ] Prerequisites met (issue-tracker, test-management, Copilot, PowerShell)
 - [ ] `.env` file created and secured
-- [ ] Jira API credentials tested
+- [ ] issue-tracker API credentials tested
 - [ ] Monitors scheduled (or Docker deployed)
 - [ ] Registration UI accessible
 - [ ] First monitor run completed (check `scripts/triggers/`)

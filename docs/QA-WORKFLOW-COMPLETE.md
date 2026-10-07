@@ -4,26 +4,26 @@
 
 ```mermaid
 graph TD
-    A["📋 Story Created in Sprint<br/>Status: In Dev / Ready for Dev"] -->|Monitor detects<br/>no Xray Test| B["🟦 Step 1: Test Case Preparation<br/>Agent: test_case_preparation"]
+    A["📋 Story Created in Sprint<br/>Status: In Dev / Ready for Dev"] -->|Monitor detects<br/>no test-management Test| B["🟦 Step 1: Test Case Preparation<br/>Agent: test_case_preparation"]
     
     B -->|Parse ACs<br/>Generate steps| B1["📝 Create TC Doc<br/>docs/TestCases/{sprint}/TC_{KEY}.md"]
     B1 -->|Generate 40+ steps| B2["❓ Post Q&N Comment<br/>AC clarification questions"]
     B2 -->|Wait for PO response| B3{{"PO Answered<br/>All Questions?"}}
     
     B3 -->|No| B2
-    B3 -->|Yes| B4["✅ Create Xray Test<br/>Add all test steps"]
-    B4 -->|Set status| B5["🎯 Xray Test → Ready for Test Review<br/>Close STORY-0000 (Create TC sub-task)"]
+    B3 -->|Yes| B4["✅ Create test-management Test<br/>Add all test steps"]
+    B4 -->|Set status| B5["🎯 test-management Test → Ready for Test Review<br/>Close STORY-0000 (Create TC sub-task)"]
     
     B5 -->|Auto-trigger| C["🟩 Step 2: Test Case Review<br/>Agent: test_case_review"]
     
     C -->|1a: Transition sub-task| C1["🔄 STORY-0000 → In Dev<br/>(Review Test Case)"]
     C1 -->|Review steps<br/>against ACs| C2{{"High/Medium/Low<br/>Gaps Found?"}}
     
-    C2 -->|Yes - High/Med gaps| C3["❌ Update Xray Test → Open<br/>Post comments on test"]
+    C2 -->|Yes - High/Med gaps| C3["❌ Update test-management Test → Open<br/>Post comments on test"]
     C3 -->|Notify test_case_prep| B2
     
     C2 -->|No gaps found| C4["✅ Add approval comment<br/>Request QA to set test to Active"]
-    C4 -->|Notify QA Engineer| C5["🎯 Xray Test → Active<br/>Close STORY-0000 (Review TC sub-task)"]
+    C4 -->|Notify QA Engineer| C5["🎯 test-management Test → Active<br/>Close STORY-0000 (Review TC sub-task)"]
     
     C5 -->|Auto-trigger on Active| D["🟨 Step 6: Test Case Execution<br/>Agent: test_case_execution"]
     
@@ -32,14 +32,14 @@ graph TD
     D2 --> END1["❌ Stop"]
     
     D1 -->|Yes| D3{{"✅ Sprint TE exists<br/>and Test in it?"}}
-    D3 -->|No| D4["📊 Create Xray Test Execution<br/>Add Test to TE"]
+    D3 -->|No| D4["📊 Create test-management Test Execution<br/>Add Test to TE"]
     D4 --> D5{{"✅ PR Merged?"}}
     
     D3 -->|Yes| D5
     D5 -->|No| D6["⛔ BLOCKED<br/>Waiting for PR merge"]
     D6 --> END2["❌ Stop"]
     
-    D5 -->|Yes| D7["✅ Xray Test → Active?"]
+    D5 -->|Yes| D7["✅ test-management Test → Active?"]
     D7 -->|No| D8["⛔ BLOCKED<br/>Test not ready"]
     D8 --> END3["❌ Stop"]
     
@@ -80,13 +80,13 @@ graph TD
     H1 -->|Capture results| H2{{"✅ All tests<br/>PASS?"}}
     
     H2 -->|Any FAIL| H3["📋 Save Automation Report<br/>docs/Automation/AUTRPT_{KEY}_Run{N}.md"]
-    H3 -->|Log Jira Defects| H4["❌ Defects raised<br/>Notify @Dev"]
+    H3 -->|Log issue-tracker Defects| H4["❌ Defects raised<br/>Notify @Dev"]
     H4 -->|Dev fixes| F1
     
     H2 -->|All PASS| H5["🎊 Add automation spec<br/>to regression suite"]
     H5 -->|Commit & push| H6["📦 git commit<br/>feat: add {KEY} spec to regression"]
     H6 -->|Save results| H3
-    H3 -->|Post Jira comment| H7["✅ STORY COMPLETE<br/>All QA gates passed<br/>Automation added to suite"]
+    H3 -->|Post issue-tracker comment| H7["✅ STORY COMPLETE<br/>All QA gates passed<br/>Automation added to suite"]
     
     H7 --> END5["✅ Story moves to Done"]
     
@@ -121,10 +121,10 @@ graph TD
 | Gate | Step | Enforcer | Condition | Action if Blocked |
 |------|------|----------|-----------|-------------------|
 | **Gate 0** | Story Status | test_case_execution | Status = `Waiting for Verification` | Post comment, notify tester → **STOP** |
-| **Gate 0B** | Sprint TE Presence | test_case_execution | Xray Test Execution exists in sprint | Create TE if missing, add test |
+| **Gate 0B** | Sprint TE Presence | test_case_execution | test-management Test Execution exists in sprint | Create TE if missing, add test |
 | **Gate 0C** | Story Transition | test_case_execution | Transition to `Testing` | Best-effort (non-blocking) |
 | **Gate 0-Dev** | PR Merged | test_case_execution | PR state = `MERGED` | Post comment on defect, notify dev → **STOP** |
-| **Gate 0D** | Xray Test Active | test_case_execution | Xray Test status = `Active` | Mention TC owner, request activation → **STOP** |
+| **Gate 0D** | test-management Test Active | test_case_execution | test-management Test status = `Active` | Mention TC owner, request activation → **STOP** |
 | **Gate 0E** | TC Review Housekeeping | test_case_execution | TC Review sub-task closed | Informational reminder (non-blocking) |
 
 ---

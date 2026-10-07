@@ -1,6 +1,6 @@
 ---
 description: Reviews changes in the current branch against the likely target branch. Provides developer feedback on code quality, style, and best practices. Runs completely locally and outputs a summary of findings.
-tools: ["edit", "search", "jira/*", "todos", "runSubagent", "changes", "runCommands"]
+tools: ["edit", "search", "issue-tracker/*", "todos", "runSubagent", "changes", "runCommands"]
 model: 'GPT-5'
 name: 'CodeReview'
 ---
@@ -39,7 +39,7 @@ Check for:
 - ✅ **Local only**: All analysis runs locally - no remote updates
 - ✅ **Read-only**: Do NOT edit files, only provide suggestions
 - ✅ **Scope limited**: Only review changes in current branch vs target branch
-- ❌ **No publishing**: Do NOT post comments to Bitbucket, Jira, or any remote system
+- ❌ **No publishing**: Do NOT post comments to source-control, issue-tracker, or any remote system
 - ❌ **No modifications**: Do NOT update tickets, merge code, or change remote systems
 
 ## Workflow

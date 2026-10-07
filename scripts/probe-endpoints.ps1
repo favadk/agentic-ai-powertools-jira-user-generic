@@ -1,17 +1,17 @@
-. .\scripts\xray-api.ps1
-$tok = Get-XrayCloudToken
+. .\scripts\test-management-api.ps1
+$tok = Get-test-managementCloudToken
 
 Add-Type -AssemblyName System.Net.Http
 
 $runId = "6a5ff87b72d5b592fbee751e"
 $step4 = "2cb9dfec-5f85-4d8c-aaa7-fb885b7a7c78"
-$fp    = "C:\Agentic-AI\agentic-ai-powertools-jira-user-generic\docs\TestExecution\evidence\STORY-0000-Cycle1\evidence-step4-01-cognito-signin.png"
+$fp    = "C:\Agentic-AI\agentic-ai-powertools-issue-tracker-user-generic\docs\TestExecution\evidence\STORY-0000-Cycle1\evidence-step4-01-cognito-signin.png"
 
 $endpoints = @(
-    "https://us.xray.cloud.getxray.app/api/v2/testrun/$runId/evidence",
-    "https://us.xray.cloud.getxray.app/api/v2/testrun/$runId/step/$step4/evidence",
-    "https://xray.cloud.getxray.app/api/v2/testrun/$runId/step/$step4/attachment",
-    "https://us.xray.cloud.getxray.app/api/v1/testrun/$runId/step/$step4/attachment"
+    "https://us.test-management.cloud.gettest-management.app/api/v2/testrun/$runId/evidence",
+    "https://us.test-management.cloud.gettest-management.app/api/v2/testrun/$runId/step/$step4/evidence",
+    "https://test-management.cloud.gettest-management.app/api/v2/testrun/$runId/step/$step4/attachment",
+    "https://us.test-management.cloud.gettest-management.app/api/v1/testrun/$runId/step/$step4/attachment"
 )
 
 foreach ($url in $endpoints) {

@@ -6,14 +6,14 @@ tools:
     "edit/createDirectory",
     "edit/editFiles",
     "search",
-    "jira/jira_get_issue",
-    "jira/jira_search",
-    "jira/jira_add_comment",
-    "bitbucket/bitbucket_browse_repository",
-    "bitbucket/bitbucket_get_file_content",
-    "bitbucket/bitbucket_list_repositories",
-    "bitbucket/bitbucket_search",
-    "bitbucket/bitbucket_create_pull_request",
+    "issue-tracker/issue-tracker_get_issue",
+    "issue-tracker/issue-tracker_search",
+    "issue-tracker/issue-tracker_add_comment",
+    "source-control/source-control_browse_repository",
+    "source-control/source-control_get_file_content",
+    "source-control/source-control_list_repositories",
+    "source-control/source-control_search",
+    "source-control/source-control_create_pull_request",
     "run_in_terminal",
     "todos",
     "runSubagent",
@@ -36,14 +36,14 @@ instructions:
    - Lists automation skill reference: `.github/skills/automation-repository-config.md`
    - Identifies regression suite manifest path
 
-2. **Story & execution history from Jira**
-   - `jira_get_issue` on `{STORY-KEY}`: confirm story is Done/Closed/Released
+2. **Story & execution history from issue-tracker**
+   - `issue-tracker_get_issue` on `{STORY-KEY}`: confirm story is Done/Closed/Released
    - Latest TE report: read `docs/TestExecution/{sprint-slug}/TE_{STORY-KEY}_Cycle{N}.md` — confirm 100% pass
 
-3. **Documentation help links from Jira** — fetch remote links on the story:
+3. **Documentation help links from issue-tracker** — fetch remote links on the story:
    ```powershell
    $remoteLinks = Invoke-RestMethod \
-       -Uri "$env:JIRA_URL/rest/api/3/issue/{STORY-KEY}/remotelink" \
+       -Uri "$env:issue-tracker_URL/rest/api/3/issue/{STORY-KEY}/remotelink" \
        -Headers $creds.Headers
    ```
    For each link: fetch content with `fetch_webpage` and use as reference when:
@@ -56,7 +56,7 @@ instructions:
    - Filter test cases flagged `Automation: Yes` or `Automation: Partial`
    - Note any `⚠️ VERSION-SPECIFIC` or `⚠️ Q/N` flags — these need confirmation before automation
 
-5. **Existing automation specs** — search Bitbucket/local for any prior `{STORY-KEY}.spec.js` or related spec
+5. **Existing automation specs** — search source-control/local for any prior `{STORY-KEY}.spec.js` or related spec
    - If found: load and enhance, do not duplicate
    - If not found: create new spec from scratch
 
@@ -75,7 +75,7 @@ Produce automation test scripts from the approved manual test cases in `docs/Tes
 ## Constraints
 
 - **Do NOT commit or push code** without explicit user instruction.
-- **Follow existing project conventions.** Before writing any code, inspect the existing automation codebase in Bitbucket to identify the framework, patterns, and naming conventions in use.
+- **Follow existing project conventions.** Before writing any code, inspect the existing automation codebase in source-control to identify the framework, patterns, and naming conventions in use.
 - **Only automate TCs flagged as Automation = Yes or Partial** in the TC document. Skip Manual-Only TCs.
 - **Use concrete page/element locators** only if discoverable from the repository or user-provided information. Never invent locators.
 - **Separation of concerns**: Keep test logic, page objects/helpers, and test data separate following the project's existing structure.
@@ -85,17 +85,17 @@ Produce automation test scripts from the approved manual test cases in `docs/Tes
 ### Pre-flight: Trigger Conditions & Prerequisites
 
 **When is this agent invoked?**
-1. **Automatic** — `story_monitor` agent detects story status change to `Done` / `Closed` / `Released` AND posts a Jira comment on the story @mentioning `@automation_code_preparation` with story key.
+1. **Automatic** — `story_monitor` agent detects story status change to `Done` / `Closed` / `Released` AND posts a issue-tracker comment on the story @mentioning `@automation_code_preparation` with story key.
 2. **Manual** — User runs the agent directly with story key.
 
 **Prerequisites that MUST be met before automation code can be written:**
 1. ✅ Sprint QA Plan for this story **MUST specify** `Automation Target: Yes` or `Automation Target: Partial` (see `docs/QAPlan/QAP_{STORY-KEY}.md`)
 2. ✅ Test Case document **MUST exist** at `docs/TestCases/{sprint-slug}/TC_{STORY-KEY}.md` with at least one test case marked `Automation: Yes` or `Automation: Partial`
 3. ✅ **All test execution steps MUST have passed** — latest cycle in `docs/TestExecution/{sprint-slug}/TE_{STORY-KEY}_Cycle{N}.md` shows 100% pass rate
-4. ✅ Xray Test Execution **MUST be in a terminal state** — status = PASS or equivalent in Xray
+4. ✅ test-management Test Execution **MUST be in a terminal state** — status = PASS or equivalent in test-management
 5. ✅ No in-flight test cycles — only 1 active TE per story at any time
 
-**If any prerequisite fails:** post a Jira comment explaining the blocker and STOP. Do not write automation code.
+**If any prerequisite fails:** post a issue-tracker comment explaining the blocker and STOP. Do not write automation code.
 
 ---
 
@@ -108,10 +108,10 @@ Before writing any automation code, verify the test execution has fully passed b
 3. If any step is not `PASS` — **report the failing steps, record the blocker, and stop**. Do not write automation code.
 
 **If Gate fails (TE has failures):**
-- Post a Jira comment on the story: `"[QA Automation] Story {STORY-KEY} automation blocked — TE {CYCLE} has failing steps. Please fix the defect and run a new TE cycle before proceeding to automation code."`
+- Post a issue-tracker comment on the story: `"[QA Automation] Story {STORY-KEY} automation blocked — TE {CYCLE} has failing steps. Please fix the defect and run a new TE cycle before proceeding to automation code."`
 - Retrieve the story from monitor-state.json
 - If not already blocked, update: `automationStatus = BLOCKED`, `automationBlocker = "TE cycle {N} has failing steps: {step IDs}"`
-- Notify tester and PO via Jira comment
+- Notify tester and PO via issue-tracker comment
 
 Only proceed to Step 1 when all steps have passed.
 
@@ -119,10 +119,10 @@ Only proceed to Step 1 when all steps have passed.
 
 Create a todo plan:
 1. ✅ Execution status confirmed — all steps PASS (Gate 0 passed)
-2. **Discover story team** (PO, Dev, Tester) from Jira sub-tasks
+2. **Discover story team** (PO, Dev, Tester) from issue-tracker sub-tasks
 3. Create automation branch from default branch (`automation/{STORY-KEY}`)
 4. Load TC document and identify automation-eligible TCs
-5. Inspect existing automation framework in Bitbucket (use repo config from `automation-repository-config.md`)
+5. Inspect existing automation framework in source-control (use repo config from `automation-repository-config.md`)
 6. Identify test structure, base classes, helpers, naming conventions
 7. Draft automation scripts per eligible TC
 8. Create/update test data files
@@ -133,8 +133,8 @@ Create a todo plan:
 
 Run Story Team Discovery (see `.github/skills/story-team-discovery.md`):
 
-1. `jira_get_issue` on `{STORY-KEY}` with `fields: reporter,subtasks` → extract `$po` from `fields.reporter`
-2. From `fields.subtasks[]`, fetch each sub-task via `jira_get_issue` → classify using the priority keyword table (Evidence Reviewer → TC Reviewer → Dev → Tester) → populate `$dev`, `$tester`, `$tcReviewer`, `$evidenceReviewer`
+1. `issue-tracker_get_issue` on `{STORY-KEY}` with `fields: reporter,subtasks` → extract `$po` from `fields.reporter`
+2. From `fields.subtasks[]`, fetch each sub-task via `issue-tracker_get_issue` → classify using the priority keyword table (Evidence Reviewer → TC Reviewer → Dev → Tester) → populate `$dev`, `$tester`, `$tcReviewer`, `$evidenceReviewer`
 3. Log: `"Team discovered: PO={PO}, Dev={Dev}, Tester={Tester}, TC Reviewer={tcReviewer}, Evidence Reviewer={evidenceReviewer}"`
 4. **Conflict check**: if `$dev.accountId == $po.accountId`, log `"⚠️ Dev and PO are the same person ({name}). Applying fallback: story assignee as Dev."` and re-assign `$dev` from `fields.assignee` of the story. If `fields.assignee` is also the same as PO or null, ask the user once who the developer is.
 
@@ -144,7 +144,7 @@ Run Story Team Discovery (see `.github/skills/story-team-discovery.md`):
 
 ### Step 2 — Discover the Automation Framework
 
-Use Bitbucket tools to:
+Use source-control tools to:
 1. Browse the repository for test/automation folders (common paths: `tests/`, `automation/`, `e2e/`, `test/`, `specs/`).
 2. Identify the framework in use: NUnit / xUnit / MSTest (C#), JUnit / TestNG (Java), pytest (Python), Playwright / Cypress / Selenium (JS/TS), or other.
 3. Read existing test files to extract:
@@ -188,7 +188,7 @@ Save a summary document to `docs/Automation/AUT_{STORY-KEY}.md` describing:
 **After saving, if there are any "Dev input required" items**, post a comment on the story `@mentioning $dev`:
 
 ```powershell
-$devQuery = New-JiraCommentADF -Mentionee $dev -MessageText @"
+$devQuery = New-issue-trackerCommentADF -Mentionee $dev -MessageText @"
  — Automation code preparation query for {STORY-KEY}:
 
 The following implementation details are needed to complete the automation scripts:
@@ -198,7 +198,7 @@ This is needed to finalise the automation for TC-{n}. Please provide details at 
 
 Automation plan: docs/Automation/AUT_{STORY-KEY}.md
 "@
-Add-JiraComment -IssueKey "{STORY-KEY}" -Body $devQuery
+Add-issue-trackerComment -IssueKey "{STORY-KEY}" -Body $devQuery
 ```
 
 ### Step 6 — Invoke Automation Code Review
@@ -206,12 +206,12 @@ Add-JiraComment -IssueKey "{STORY-KEY}" -Body $devQuery
 After saving the plan document, notify `$tester` and inform the user:
 
 ```powershell
-$reviewNotify = New-JiraCommentADF -Mentionee $tester -MessageText @"
+$reviewNotify = New-issue-trackerCommentADF -Mentionee $tester -MessageText @"
  — Automation code has been prepared for {STORY-KEY}. Automation code review is now starting.
 Plan: docs/Automation/AUT_{STORY-KEY}.md | Scripts: {file list}
 You will be notified when the code review is complete and ready for your sign-off.
 "@
-Add-JiraComment -IssueKey "{STORY-KEY}" -Body $reviewNotify
+Add-issue-trackerComment -IssueKey "{STORY-KEY}" -Body $reviewNotify
 ```
 
 Then inform the user:

@@ -75,7 +75,7 @@ I need to create test cases
 COPILOT_MODEL_PRIMARY=gpt-4o
 OPENAI_API_KEY=<key>
 ANTHROPIC_API_KEY=<key>
-# ... plus Jira, Xray, GitHub vars
+# ... plus issue-tracker, test-management, GitHub vars
 ```
 
 **Step 2: Start all services:**
@@ -86,7 +86,7 @@ docker-compose up -d
 **Step 3: Verify models are working:**
 ```powershell
 # Inside container
-. .\scripts\xray-api.ps1
+. .\scripts\test-management-api.ps1
 Get-PreferredModel -AgentName "test_case_preparation"
 # Returns: gpt-4o
 ```
@@ -120,7 +120,7 @@ DOCUMENTATION-INDEX.md (START HERE)
     │   │
     │   ├── Skill Library
     │   │   ├── qa-artifact-naming.md
-    │   │   ├── xray-integration.md
+    │   │   ├── test-management-integration.md
     │   │   ├── evidence-quality-standards.md
     │   │   └── ... (8 skills total)
     │   │

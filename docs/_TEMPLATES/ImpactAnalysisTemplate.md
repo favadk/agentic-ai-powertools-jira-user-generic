@@ -15,7 +15,7 @@ Impact Analysis
 
 ---
 
-## Related Jira Defect(s)
+## Related issue-tracker Defect(s)
 
 | _Defect #_    | _Title_   |
 | ------------- | --------- |

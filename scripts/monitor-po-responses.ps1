@@ -1,7 +1,7 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-    Polls Jira for new comments on watched/blocked test case issues.
+    Polls issue-tracker for new comments on watched/blocked test case issues.
     When a new comment is detected, shows a Windows toast notification,
     logs the response, and writes a trigger file so the story_monitor
     agent can auto-update the test case and re-trigger review.
@@ -13,7 +13,7 @@
       1. Records the response in monitor-state.json
       2. Shows a Windows toast notification
       3. Writes a trigger file to scripts/triggers/{issueKey}-response.json
-      4. Optionally posts an acknowledgement comment to Jira
+      4. Optionally posts an acknowledgement comment to issue-tracker
 
     Run this on a schedule (every 30 min) via Task Scheduler.
     See: scripts/setup-po-monitor-scheduler.ps1 to register the schedule.
@@ -22,7 +22,7 @@
     Path to monitor-state.json. Default: scripts/monitor-state.json in repo root.
 
 .PARAMETER PostAck
-    If set, posts an auto-acknowledgement comment to Jira when a new comment is found.
+    If set, posts an auto-acknowledgement comment to issue-tracker when a new comment is found.
 
 .EXAMPLE
     .\scripts\monitor-po-responses.ps1
@@ -45,8 +45,8 @@ $triggersDir = Join-Path $PSScriptRoot "triggers"
 if (-not (Test-Path $triggersDir)) { New-Item -ItemType Directory -Path $triggersDir | Out-Null }
 
 # --- Load credentials ---
-. (Join-Path $PSScriptRoot "xray-api.ps1") 2>$null
-$creds = Get-XrayCreds   # returns $creds.Url and $creds.Headers
+. (Join-Path $PSScriptRoot "test-management-api.ps1") 2>$null
+$creds = Get-test-managementCreds   # returns $creds.Url and $creds.Headers
 
 # --- Load state ---
 $state = Get-Content $StateFile -Raw | ConvertFrom-Json
@@ -113,7 +113,7 @@ try {
         $selfAccountId = [string]$selfAccount.accountId
     }
 } catch {
-    Write-Warning "Could not resolve current Jira user for self-comment filtering: $_"
+    Write-Warning "Could not resolve current issue-tracker user for self-comment filtering: $_"
 }
 
 foreach ($issue in $watchedIssues) {
@@ -128,7 +128,7 @@ foreach ($issue in $watchedIssues) {
         foreach ($pendingResponse in @($issue.detectedResponses | Where-Object { -not $_.processed })) {
             if (-not $pendingResponse.commentId -or -not $pendingResponse.sourceIssueKey) { continue }
 
-            $pendingSourceIssueType = if ([string]$pendingResponse.sourceIssueKey -eq [string]$issue.issueKey) { "STORY" } else { "XRAY_TEST" }
+            $pendingSourceIssueType = if ([string]$pendingResponse.sourceIssueKey -eq [string]$issue.issueKey) { "STORY" } else { "test-management_TEST" }
             $pendingTriggerFile = Join-Path $triggersDir "$($issue.issueKey)-response-$($pendingResponse.commentId).json"
             if (-not (Test-Path $pendingTriggerFile)) {
                 @{
@@ -138,7 +138,7 @@ foreach ($issue in $watchedIssues) {
                     resolutionIssueKey = [string]$pendingResponse.sourceIssueKey
                     issueKey           = $issue.issueKey
                     storyKey           = if ($issue.storyKey) { $issue.storyKey } else { $issue.issueKey }
-                    xrayTestKey        = if ($issue.xrayTestKey) { $issue.xrayTestKey } else { $issue.issueKey }
+                    test-managementTestKey        = if ($issue.test-managementTestKey) { $issue.test-managementTestKey } else { $issue.issueKey }
                     tcDocPath          = Join-Path $repoRoot $issue.tcDocPath
                     tcrDocPath         = Join-Path $repoRoot $issue.tcrDocPath
                     blockedStep        = $issue.blockedStep
@@ -158,8 +158,8 @@ foreach ($issue in $watchedIssues) {
     $commentTargets = @($issue.issueKey)
     if ($issue.PSObject.Properties.Name -contains "qnWatchIssue" -and $issue.qnWatchIssue) {
         $commentTargets += [string]$issue.qnWatchIssue
-    } elseif ($issue.PSObject.Properties.Name -contains "xrayTestKey" -and $issue.xrayTestKey) {
-        $commentTargets += [string]$issue.xrayTestKey
+    } elseif ($issue.PSObject.Properties.Name -contains "test-managementTestKey" -and $issue.test-managementTestKey) {
+        $commentTargets += [string]$issue.test-managementTestKey
     }
     $commentTargets = @($commentTargets | Where-Object { $_ } | Select-Object -Unique)
 
@@ -245,7 +245,7 @@ foreach ($issue in $watchedIssues) {
                     $_.content | ForEach-Object { $_.text }
                 }) -join " "
             } catch {
-                $commentText = "[Could not extract text - view in Jira]"
+                $commentText = "[Could not extract text - view in issue-tracker]"
             }
 
             Write-Host ""
@@ -280,7 +280,7 @@ foreach ($issue in $watchedIssues) {
             $anyUpdates = $true
 
             $triggerFile = Join-Path $triggersDir "$($issue.issueKey)-response-$($comment.id).json"
-            $sourceIssueType = if ($targetKey -eq $issue.issueKey) { "STORY" } else { "XRAY_TEST" }
+            $sourceIssueType = if ($targetKey -eq $issue.issueKey) { "STORY" } else { "test-management_TEST" }
             @{
                 changeType         = "PO_RESPONSE"
                 sourceIssueKey     = $targetKey
@@ -288,7 +288,7 @@ foreach ($issue in $watchedIssues) {
                 resolutionIssueKey = $targetKey
                 issueKey           = $issue.issueKey
                 storyKey           = if ($issue.storyKey) { $issue.storyKey } else { $issue.issueKey }
-                xrayTestKey        = if ($issue.xrayTestKey) { $issue.xrayTestKey } else { $issue.issueKey }
+                test-managementTestKey        = if ($issue.test-managementTestKey) { $issue.test-managementTestKey } else { $issue.issueKey }
                 tcDocPath          = Join-Path $repoRoot $issue.tcDocPath
                 tcrDocPath         = Join-Path $repoRoot $issue.tcrDocPath
                 blockedStep        = $issue.blockedStep
@@ -322,7 +322,7 @@ foreach ($issue in $watchedIssues) {
                         version = 1; type = "doc"
                         content = @(
                             @{ type = "paragraph"; content = @(
-                                @{ type = "text"; text = "[QA Monitor] Comment detected from $commentAuthor at $($comment.created). The automated test review workflow will assess this feedback against the linked TC and Xray steps." }
+                                @{ type = "text"; text = "[QA Monitor] Comment detected from $commentAuthor at $($comment.created). The automated test review workflow will assess this feedback against the linked TC and test-management steps." }
                             )}
                         )
                     }
@@ -370,7 +370,7 @@ if ($pendingIssues.Count -gt 0) {
         Write-Host "  TC Doc: $($p.tcDocPath)"
         Write-Host "  Trigger: scripts\triggers\$($p.issueKey)-response.json"
         Write-Host ""
-        Write-Host "  --> QA-Process-Test-Comment-Reviews will process linked Xray comment triggers on its next run."
+        Write-Host "  --> QA-Process-Test-Comment-Reviews will process linked test-management comment triggers on its next run."
         Write-Host ""
     }
 } else {

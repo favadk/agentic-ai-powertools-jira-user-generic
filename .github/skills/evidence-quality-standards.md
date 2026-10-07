@@ -46,7 +46,7 @@ Good evidence must satisfy all four of the following:
 - [ ] Evidence shows the **exact action** where the failure occurred (not just the end state)
 - [ ] Failure screenshot includes: the step number, the action attempted, and the resulting error or unexpected state
 - [ ] Actual result is recorded **verbatim** — not paraphrased
-- [ ] A Jira Defect key is linked to the failure
+- [ ] A issue-tracker Defect key is linked to the failure
 - [ ] Defect summary accurately describes the failing action and observed behaviour
 
 ### For BLOCKED / SKIPPED results

@@ -1,12 +1,12 @@
 
 อออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ
-  Jira MCP Server
+  issue-tracker MCP Server
 อออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ
 
-Model Context Protocol (MCP) server for Jira integration.
+Model Context Protocol (MCP) server for issue-tracker integration.
 
 USAGE
-  jira-mcp [--help]
+  issue-tracker-mcp [--help]
 
 OPTIONS
   --help            Show this help message and exit
@@ -17,19 +17,19 @@ OPTIONS
 
 Install as a .NET Global Tool:
 
-  dotnet tool install --global Jira.Mcp --add-source ./nupkg
+  dotnet tool install --global issue-tracker.Mcp --add-source ./nupkg
 
 Or from an internal NuGet feed:
 
-  dotnet tool install --global Jira.Mcp --add-source https://your-nuget-feed
+  dotnet tool install --global issue-tracker.Mcp --add-source https://your-nuget-feed
 
 Update to latest version:
 
-  dotnet tool update --global Jira.Mcp
+  dotnet tool update --global issue-tracker.Mcp
 
 Uninstall:
 
-  dotnet tool uninstall --global Jira.Mcp
+  dotnet tool uninstall --global issue-tracker.Mcp
 
 อออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ
   CONFIGURATION
@@ -39,15 +39,15 @@ Configuration is done through environment variables.
 
 REQUIRED ENVIRONMENT VARIABLES
 
-  JIRA_URL                        Jira instance URL (e.g., https://your-domain.atlassian.net)
+  issue-tracker_URL                        issue-tracker instance URL (e.g., https://your-domain.atlassian.net)
 
 OPTIONAL ENVIRONMENT VARIABLES
 
-  JIRA_PERSONAL_TOKEN            Personal Access Token (recommended for server/DC)
-  JIRA_USERNAME                  Username/email for Basic auth (required for Cloud)
-  JIRA_TOKEN                     API token for Basic auth (required for Cloud)
-  JIRA_SSL_VERIFY                Set to 'false' to disable SSL verification (default: true)
-  JIRA_PROJECTS_FILTER           Comma-separated list of project keys to filter
+  issue-tracker_PERSONAL_TOKEN            Personal Access Token (recommended for server/DC)
+  issue-tracker_USERNAME                  Username/email for Basic auth (required for Cloud)
+  issue-tracker_TOKEN                     API token for Basic auth (required for Cloud)
+  issue-tracker_SSL_VERIFY                Set to 'false' to disable SSL verification (default: true)
+  issue-tracker_PROJECTS_FILTER           Comma-separated list of project keys to filter
 
 COMMON ENVIRONMENT VARIABLES
 
@@ -65,12 +65,12 @@ COMMON ENVIRONMENT VARIABLES
 This server supports multiple authentication methods:
 
 1. PERSONAL ACCESS TOKEN (Recommended)
-   - Set JIRA_PERSONAL_TOKEN environment variable
+   - Set issue-tracker_PERSONAL_TOKEN environment variable
    - Most secure method for server/data center deployments
 
 2. BASIC AUTHENTICATION
-   - Set JIRA_USERNAME and JIRA_TOKEN
-   - Use API token (not password) for JIRA_TOKEN
+   - Set issue-tracker_USERNAME and issue-tracker_TOKEN
+   - Use API token (not password) for issue-tracker_TOKEN
    - Required for Atlassian Cloud deployments
 
 อออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ
@@ -81,7 +81,7 @@ Logging is DISABLED by default to avoid interfering with the MCP protocol.
 
 To enable logging, set the MCP_LOG_LEVEL environment variable:
 
-  MCP_LOG_LEVEL=Debug jira-mcp
+  MCP_LOG_LEVEL=Debug issue-tracker-mcp
 
 Log Levels (from most to least verbose):
   - Trace         Most detailed, includes all HTTP requests/responses
@@ -106,10 +106,10 @@ Claude Desktop (claude_desktop_config.json):
 
 {
   "mcpServers": {
-    "jira": {
-      "command": "jira-mcp",
+    "issue-tracker": {
+      "command": "issue-tracker-mcp",
       "env": {
-        "JIRA_URL": "https://your-domain.atlassian.net",
+        "issue-tracker_URL": "https://your-domain.atlassian.net",
         "MCP_LOG_LEVEL": "Debug"
       }
     }
@@ -120,11 +120,11 @@ VS Code MCP Extension (.vscode/mcp.json):
 
 {
   "servers": {
-    "jira": {
+    "issue-tracker": {
       "type": "stdio",
-      "command": "jira-mcp",
+      "command": "issue-tracker-mcp",
       "env": {
-        "JIRA_URL": "https://your-domain.atlassian.net",
+        "issue-tracker_URL": "https://your-domain.atlassian.net",
         "MCP_LOG_LEVEL": "Information"
       }
     }
@@ -137,12 +137,12 @@ If you haven't installed globally, you can use 'dotnet tool run':
 
 {
   "servers": {
-    "jira": {
+    "issue-tracker": {
       "type": "stdio",
       "command": "dotnet",
-      "args": ["tool", "run", "jira-mcp"],
+      "args": ["tool", "run", "issue-tracker-mcp"],
       "env": {
-        "JIRA_URL": "https://your-domain.atlassian.net"
+        "issue-tracker_URL": "https://your-domain.atlassian.net"
       }
     }
   }
@@ -157,12 +157,12 @@ For active development on the MCP server code:
 
 {
   "servers": {
-    "jira": {
+    "issue-tracker": {
       "type": "stdio",
       "command": "dotnet",
-      "args": ["run", "--project", "path/to/Jira.Mcp/Jira.Mcp.csproj"],
+      "args": ["run", "--project", "path/to/issue-tracker.Mcp/issue-tracker.Mcp.csproj"],
       "env": {
-        "JIRA_URL": "https://your-domain.atlassian.net"
+        "issue-tracker_URL": "https://your-domain.atlassian.net"
       }
     }
   }
@@ -175,14 +175,14 @@ For active development on the MCP server code:
 Once installed as a global tool, you can run from any directory:
 
 Windows PowerShell:
-  $env:JIRA_URL="value"
+  $env:issue-tracker_URL="value"
   $env:MCP_LOG_LEVEL="Debug"
-  jira-mcp
+  issue-tracker-mcp
 
 Linux/macOS:
-  export JIRA_URL=value
+  export issue-tracker_URL=value
   export MCP_LOG_LEVEL=Debug
-  jira-mcp
+  issue-tracker-mcp
 
 อออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ
   TROUBLESHOOTING
@@ -195,7 +195,7 @@ Problem: "Authentication is not configured" error
 Solution: Ensure required environment variables are set with valid credentials
 
 Problem: SSL certificate errors
-Solution: Set JIRA_SSL_VERIFY=false (use with caution)
+Solution: Set issue-tracker_SSL_VERIFY=false (use with caution)
 
 Problem: No log output when MCP_LOG_LEVEL is set
 Solution: Check that logs are being captured from STDERR, not STDOUT

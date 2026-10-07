@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Generates structured QA test cases from a Jira story's Acceptance Criteria
+    Generates structured QA test cases from a issue-tracker story's Acceptance Criteria
     using a locally running Ollama LLM instance.
 
 .USAGE
@@ -22,7 +22,7 @@
 #>
 
 # ---------------------------------------------------------------------------
-# Helper: strip HTML tags from Jira rendered fields
+# Helper: strip HTML tags from issue-tracker rendered fields
 # ---------------------------------------------------------------------------
 function ConvertFrom-HtmlToText {
     param([string]$Html)
@@ -90,7 +90,7 @@ function Invoke-OllamaTestCaseGeneration {
     .SYNOPSIS
         Calls a local Ollama LLM to generate test cases from story AC.
 
-    .PARAMETER StorySummary        Story title/summary from Jira
+    .PARAMETER StorySummary        Story title/summary from issue-tracker
     .PARAMETER AcceptanceCriteria  AC text (plain text, HTML, or ADF object)
     .PARAMETER Description         Optional story description for extra context
     .PARAMETER Model               Ollama model name (default: llama3.2)
@@ -136,7 +136,7 @@ function Invoke-OllamaTestCaseGeneration {
 
     # Build system prompt using explicit string concatenation to avoid encoding issues
     $systemPrompt = "You are a senior QA Test Case Author. " +
-        "Given a Jira User Story and its Acceptance Criteria, generate comprehensive, structured test cases.`n`n" +
+        "Given a issue-tracker User Story and its Acceptance Criteria, generate comprehensive, structured test cases.`n`n" +
         "RULES:`n" +
         "1. Each AC item gets at minimum: 1 Happy Path test case AND 1 Negative test case.`n" +
         "2. Add Boundary test cases where numeric, date, or length limits appear in the AC.`n" +

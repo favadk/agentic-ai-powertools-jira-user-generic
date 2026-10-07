@@ -361,15 +361,15 @@ if (Test-Path $automationRoot) {
 
         $project = Get-ProjectFromKey -StoryKey $storyKey
 
-        $jiraPending = $false
-        $confluencePending = $false
+        $issue-trackerPending = $false
+        $knowledge-basePending = $false
         foreach ($line in $lines) {
-            if ($line -match "\|\s*Jira comment\s*\|\s*.*Pending") { $jiraPending = $true }
-            if ($line -match "\|\s*Confluence\s*\|\s*.*Pending") { $confluencePending = $true }
+            if ($line -match "\|\s*issue-tracker comment\s*\|\s*.*Pending") { $issue-trackerPending = $true }
+            if ($line -match "\|\s*knowledge-base\s*\|\s*.*Pending") { $knowledge-basePending = $true }
         }
 
-        if ($jiraPending -or $confluencePending) {
-            $target = if ($jiraPending -and $confluencePending) { "Jira and Confluence" } elseif ($jiraPending) { "Jira" } else { "Confluence" }
+        if ($issue-trackerPending -or $knowledge-basePending) {
+            $target = if ($issue-trackerPending -and $knowledge-basePending) { "issue-tracker and knowledge-base" } elseif ($issue-trackerPending) { "issue-tracker" } else { "knowledge-base" }
             Add-PendingActionEntry -Entry @{
                 id = "publish-" + $storyKey + "-" + ($ar.BaseName.ToLower())
                 project = $project

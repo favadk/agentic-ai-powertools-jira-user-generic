@@ -1,19 +1,19 @@
 ---
-description: Processes QA trigger files written by the two background monitors — routes by changeType (PO_RESPONSE, DESCRIPTION_CHANGE, STATUS_CHANGE, SPRINT_CHANGE) — for PO responses resumes the blocked TC cycle; for description changes diffs ACs and updates TC doc + Xray steps; for status and sprint changes evaluates impact and provisions QA execution
+description: Processes QA trigger files written by the two background monitors — routes by changeType (PO_RESPONSE, DESCRIPTION_CHANGE, STATUS_CHANGE, SPRINT_CHANGE) — for PO responses resumes the blocked TC cycle; for description changes diffs ACs and updates TC doc + test-management steps; for status and sprint changes evaluates impact and provisions QA execution
 tools:
   [
     "edit/editFiles",
     "search",
-    "jira/jira_get_issue",
-    "jira/jira_search",
-    "jira/jira_add_comment",
-    "jira/jira_update_issue",
-    "jira/jira_create_issue",
-    "jira/jira_create_issue_link",
-    "jira/jira_get_agile_boards",
-    "jira/jira_get_sprints_from_board",
-    "jira/jira_get_sprint_issues",
-    "jira/jira_move_issues_to_sprint",
+    "issue-tracker/issue-tracker_get_issue",
+    "issue-tracker/issue-tracker_search",
+    "issue-tracker/issue-tracker_add_comment",
+    "issue-tracker/issue-tracker_update_issue",
+    "issue-tracker/issue-tracker_create_issue",
+    "issue-tracker/issue-tracker_create_issue_link",
+    "issue-tracker/issue-tracker_get_agile_boards",
+    "issue-tracker/issue-tracker_get_sprints_from_board",
+    "issue-tracker/issue-tracker_get_sprint_issues",
+    "issue-tracker/issue-tracker_move_issues_to_sprint",
     "run_in_terminal",
     "todos",
     "runSubagent",
@@ -58,17 +58,17 @@ If no explicit issue key was supplied, scan `scripts/triggers/` for any `.json` 
 
 Extract:
 - `$trigger.issueKey` — the user story (e.g., STORY-0000) — this is where PO responses are monitored
-- `$trigger.xrayTestKey` — the Xray Test issue (e.g., STORY-0000)
+- `$trigger.test-managementTestKey` — the test-management Test issue (e.g., STORY-0000)
 - `$trigger.sourceIssueKey` — the issue where the comment was posted
-- `$trigger.sourceIssueType` — `STORY` or `XRAY_TEST`; absent means `STORY` for backward compatibility
+- `$trigger.sourceIssueType` — `STORY` or `test-management_TEST`; absent means `STORY` for backward compatibility
 - `$trigger.resolutionIssueKey` — the issue that must receive the resolution comment; use `sourceIssueKey` when absent
 - `$trigger.storyKey` — same as issueKey (e.g., STORY-0000)
 - `$trigger.tcDocPath` — local TC document path
 - `$trigger.tcrDocPath` — local TCR document path
-- `$trigger.blockedStep` — which Xray step was blocked (e.g., "Xray Step 7")
+- `$trigger.blockedStep` — which test-management step was blocked (e.g., "test-management Step 7")
 - `$trigger.commentText` — the PO's response text
 
-> **Note**: `poDisplayName` and `poEmail` fields in the trigger file are informational only. Always re-discover the team live from Jira (Step 1a below) — do not rely solely on trigger file values.
+> **Note**: `poDisplayName` and `poEmail` fields in the trigger file are informational only. Always re-discover the team live from issue-tracker (Step 1a below) — do not rely solely on trigger file values.
 
 If no trigger file exists, check `scripts/monitor-state.json` for any issue with `status == "PO_RESPONDED"` and unprocessed responses.
 
@@ -91,25 +91,25 @@ Read `$trigger.changeType`. Route to the appropriate step:
 
 > For `DESCRIPTION_CHANGE` triggers, `$trigger.newDescription` contains the full current story description as plain text. Use it for diffing.
 
-> **Execution handoff**: The scheduled monitor only writes trigger files; it does not invoke another agent by itself. After a `SPRINT_CHANGE` or QA-status trigger provisions a TE, `story_monitor` must be invoked to perform the handoff to `test_case_execution`. Do not claim that execution started until that agent has verified the Xray Test is attached to the TE and an Xray test run exists.
+> **Execution handoff**: The scheduled monitor only writes trigger files; it does not invoke another agent by itself. After a `SPRINT_CHANGE` or QA-status trigger provisions a TE, `story_monitor` must be invoked to perform the handoff to `test_case_execution`. Do not claim that execution started until that agent has verified the test-management Test is attached to the TE and an test-management test run exists.
 
 ---
 
 ## STEP 1b — Discover Story Team (Always Run)
 
-Immediately after reading the trigger file, run Story Team Discovery for the story (`$trigger.issueKey`). This ensures comment @mentions always use live Jira data.
+Immediately after reading the trigger file, run Story Team Discovery for the story (`$trigger.issueKey`). This ensures comment @mentions always use live issue-tracker data.
 
-1. Use `jira_get_issue` on `$trigger.issueKey` with `fields: reporter,subtasks` — extract `$po` from `fields.reporter`.
-2. From `fields.subtasks[]`, fetch each sub-task via `jira_get_issue` → classify using the priority keyword table (Evidence Reviewer → TC Reviewer → Dev → Tester) → populate `$dev`, `$tester`, `$tcReviewer`, `$evidenceReviewer`.
+1. Use `issue-tracker_get_issue` on `$trigger.issueKey` with `fields: reporter,subtasks` — extract `$po` from `fields.reporter`.
+2. From `fields.subtasks[]`, fetch each sub-task via `issue-tracker_get_issue` → classify using the priority keyword table (Evidence Reviewer → TC Reviewer → Dev → Tester) → populate `$dev`, `$tester`, `$tcReviewer`, `$evidenceReviewer`.
 3. Apply fallback rules if any role is missing.
 4. **Conflict check**: if `$dev.accountId == $po.accountId`, log `"⚠️ Dev and PO are the same person ({name}). Applying fallback: story assignee as Dev."` and re-assign `$dev` from `fields.assignee` of the story. If `fields.assignee` is also the same as PO or null, ask the user once who the developer is.
 5. Log: `"Team for {STORY-KEY}: PO={PO displayName}, Dev={Dev displayName}, Tester={Tester displayName}, TC Reviewer={tcReviewer displayName}, Evidence Reviewer={evidenceReviewer displayName}"`
-2. Use `jira_search` with JQL `parent = "{STORY-KEY}"` to find sub-tasks.
+2. Use `issue-tracker_search` with JQL `parent = "{STORY-KEY}"` to find sub-tasks.
 3. Classify sub-tasks → identify `$dev` and `$tester`.
 4. Apply fallback rules if any role is missing.
 5. Log: `"Team for {STORY-KEY}: PO={PO displayName}, Dev={Dev displayName}, Tester={Tester displayName}"`
 
-> All outgoing Jira comments from this point must use `New-JiraCommentADF` with the discovered `$po`, `$dev`, or `$tester` as the `Mentionee`.
+> All outgoing issue-tracker comments from this point must use `New-issue-trackerCommentADF` with the discovered `$po`, `$dev`, or `$tester` as the `Mentionee`.
 
 ---
 
@@ -117,10 +117,10 @@ Immediately after reading the trigger file, run Story Team Discovery for the sto
 
 > Skip this step for `PO_RESPONSE` triggers — proceed to STEP 3 instead.
 
-When `changeType == "DESCRIPTION_CHANGE"`, the story description (ACs, scope, acceptance criteria) has been edited in Jira. The full current description is in `$trigger.newDescription`.
+When `changeType == "DESCRIPTION_CHANGE"`, the story description (ACs, scope, acceptance criteria) has been edited in issue-tracker. The full current description is in `$trigger.newDescription`.
 
-### 2B-1 — Fetch fresh story text from Jira
-Fetch the story via `jira_get_issue` with `fields: description,summary,status`. Extract the current description as plain text (parse ADF content nodes). This is the authoritative source — `$trigger.newDescription` is a snapshot from detection time.
+### 2B-1 — Fetch fresh story text from issue-tracker
+Fetch the story via `issue-tracker_get_issue` with `fields: description,summary,status`. Extract the current description as plain text (parse ADF content nodes). This is the authoritative source — `$trigger.newDescription` is a snapshot from detection time.
 
 ### 2B-2 — Load the existing TC document
 Read `$trigger.tcDocPath` (e.g., `docs/TestCases/TC_STORY-7456.md`). Parse out each AC section header and the test cases mapped to it.
@@ -137,21 +137,21 @@ Log: `"AC diff for {STORY-KEY}: {N} changed, {M} removed, {K} new ACs found"`
 For each affected TC:
 1. Update the **Preconditions**, **Test Steps**, and **Expected Results** sections to reflect the new AC wording.
 2. If an AC was removed: mark the TC as `[DEPRECATED — AC removed {date}]` and add a note.
-3. If a new AC was added with no coverage: add a stub TC entry with status `[PENDING — new AC added {date}, test steps required]` and post a Jira comment asking the QA lead to complete it.
+3. If a new AC was added with no coverage: add a stub TC entry with status `[PENDING — new AC added {date}, test steps required]` and post a issue-tracker comment asking the QA lead to complete it.
 4. Add a dated change note at the top of each affected TC: `> **[{date}] AC updated**: <summary of what changed>`
 
-> **Expected result content rule**: Write only the functional, verifiable outcome. Never include change-tracking annotations, editor names, or internal meta-notes. Those belong in Jira comments only.
+> **Expected result content rule**: Write only the functional, verifiable outcome. Never include change-tracking annotations, editor names, or internal meta-notes. Those belong in issue-tracker comments only.
 
-### 2B-5 — Update Xray steps for affected TCs
-For each updated TC step that has a corresponding Xray step:
-1. Use the Xray GraphQL API (`updateTestStep`) to push the updated action and expected result.
+### 2B-5 — Update test-management steps for affected TCs
+For each updated TC step that has a corresponding test-management step:
+1. Use the test-management GraphQL API (`updateTestStep`) to push the updated action and expected result.
 2. Use the correct mutation format:
    ```graphql
    mutation { updateTestStep(stepId: "<stepId>", step: { action: "<action>", result: "<result>" }) { warnings } }
    ```
-3. Log each Xray step updated.
+3. Log each test-management step updated.
 
-### 2B-6 — Post Jira comment summarising the update
+### 2B-6 — Post issue-tracker comment summarising the update
 Post a comment to the **story** (`$trigger.storyKey`) mentioning `$po`, `$tester`, `$tcReviewer`:
 
 ```
@@ -164,17 +164,17 @@ TC changes made:
 - {TC-ID}: Marked DEPRECATED (AC removed)
 - {TC-ID}: Stub added for new AC-{N} — steps pending
 
-Xray steps updated: {list of stepIds or "none"}
+test-management steps updated: {list of stepIds or "none"}
 
 Routing to: test_case_review (Mode C Validation)
 ```
 
 ### 2B-7 — Chain to test_case_review (Mode C)
-After TC and Xray updates, invoke `test_case_review` Mode C for the affected story:
+After TC and test-management updates, invoke `test_case_review` Mode C for the affected story:
 
 ```
 runSubagent: test_case_review
-prompt: "Mode C Post-Description-Change Validation for {storyKey} / {xrayTestKey}. The story description was updated. Affected TCs have been revised. Run Mode C validation and post the verdict."
+prompt: "Mode C Post-Description-Change Validation for {storyKey} / {test-managementTestKey}. The story description was updated. Affected TCs have been revised. Run Mode C validation and post the verdict."
 ```
 
 Then go to **STEP 7** to mark the trigger as processed.
@@ -185,7 +185,7 @@ Then go to **STEP 7** to mark the trigger as processed.
 
 > Skip this step for `PO_RESPONSE` and `DESCRIPTION_CHANGE` triggers.
 
-When `changeType == "STATUS_CHANGE"`, the story or defect moved to a new Jira status.
+When `changeType == "STATUS_CHANGE"`, the story or defect moved to a new issue-tracker status.
 
 ### 2C-1 — Evaluate impact by new status
 
@@ -194,8 +194,8 @@ When `changeType == "STATUS_CHANGE"`, the story or defect moved to a new Jira st
 | New Status (Story/Defect) | Action |
 |---|---|
 | `Waiting for Verification` / `Ready for QA` / `In QA` / `Ready for Testing` / `In Testing` | **Trigger QA execution window** — see **2C-1a** below for full sprint TE provisioning + execution chain. |
-| `Done` / `Closed` / `Released` | 1. Verify all TCs are in a terminal Xray state (PASS or FAIL). Flag any still in TODO/EXECUTING. 2. **If Automation Target = Yes or Partial**: Post a comment on the story tagging `@automation_code_preparation` agent with the story key to kick off Stage 5 (Automation Code Prep). |
-| `Cancelled` / `Won't Do` | Mark all linked TCs as `[DEPRECATED — story cancelled {date}]`. Update Xray test status to ABORTED if possible. Notify `$tester` and `$tcReviewer` via Jira comment. |
+| `Done` / `Closed` / `Released` | 1. Verify all TCs are in a terminal test-management state (PASS or FAIL). Flag any still in TODO/EXECUTING. 2. **If Automation Target = Yes or Partial**: Post a comment on the story tagging `@automation_code_preparation` agent with the story key to kick off Stage 5 (Automation Code Prep). |
+| `Cancelled` / `Won't Do` | Mark all linked TCs as `[DEPRECATED — story cancelled {date}]`. Update test-management test status to ABORTED if possible. Notify `$tester` and `$tcReviewer` via issue-tracker comment. |
 | `In Progress` (from `To Do`) | Check `$trigger.issueType`: if **Story/Task** → notify `$tester` that TC preparation can begin; if no TC doc exists, chain to `test_case_preparation`. If **Defect/Bug** → chain to `test_case_preparation` **Mode D (Defect Regression)**. |
 | `In Dev` | Same as `In Progress` — apply the same Story vs Defect/Bug branch above. |
 | `Ready for Dev` | Same as `In Dev` for Defects/Bugs — regression test preparation window opens. For Stories, notify tester only (dev not started yet). |
@@ -208,7 +208,7 @@ When `changeType == "STATUS_CHANGE"`, the story or defect moved to a new Jira st
 
 | TE Status | Action |
 |---|---|
-| `Test Results Review` / `Ready for Review` / `Review In Progress` | **Notify tester results are ready.** 1. Retrieve linked story key via `jira_get_issue($issueKey)` → extract story link. 2. Look up tester role from story's team sub-tasks in monitor-state.json. 3. Post a Jira comment on the TE issue **@mentioning `$tester`**: `"[QA - Test Results Ready for Review] @{tester} — the test execution {TE_KEY} for {STORY_KEY} is now marked '{newStatus}'. Results summary: {pass-rate}% pass. Please review the evidence at {TE_DOC_PATH} and sign off (Stage 4: Evidence Review) or flag items for rework."` 4. Calculate pass rate from step results. If pass rate = 100%, add green 🟢 prefix ("All steps passed"). If any failure/block, add orange 🟠 prefix and also @mention `$evidenceReviewer` for priority escalation. |
+| `Test Results Review` / `Ready for Review` / `Review In Progress` | **Notify tester results are ready.** 1. Retrieve linked story key via `issue-tracker_get_issue($issueKey)` → extract story link. 2. Look up tester role from story's team sub-tasks in monitor-state.json. 3. Post a issue-tracker comment on the TE issue **@mentioning `$tester`**: `"[QA - Test Results Ready for Review] @{tester} — the test execution {TE_KEY} for {STORY_KEY} is now marked '{newStatus}'. Results summary: {pass-rate}% pass. Please review the evidence at {TE_DOC_PATH} and sign off (Stage 4: Evidence Review) or flag items for rework."` 4. Calculate pass rate from step results. If pass rate = 100%, add green 🟢 prefix ("All steps passed"). If any failure/block, add orange 🟠 prefix and also @mention `$evidenceReviewer` for priority escalation. |
 | `Closed` / `Done` | Verify story status. If story is also in terminal state (Done/Closed/Released), then evidence review is complete → proceed to automation trigger (if applicable per Done/Closed routing for Story above). If story still In Progress: post informational comment only. |
 | Any other | Post informational comment. No action required. |
 
@@ -218,9 +218,9 @@ When `changeType == "STATUS_CHANGE"`, the story or defect moved to a new Jira st
 
 Run these steps in order. **TE creation is unconditional — it must complete before `test_case_execution` is invoked**, regardless of whether the PR is merged.
 
-**Step A — TC document + Xray Test check**
+**Step A — TC document + test-management Test check**
 1. Check if `docs/TestCases/TC_{storyKey}.md` exists. If missing → post comment mentioning `$tester`: `"[QA Monitor] Story moved to {newStatus} but no TC document found. Please run @test_case_preparation for {storyKey} first."` → **stop**.
-2. Read `xrayTestKey` from `scripts/monitor-state.json` (`issues[].xrayTestKey` for this story). If null/missing → post comment: `"[QA Monitor] No Xray Test key found in monitor state for {storyKey}. Re-run test_case_preparation or update monitor-state.json."` → **stop**.
+2. Read `test-managementTestKey` from `scripts/monitor-state.json` (`issues[].test-managementTestKey` for this story). If null/missing → post comment: `"[QA Monitor] No test-management Test key found in monitor state for {storyKey}. Re-run test_case_preparation or update monitor-state.json."` → **stop**.
 ---
 
 ### 2C-1c — Done/Closed/Released: Automation Trigger Handling (from monitor-story-changes.ps1)
@@ -230,20 +230,20 @@ When status changes to `Done` / `Closed` / `Released`:
 1. **Automation Eligibility Check** — `monitor-story-changes.ps1` reads `docs/QAPlan/QAP_{STORY-KEY}.md` and extracts `Automation Target` flag (Yes / Partial / No)
 2. **If Automation Target = Yes or Partial:**
    - Scan for existing automation artifacts: `AUT_*.md`, `AUTR_*.md`, `AUTRPT_*_Run*.md`
-   - If none exist → post a Jira comment @mentioning `@automation_code_preparation {STORY-KEY}` to kick off Stage 5
+   - If none exist → post a issue-tracker comment @mentioning `@automation_code_preparation {STORY-KEY}` to kick off Stage 5
    - If all 3 artifacts exist → record `automationStatus = COMPLETE` in monitor-state.json (no comment posted)
    - If 1–2 artifacts exist → record `automationStatus = IN_PROGRESS` in monitor-state.json (no comment posted)
 3. **Record in monitor-state.json:**
    - `automationTarget`: Yes / Partial / No
    - `automationTriggerPostedAt`: ISO timestamp when @mention comment was posted (or null if not posted)
-   - `automationTriggerCommentId`: Jira comment ID (for audit trail)
+   - `automationTriggerCommentId`: issue-tracker comment ID (for audit trail)
    - `automationStatus`: TRIGGERED / IN_PROGRESS / COMPLETE / BLOCKED
    - `automationBlocker`: Reason if BLOCKED (e.g., "TE has failures", "TC missing", "Automation Target = No")
    - `automationArtifacts`: Object with paths to planDoc, reviewDoc, resultsDoc
 
 **If `automation_code_preparation` detects a gate failure:**
 - It reads `docs/TestExecution/{sprint-slug}/TE_{STORY-KEY}_Cycle{N}.md` and verifies 100% pass rate
-- If any step is FAIL/BLOCK → posts a Jira comment explaining the blocker
+- If any step is FAIL/BLOCK → posts a issue-tracker comment explaining the blocker
 - Updates monitor-state.json: `automationStatus = BLOCKED`, `automationBlocker = "{reason}"`
 - Does NOT write automation code
 
@@ -254,28 +254,28 @@ When status changes to `Done` / `Closed` / `Released`:
 
 1. Resolve the active sprint:
    ```powershell
-   $boards       = jira_get_agile_boards(projectKeyOrId: "{PROJECT-KEY}")
+   $boards       = issue-tracker_get_agile_boards(projectKeyOrId: "{PROJECT-KEY}")
    $boardId      = first scrum board id from $boards
-   $sprints      = jira_get_sprints_from_board(boardId: $boardId, state: "active")
+   $sprints      = issue-tracker_get_sprints_from_board(boardId: $boardId, state: "active")
    $sprintId     = $sprints[0].id
    $sprintName   = $sprints[0].name
-   $sprintIssues = jira_get_sprint_issues(sprintId: $sprintId)
+   $sprintIssues = issue-tracker_get_sprint_issues(sprintId: $sprintId)
    ```
 
 2. Filter locally for an existing sprint TE: `issuetype == "Test Execution" AND statusCategory != done`
-   - **Found** → record `$teKey`. If `$xrayTestKey` not yet linked to it → call `mcp_xray_add_tests_to_execution`.
+   - **Found** → record `$teKey`. If `$test-managementTestKey` not yet linked to it → call `mcp_test-management_add_tests_to_execution`.
    - **Not found** → create one using `run_in_terminal`:
      ```powershell
-     cd "C:\Agentic-AI\agentic-ai-powertools-jira-user-generic"
-     . .\scripts\xray-api.ps1
-     $teKey = New-XrayTestExecution `
+     cd "C:\Agentic-AI\agentic-ai-powertools-issue-tracker-user-generic"
+     . .\scripts\test-management-api.ps1
+     $teKey = New-test-managementTestExecution `
          -ProjectKey  "STORY" `
          -StoryKey    "{storyKey}" `
-         -TestKeys    @("{xrayTestKey}") `
+         -TestKeys    @("{test-managementTestKey}") `
          -Summary     "Sprint TE: {sprintName} — STORY" `
          -Environment "SIT"
      ```
-     Then move into sprint: `jira_move_issues_to_sprint(sprintId: $sprintId, issueKeys: @($teKey))`
+     Then move into sprint: `issue-tracker_move_issues_to_sprint(sprintId: $sprintId, issueKeys: @($teKey))`
 
 3. Post TE creation notification on the story (Section 3.3 of `test-execution-sprint-linking.md`), mentioning `$po` and PM (`712020:cfc20da4-5639-4bcc-8370-5f53dc0d2f10`).
 
@@ -286,12 +286,12 @@ When status changes to `Done` / `Closed` / `Released`:
 After TE is confirmed in sprint, invoke:
 ```
 runSubagent: test_case_execution
-prompt: "Execute test cases for {storyKey}. Sprint TE already provisioned: {teKey}. Xray Test: {xrayTestKey}. Story status: {newStatus}."
+prompt: "Execute test cases for {storyKey}. Sprint TE already provisioned: {teKey}. test-management Test: {test-managementTestKey}. Story status: {newStatus}."
 ```
 
 > `test_case_execution` will still apply its own dev gate (Step 0-Dev). If the PR is not merged, it stops there — but the TE container already exists in the sprint with status `TODO`, and PO/PM have been notified. When the dev gate later passes (PR merged), the tester re-invokes `@test_case_execution` and picks up the existing TE.
 
-### 2C-2 — Post Jira comment
+### 2C-2 — Post issue-tracker comment
 Post a comment to the story (`$trigger.storyKey`) summarising the status transition and any TC actions taken:
 
 ```
@@ -311,14 +311,14 @@ Then go to **STEP 7** to archive the status trigger file.
 When a watched story moves from a previous sprint into the newly active sprint, treat the move as a new execution cycle. Do not reuse a Test Execution from `previousSprintSlug`, and do not execute until every required issue is visible in the new sprint.
 
 1. Verify `$trigger.storyKey` is present in the active sprint issue list. If it is not present, stop and report the current-sprint guardrail.
-2. Resolve `$xrayTestKey` from the trigger or live story links. Verify the Xray Test is linked to the story using the Jira `Tests` link (repair the link if missing).
-3. Move the story and Xray Test to the active sprint with `jira_move_issues_to_sprint` and re-fetch the sprint issue list to verify both are present. If the Xray Test cannot be assigned, block the carry-over flow; do not put that test assignment request in the PO/PM notification.
+2. Resolve `$test-managementTestKey` from the trigger or live story links. Verify the test-management Test is linked to the story using the issue-tracker `Tests` link (repair the link if missing).
+3. Move the story and test-management Test to the active sprint with `issue-tracker_move_issues_to_sprint` and re-fetch the sprint issue list to verify both are present. If the test-management Test cannot be assigned, block the carry-over flow; do not put that test assignment request in the PO/PM notification.
 4. Always create a **new** Test Execution for the new sprint, even when an open TE exists for the previous sprint:
-   - Use `New-XrayTestExecution` with `-StoryKey $trigger.storyKey`, `-TestKeys @($xrayTestKey)`, and a summary containing the new sprint name.
+   - Use `New-test-managementTestExecution` with `-StoryKey $trigger.storyKey`, `-TestKeys @($test-managementTestKey)`, and a summary containing the new sprint name.
    - Move the new TE to the active sprint and re-fetch the sprint issue list to verify it is present.
-   - Link the new TE to the story with `jira_create_issue_link` (use the project-supported test/execution link type; if unavailable, use `relates to` and record that fallback).
-5. Persist the new TE key, sprint slug, and Xray Test key in `scripts/monitor-state.json`.
-6. Post the TE creation and carry-over notification to the story, mentioning the PO/PM and including a direct clickable browse link to the TE, requesting only that the TE be added to the active sprint. Chain to `test_case_execution` only after the TE, story, and Xray Test are confirmed in the new sprint and the story/test relationship is verified.
+   - Link the new TE to the story with `issue-tracker_create_issue_link` (use the project-supported test/execution link type; if unavailable, use `relates to` and record that fallback).
+5. Persist the new TE key, sprint slug, and test-management Test key in `scripts/monitor-state.json`.
+6. Post the TE creation and carry-over notification to the story, mentioning the PO/PM and including a direct clickable browse link to the TE, requesting only that the TE be added to the active sprint. Chain to `test_case_execution` only after the TE, story, and test-management Test are confirmed in the new sprint and the story/test relationship is verified.
 
 If any move or link cannot be verified, stop with a blocker. Never silently continue using a previous-sprint TE.
 
@@ -328,20 +328,20 @@ If any move or link cannot be verified, stop with a blocker. Never silently cont
 
 Read the TC document (`$trigger.tcDocPath`) and the blocked step context from `scripts/monitor-state.json`.
 
-### 2A — Xray Test Comment Routing
+### 2A — test-management Test Comment Routing
 
-If `$trigger.sourceIssueType == "XRAY_TEST"`, treat the comment as test-level QA/reviewer feedback, not as a confirmed PO answer:
+If `$trigger.sourceIssueType == "test-management_TEST"`, treat the comment as test-level QA/reviewer feedback, not as a confirmed PO answer:
 
 1. Do not interpret the feedback, update test steps, or post a resolution.
-2. Invoke `test_case_review` in **Mode D — Comment Review** with `{storyKey}`, `{xrayTestKey}`, `{sourceIssueKey}`, `{resolutionIssueKey}`, `{commentId}`, `{commentText}`, and `{tcDocPath}`.
+2. Invoke `test_case_review` in **Mode D — Comment Review** with `{storyKey}`, `{test-managementTestKey}`, `{sourceIssueKey}`, `{resolutionIssueKey}`, `{commentId}`, `{commentText}`, and `{tcDocPath}`.
 3. Mark the trigger as processed only after the review agent has posted its verdict or evidence request to `$trigger.resolutionIssueKey`.
 
 For this route, skip STEPs 3–6. The review agent owns all analysis, preparation handoff, test-level response, and post-update validation. The parent story remains traceability only.
 
 Interpret the PO's response:
-- **If PO confirms the test expectation** (e.g., "yes, refreshes after logout should be blocked") → TC-12 is valid as-is. Unblock Xray Step 7. Mark pass/fail criteria confirmed.
-- **If PO clarifies a different interpretation** (e.g., "refreshes should still work") → update TC-12 expected result and Xray Step 7 accordingly.
-- **If PO is ambiguous or asks a follow-up question** → post a clarifying comment back to the story using `New-JiraCommentADF` with `$po` as `Mentionee`, and leave status as WAITING_PO_RESPONSE. If the follow-up involves an implementation detail, also `@mention $dev`.
+- **If PO confirms the test expectation** (e.g., "yes, refreshes after logout should be blocked") → TC-12 is valid as-is. Unblock test-management Step 7. Mark pass/fail criteria confirmed.
+- **If PO clarifies a different interpretation** (e.g., "refreshes should still work") → update TC-12 expected result and test-management Step 7 accordingly.
+- **If PO is ambiguous or asks a follow-up question** → post a clarifying comment back to the story using `New-issue-trackerCommentADF` with `$po` as `Mentionee`, and leave status as WAITING_PO_RESPONSE. If the follow-up involves an implementation detail, also `@mention $dev`.
 
 ---
 
@@ -356,22 +356,22 @@ Open `$trigger.tcDocPath` and update the affected test case section:
 
 ---
 
-## STEP 4 — Update Xray Step
+## STEP 4 — Update test-management Step
 
-Use the Xray GraphQL API to update the action/expected-result of the blocked step.
+Use the test-management GraphQL API to update the action/expected-result of the blocked step.
 
-> **Expected result content rule**: Write only the functional, verifiable outcome — what the tester observes in the application. Never include PO confirmation notes, option labels (e.g. "[OPTION B -- PO CONFIRMED date]"), decision rationale, or any internal QA meta-annotations. Those belong in Jira comments only.
+> **Expected result content rule**: Write only the functional, verifiable outcome — what the tester observes in the application. Never include PO confirmation notes, option labels (e.g. "[OPTION B -- PO CONFIRMED date]"), decision rationale, or any internal QA meta-annotations. Those belong in issue-tracker comments only.
 
 ```powershell
-. .\scripts\xray-api.ps1
-$token = Get-XrayCloudToken
+. .\scripts\test-management-api.ps1
+$token = Get-test-managementCloudToken
 
-# Update Xray Step 7 (id: 0238d135-84fe-4ea0-850f-1ddd35640e10) on STORY-0000
+# Update test-management Step 7 (id: 0238d135-84fe-4ea0-850f-1ddd35640e10) on STORY-0000
 $mutation = @{
     query = 'mutation { updateTestStep(issueId: "1400561", step: { id: "0238d135-84fe-4ea0-850f-1ddd35640e10", action: "<updated action>", result: "<confirmed expected result>" }) { id action result } }'
 } | ConvertTo-Json
 
-Invoke-WebRequest -Method POST -Uri "https://us.xray.cloud.getxray.app/api/v2/graphql" `
+Invoke-WebRequest -Method POST -Uri "https://us.test-management.cloud.gettest-management.app/api/v2/graphql" `
     -Headers @{ Authorization = "Bearer $token"; "Content-Type" = "application/json" } `
     -Body $mutation -UseBasicParsing | ConvertFrom-Json
 ```
@@ -380,9 +380,9 @@ Remove the `BLOCKED: PO confirmation required` text from the step action.
 
 ---
 
-## STEP 5 — Post Jira Comment
+## STEP 5 — Post issue-tracker Comment
 
-For an `XRAY_TEST` source, post the structured resolution comment to `$trigger.resolutionIssueKey` first. For a `STORY` source, post it to `$trigger.issueKey`. After a test-level resolution, add a short traceability summary to the parent story only when it differs from the resolution issue.
+For an `test-management_TEST` source, post the structured resolution comment to `$trigger.resolutionIssueKey` first. For a `STORY` source, post it to `$trigger.issueKey`. After a test-level resolution, add a short traceability summary to the parent story only when it differs from the resolution issue.
 
 ```
 [QA Monitor] Test Comment Processed — {date}
@@ -391,13 +391,13 @@ Comment from {poDisplayName}: "{summary of response}"
 
 Actions taken:
 - TC-STORY-0000-12 expected result: UPDATED / CONFIRMED
-- Xray Step 7 on STORY-0000: UNBLOCKED — BLOCKED notice removed
+- test-management Step 7 on STORY-0000: UNBLOCKED — BLOCKED notice removed
 - TC document updated: docs/TestCases/TC_STORY-7456.md
 
 Routing to: test_case_review (Mode C Post-Update Validation)
 ```
 
-For unresolved Xray-test feedback, replace the actions list with the unresolved concerns, required evidence, and owner. Do not state that the test is ready for execution.
+For unresolved test-management-test feedback, replace the actions list with the unresolved concerns, required evidence, and owner. Do not state that the test is ready for execution.
 
 ---
 
@@ -407,7 +407,7 @@ Immediately invoke the review agent to validate the update:
 
 ```
 runSubagent: test_case_review
-prompt: "Mode C Post-Comment Validation for {storyKey} / {xrayTestKey}. Test-level feedback has been resolved with [summary]. Please validate the updated TC document at {tcDocPath} and post the verdict to {resolutionIssueKey}."
+prompt: "Mode C Post-Comment Validation for {storyKey} / {test-managementTestKey}. Test-level feedback has been resolved with [summary]. Please validate the updated TC document at {tcDocPath} and post the verdict to {resolutionIssueKey}."
 ```
 
 ---
@@ -441,9 +441,9 @@ To run both monitors together:
 
 ## Error Handling
 
-- If Jira API fails → log warning, do not update state, retry on next poll cycle
+- If issue-tracker API fails → log warning, do not update state, retry on next poll cycle
 - If PO response is ambiguous → post clarifying question, set status back to `WAITING_PO_RESPONSE`
-- If TC document is missing → warn user, do not proceed to Xray update
+- If TC document is missing → warn user, do not proceed to test-management update
 
 
 ---
@@ -456,7 +456,7 @@ Run the handler script which executes all 5 steps automatically:
 
 ```powershell
 cd $repoRoot
-. .\scripts\xray-api.ps1
+. .\scripts\test-management-api.ps1
 .\scripts\handle-windows-update.ps1 -TriggerFile "$triggerFile"
 ```
 
@@ -464,27 +464,27 @@ The script performs:
 
 | Step | Action |
 |------|--------|
-| 1 | Links Xray Test **STORY-0000** to the story |
+| 1 | Links test-management Test **STORY-0000** to the story |
 | 2 | Creates branch `qualify/monthly-windows-update-<Month-YYYY>` from `master` |
 | 3 | Fetches cumulative KB article IDs for Windows 10 21H2 and Windows 11 24H2 from the Microsoft Update Catalog |
 | 4 | Updates `softwareManager.js`: `softwareVersions`, `softwareDependencies`, `kbArticles`, `softwareVersionsReleaseDates` |
 | 5 | Commits and pushes the branch |
-| 6 | Triggers Jenkins job with: `BRANCH=qualify/monthly-windows-update-<Month>-<YYYY>`, `SPEC=./Tests/Story tests/STORY-0000.spec.js`, `BASE_URL=https://app.example.com `OLS_NAME=scs-perfPhy-SRV.scs.ExampleOrg.com` |
+| 6 | Triggers automation-server job with: `BRANCH=qualify/monthly-windows-update-<Month>-<YYYY>`, `SPEC=./Tests/Story tests/STORY-0000.spec.js`, `BASE_URL=https://app.example.com `OLS_NAME=scs-perfPhy-SRV.scs.ExampleOrg.com` |
 
-**After the script completes**, post a Jira comment on `$trigger.issueKey`:
+**After the script completes**, post a issue-tracker comment on `$trigger.issueKey`:
 
 ```
 [QA Automation Agent] Windows update automation triggered for <issueKey>.
 
 Branch created: qualify/monthly-windows-update-<Month-YYYY>
-Xray Test linked: STORY-0000
+test-management Test linked: STORY-0000
 SoftwareManager updated with KB articles for win10 (<KB>) and win11 (<KB>)
-Jenkins job triggered with spec STORY-0000.spec.js on tst-51.
+automation-server job triggered with spec STORY-0000.spec.js on tst-51.
 
-Results will appear in the linked Test Execution once the Jenkins run completes.
+Results will appear in the linked Test Execution once the automation-server run completes.
 ```
 
-**If the script fails** (KB fetch fails, Jenkins unreachable, etc.):
+**If the script fails** (KB fetch fails, automation-server unreachable, etc.):
 - Post a comment explaining the failure with the manual run command
 - Set `windowsUpdateProcessed = null` in `monitor-state.json` so it retries next cycle
 
@@ -504,7 +504,7 @@ $env:OLS_NAME   = $trigger.params.OLS_NAME
 npx protractor test.conf.js --specs $trigger.params.SPEC
 ```
 
-Update results in Jira Test Execution when complete.
+Update results in issue-tracker Test Execution when complete.
 
 
 ---
@@ -516,18 +516,18 @@ Triggered when trigger.changeType == 'WINDOWS_UPDATE'.
 Run the handler script:
 `powershell
 cd $repoRoot
-. .\\scripts\\xray-api.ps1
+. .\\scripts\\test-management-api.ps1
 .\\scripts\\handle-windows-update.ps1 -TriggerFile $triggerFile
 ```n
 The script performs:
 
 | Step | Action |
 |------|--------|
-| 1 | Links Xray Test STORY-0000 to the story |
+| 1 | Links test-management Test STORY-0000 to the story |
 | 2 | Creates branch qualify/monthly-windows-update-Month-YYYY from master |
 | 3 | Fetches KB article IDs for Windows 10 21H2 and Windows 11 24H2 from Microsoft Update Catalog |
 | 4 | Updates softwareManager.js (softwareVersions, softwareDependencies, kbArticles, releaseDates) |
 | 5 | Commits and pushes the branch |
-| 6 | Triggers Jenkins job: BRANCH=qualify/..., SPEC=STORY-0000.spec.js, BASE_URL=https://app.example.com OLS_NAME=scs-perfPhy-SRV.scs.ExampleOrg.com |
+| 6 | Triggers automation-server job: BRANCH=qualify/..., SPEC=STORY-0000.spec.js, BASE_URL=https://app.example.com OLS_NAME=scs-perfPhy-SRV.scs.ExampleOrg.com |
 
-After script completes, post a Jira comment on the story with branch name, KB articles, and Jenkins run link.
+After script completes, post a issue-tracker comment on the story with branch name, KB articles, and automation-server run link.

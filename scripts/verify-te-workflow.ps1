@@ -64,7 +64,7 @@ $stories | ForEach-Object {
     if (Test-Path $path) {
         Write-Host "  [FOUND] $key -- $path"
     } else {
-        Write-Host "  [MISSING] $key -- fallback: Jira Test link query needed"
+        Write-Host "  [MISSING] $key -- fallback: issue-tracker Test link query needed"
     }
 }
 
@@ -95,10 +95,10 @@ if (-not $teKey) {
     Write-Host "  2. [SECTION 3] Auto-create TE would trigger:"
     Write-Host "       - Create TE: Sprint TE: sample-sprint -- STORY"
     Write-Host "       - Move TE to sprint ID 78391"
-    Write-Host "       - Post Jira comment at PO / PM with TE key"
+    Write-Host "       - Post issue-tracker comment at PO / PM with TE key"
     Write-Host "       - Post Teams: CID Scurm Team Chat + AC1 Daily Stand-up"
     Write-Host "  3. [SECTION 4] Bulk-add tests for stories:"
-    $stories | ForEach-Object { Write-Host "       - $($_.key) (if TC doc or Jira Test link found)" }
+    $stories | ForEach-Object { Write-Host "       - $($_.key) (if TC doc or issue-tracker Test link found)" }
     Write-Host "  4. [STEP 4.4] Transition new TE to indeterminate (In Progress/In Dev)"
 } else {
     $te    = $j.issues | Where-Object { $_.key -eq $teKey }
@@ -115,7 +115,7 @@ Write-Host ""
 Write-Host "============================================================"
 Write-Host " BUG FIX VERIFICATION"
 Write-Host "============================================================"
-Write-Host "  Fix 1 (JQL): Use jira_get_sprint_issues + local filter -- not jira_search JQL"
+Write-Host "  Fix 1 (JQL): Use issue-tracker_get_sprint_issues + local filter -- not issue-tracker_search JQL"
 Write-Host "  Fix 2 (Status): Check statusCategory.key != indeterminate -- not exact name In Dev"
 Write-Host ""
 Write-Host "  Evidence -- TE in this sprint:"

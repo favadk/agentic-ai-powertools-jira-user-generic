@@ -1,6 +1,6 @@
 # MCP Servers Installation Guide
 
-This guide covers the installation and configuration of MCP (Model Context Protocol) servers for Jira, Bitbucket, and Confluence integration with GitHub Copilot.
+This guide covers the installation and configuration of MCP (Model Context Protocol) servers for issue-tracker, source-control, and knowledge-base integration with GitHub Copilot.
 
 The repository already includes a ready-to-use sample configuration at `.vscode/mcp.json` and local MCP binaries under `.tools/`.
 
@@ -18,7 +18,7 @@ The default `mcp.json` included in this repository uses simulated URLs and dummy
 The checked-in `.vscode/mcp.json` uses:
 
 - Dummy domains (`*.exampleqa.local`)
-- Non-functional placeholder secrets (for example `DUMMY_JIRA_TOKEN_FOR_LOCAL_TESTING_ONLY`)
+- Non-functional placeholder secrets (for example `DUMMY_issue-tracker_TOKEN_FOR_LOCAL_TESTING_ONLY`)
 
 This keeps the branch fully portable for STLC framework demonstrations and prevents accidental use of real organization credentials.
 
@@ -30,36 +30,36 @@ If you need a user-specific setup, copy it to your local workspace and replace p
 
 ### Configuration Parameters
 
-- **JIRA_URL**: Your Jira instance URL (dummy by default)
-- **JIRA_PERSONAL_TOKEN**: Placeholder value for local simulation
-- **JIRA_SSL_VERIFY**: Set to `"false"` if using self-signed certificates
+- **issue-tracker_URL**: Your issue-tracker instance URL (dummy by default)
+- **issue-tracker_PERSONAL_TOKEN**: Placeholder value for local simulation
+- **issue-tracker_SSL_VERIFY**: Set to `"false"` if using self-signed certificates
 
-- **BITBUCKET_URL**: Your Bitbucket instance URL (dummy by default)
-- **BITBUCKET_TOKEN**: Placeholder value for local simulation
-- **BITBUCKET_DEFAULT_PROJECT**: Default project key (optional)
+- **source-control_URL**: Your source-control instance URL (dummy by default)
+- **source-control_TOKEN**: Placeholder value for local simulation
+- **source-control_DEFAULT_PROJECT**: Default project key (optional)
 
-- **CONFLUENCE_URL**: Your Confluence instance URL (dummy by default)
-- **CONFLUENCE_PERSONAL_TOKEN**: Placeholder value for local simulation
-- **CONFLUENCE_SSL_VERIFY**: Set to `"false"` if using self-signed certificates
+- **knowledge-base_URL**: Your knowledge-base instance URL (dummy by default)
+- **knowledge-base_PERSONAL_TOKEN**: Placeholder value for local simulation
+- **knowledge-base_SSL_VERIFY**: Set to `"false"` if using self-signed certificates
 
 - **lc-asssisthub.url**: Optional HTTPS MCP endpoint placeholder used for local/demo routing
 - **lc-asssisthub.type**: Set to `"https"`
 
 ## Agent Modes (VS Code / GitHub Copilot)
 
-This project integrates with GitHub Copilot and supports different "agent modes" you can select in the VS Code Copilot UI or the GitHub Copilot chat window. Agent modes allow switching between pre-configured behaviors or specialized assistants (for example, a Jira agent, a Bitbucket agent, or a Confluence agent). They are conceptually similar to chat modes and let you tailor Copilot to a particular system context.
+This project integrates with GitHub Copilot and supports different "agent modes" you can select in the VS Code Copilot UI or the GitHub Copilot chat window. Agent modes allow switching between pre-configured behaviors or specialized assistants (for example, a issue-tracker agent, a source-control agent, or a knowledge-base agent). They are conceptually similar to chat modes and let you tailor Copilot to a particular system context.
 
 How to use agent modes:
 
 - Open the GitHub Copilot chat panel in VS Code (Copilot Chat view) or the in-editor Copilot chat widget.
 - In the chat UI, look for the mode/agent selector near the top of the chat input (it may be a dropdown or a label). Click it to see available agents.
-- Select an agent like "Jira", "Bitbucket", or "Confluence" to scope the assistant to that system. The selected agent will route queries to the corresponding MCP server defined in `.vscode/mcp.json`.
+- Select an agent like "issue-tracker", "source-control", or "knowledge-base" to scope the assistant to that system. The selected agent will route queries to the corresponding MCP server defined in `.vscode/mcp.json`.
 
 Tips for prompts and examples:
 
-- To fetch issue details: `Get details for Jira issue PROJ-12345`
+- To fetch issue details: `Get details for issue-tracker issue PROJ-12345`
 - To summarize a pull request: `Summarize PR #123 (include files changed and risk)`
-- To find documentation: `Search Confluence for MCP server setup guide`
+- To find documentation: `Search knowledge-base for MCP server setup guide`
 
 Note: If your VS Code installation doesn't show agent options, ensure you have the latest GitHub Copilot extension and that `mcp.json` is correctly configured. Administrators can add custom agents by extending the workspace MCP configuration.
 
@@ -67,16 +67,16 @@ Note: If your VS Code installation doesn't show agent options, ensure you have t
 
 Once configured, the MCP servers will be available to Copilot via the agents you selected. You can use them to:
 
-- Query Jira issues and create RCA documents
-- Access Bitbucket repositories and pull requests
-- Search and retrieve Confluence documentation
+- Query issue-tracker issues and create RCA documents
+- Access source-control repositories and pull requests
+- Search and retrieve knowledge-base documentation
 
 ### Example Copilot Prompts
 
 ```text
-Get details for Jira issue PROJ-12345
+Get details for issue-tracker issue PROJ-12345
 Show me the diff for PR #1303 in the SID project
-Search Confluence for documentation about MCP servers
+Search knowledge-base for documentation about MCP servers
 Create an RCA for issue PROJ-12345
 ```
 
@@ -100,8 +100,8 @@ Create an RCA for issue PROJ-12345
 For local development, run the MCP server binary directly and point the Copilot configuration to the local binary path. Example (PowerShell):
 
 ```powershell
-# run the Jira server in the foreground for local development
-& C:\path\to\jira-mcp.exe --dev
+# run the issue-tracker server in the foreground for local development
+& C:\path\to\issue-tracker-mcp.exe --dev
 ```
 
 Refer to each server's `--help` output for supported flags.

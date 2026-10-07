@@ -15,7 +15,7 @@ Apply this gate before preparing, reviewing, or executing a story when its summa
 
 ## Required Test Steps
 
-For a triggered story, the first two Xray and local TC steps are always:
+For a triggered story, the first two test-management and local TC steps are always:
 
 | Order | Action | Command | Expected Result |
 | --- | --- | --- | --- |
@@ -27,6 +27,6 @@ Run both commands from `C:\automation\06102026\UI_Protractor_Tests` with `BASE_U
 ## Gate Behavior
 
 - Record `BASE_URL`, command, run time, and pass/fail result in the TC or execution evidence.
-- If either suite fails, stop the story-specific test steps, record the failure, and raise or link a Jira **Defect** when the failure is reproducible.
+- If either suite fails, stop the story-specific test steps, record the failure, and raise or link a issue-tracker **Defect** when the failure is reproducible.
 - Reviewers must reject a triggered TC if the first two steps are not the smoke and smoke-install prerequisites.
 - Do not apply this gate to stories with no trigger keyword.

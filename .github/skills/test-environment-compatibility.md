@@ -1,5 +1,5 @@
 ---
-description: Environment and compatibility matrix — determines which OS, browser, database, device, and ExampleOrg software product version environments a story requires. Covers multi-environment coverage scoping, per-environment Xray executions, evidence requirements, and defect tagging. Includes a Product Version Traceability Matrix for OpenLab Server, OpenLab CDS, instrument drivers, ExampleOrg add-ons, and third-party add-ons — supporting single or multi-environment software version testing driven by a user-defined configuration table.
+description: Environment and compatibility matrix — determines which OS, browser, database, device, and ExampleOrg software product version environments a story requires. Covers multi-environment coverage scoping, per-environment test-management executions, evidence requirements, and defect tagging. Includes a Product Version Traceability Matrix for OpenLab Server, OpenLab CDS, instrument drivers, ExampleOrg add-ons, and third-party add-ons — supporting single or multi-environment software version testing driven by a user-defined configuration table.
 ---
 
 # Test Environment Compatibility
@@ -39,7 +39,7 @@ Look for `docs/_TEMPLATES/EnvironmentMatrixTemplate.md` in the workspace. If it 
 
 ### Priority 2 — Story labels / components
 
-Check `fields.labels[]` and `fields.components[]` from the `jira_get_issue` response. Map known label patterns:
+Check `fields.labels[]` and `fields.components[]` from the `issue-tracker_get_issue` response. Map known label patterns:
 
 | Label pattern | Meaning |
 |--------------|---------|
@@ -92,7 +92,7 @@ Each row defines a **named software environment configuration** (Env ID) — a s
 
 | Column | Required | Description | Example values |
 |--------|----------|-------------|----------------|
-| **Env ID** | Yes | Short unique identifier — used as label on Xray executions and defects | `SWE-1`, `QA-v27`, `PROD-Baseline` |
+| **Env ID** | Yes | Short unique identifier — used as label on test-management executions and defects | `SWE-1`, `QA-v27`, `PROD-Baseline` |
 | **OpenLab Server** | If applicable | Full version + service pack / service release | `v2.7 SP2`, `v2.6 SR2`, `N/A` |
 | **OpenLab CDS** | If applicable | Full version + SP, or product name variant | `v2.7 SP2`, `ChemStation C.01.10`, `N/A` |
 | **Instr. Driver** | If applicable | ExampleOrg instrument driver version | `v7.4.3`, `DDK v5.1`, `N/A` |
@@ -107,9 +107,9 @@ Each row defines a **named software environment configuration** (Env ID) — a s
 
 | Mode | How to configure | Agent behaviour |
 |------|-----------------|-----------------|
-| **Single environment** | One row in the matrix (Tier = P1) | Agents create one Xray execution regardless of story coverage tier |
-| **Multiple environments** | Multiple rows with different Env IDs and Tier values | Agents create one Xray execution per row that matches the story's coverage tier |
-| **Story-level override** | Add Jira label `sw-env:SWE-1,SWE-2` to the story | Only the listed Env IDs are tested, ignoring tier rules |
+| **Single environment** | One row in the matrix (Tier = P1) | Agents create one test-management execution regardless of story coverage tier |
+| **Multiple environments** | Multiple rows with different Env IDs and Tier values | Agents create one test-management execution per row that matches the story's coverage tier |
+| **Story-level override** | Add issue-tracker label `sw-env:SWE-1,SWE-2` to the story | Only the listed Env IDs are tested, ignoring tier rules |
 
 ### Coverage tier rules for software environments
 
@@ -129,9 +129,9 @@ Each row defines a **named software environment configuration** (Env ID) — a s
 5. For each applicable Env ID, add a version-specific expected result sub-row where outcomes differ (see Section 4.3)
 
 **`test_case_execution`**
-1. Create one Xray Test Execution per applicable Env ID
+1. Create one test-management Test Execution per applicable Env ID
 2. Name: `TE {KEY}: {Env ID} — OL CDS {version}` (see Section 5.4)
-3. Set the Xray `Environment` field to the Env ID string (e.g., `SWE-1`)
+3. Set the test-management `Environment` field to the Env ID string (e.g., `SWE-1`)
 4. Capture an About dialog screenshot as the first evidence item of each execution run (see Section 6)
 
 **`test_case_review`**
@@ -216,21 +216,21 @@ Expected Results:
 
 ---
 
-## 5. Xray Execution Strategy — Running Tests per Environment
+## 5. test-management Execution Strategy — Running Tests per Environment
 
-### 5.1 Separate Xray Test Execution per environment (preferred)
+### 5.1 Separate test-management Test Execution per environment (preferred)
 
-Create **one Xray Test Execution per environment combination** that must be tested:
+Create **one test-management Test Execution per environment combination** that must be tested:
 
 ```powershell
 # Example: P2 coverage with Chrome+Windows and Firefox+Windows
-New-XrayTestExecution `
+New-test-managementTestExecution `
     -StoryKey   "PROJ-1234" `
     -TestKeys   @("PROJ-1240") `
     -Summary    "TE PROJ-1234: Chrome / Windows 11" `
     -Environment "SIT-Chrome-Win11"
 
-New-XrayTestExecution `
+New-test-managementTestExecution `
     -StoryKey   "PROJ-1234" `
     -TestKeys   @("PROJ-1240") `
     -Summary    "TE PROJ-1234: Firefox / Windows 11" `
@@ -255,7 +255,7 @@ When sprint time is limited and separate executions are not practical, use one e
 ### 5.3 Skipped environments — how to record
 
 For any matrix environment that was NOT tested in this sprint:
-1. Create the Xray Test Execution
+1. Create the test-management Test Execution
 2. Set its overall status to `TODO` (not started)
 3. Add a comment: `"Deferred — not tested in sprint {N}. Schedule for regression."`
 4. Note it in the local TE document under "Deferred Environments"
@@ -287,7 +287,7 @@ For DB-specific tests:
 - OR show the connection string / environment banner that identifies the DB
 
 ### Software version evidence
-For software version compatibility tests, capture a version evidence screenshot **before any functional steps** in each Xray execution:
+For software version compatibility tests, capture a version evidence screenshot **before any functional steps** in each test-management execution:
 
 | Component | Evidence method | Screenshot naming |
 |-----------|----------------|-------------------|
@@ -296,14 +296,14 @@ For software version compatibility tests, capture a version evidence screenshot 
 | ExampleOrg Add-ons | OpenLab Administration > Add-ons list — name + installed version visible | `step0-addons-{env-id}.png` |
 | 3rd-Party Add-on | Add-on's own About / Version dialog | `step0-thirdparty-{env-id}.png` |
 
-**Rule**: The version evidence screenshot is treated as **Step 0** of every software-version Xray execution. It is the primary traceability link between the test result and the exact software configuration under test. If Step 0 evidence is absent, the execution evidence is incomplete.
+**Rule**: The version evidence screenshot is treated as **Step 0** of every software-version test-management execution. It is the primary traceability link between the test result and the exact software configuration under test. If Step 0 evidence is absent, the execution evidence is incomplete.
 
 ### Combined environment label
 Where practical, add a visible text overlay or caption to the screenshot naming:
 ```
 screenshot-file-name: step3-chrome-126-windows11.png
 ```
-File names are captured in Xray and serve as additional environment traceability.
+File names are captured in test-management and serve as additional environment traceability.
 
 ---
 
@@ -385,8 +385,8 @@ Story received
     │               │
     │               ├─ Add Environment Coverage section to TC (Section 4.1)
     │               ├─ Annotate env-specific steps (Section 4.2 / 4.3)
-    │               ├─ Create separate Xray executions per env (Section 5.1)
-    │               ├─ If software matrix defined: create Xray execs per Env ID (Section 2B / 5.1)
+    │               ├─ Create separate test-management executions per env (Section 5.1)
+    │               ├─ If software matrix defined: create test-management execs per Env ID (Section 2B / 5.1)
     │               ├─ Enforce env evidence in screenshots (Section 6)
     │               └─ Tag defects with env labels (Section 7)
 ```

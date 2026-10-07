@@ -1,7 +1,7 @@
 #Requires -Version 5.1
 <#!
 .SYNOPSIS
-    Polls Jira for story/defect description and status changes and writes trigger files.
+    Polls issue-tracker for story/defect description and status changes and writes trigger files.
 
 .DESCRIPTION
     - Reads scripts/monitor-state.json
@@ -13,7 +13,7 @@
     Path to monitor-state.json (default: scripts/monitor-state.json)
 
 .PARAMETER PostAck
-    If set, posts an informational Jira comment when description change is detected.
+    If set, posts an informational issue-tracker comment when description change is detected.
 #>
 
 [CmdletBinding()]
@@ -30,8 +30,8 @@ if (-not $StateFile) { $StateFile = Join-Path $PSScriptRoot "monitor-state.json"
 $triggersDir = Join-Path $PSScriptRoot "triggers"
 if (-not (Test-Path $triggersDir)) { New-Item -ItemType Directory -Path $triggersDir | Out-Null }
 
-. (Join-Path $PSScriptRoot "xray-api.ps1") 2>$null
-$creds = Get-XrayCreds
+. (Join-Path $PSScriptRoot "test-management-api.ps1") 2>$null
+$creds = Get-test-managementCreds
 
 function Get-AdfPlainText {
     param([object]$Node)
@@ -121,7 +121,7 @@ if ($sw -and $sw.enabled) {
                     $previousSprintSlug = [string]$exists.sprintSlug
                     $previousStatus = [string]$exists.lastSeenStatus
                     if ($previousSprintSlug -and $previousSprintSlug -ne $sprintSlug) {
-                        $xrayKey = if ($exists.xrayTestKey) { [string]$exists.xrayTestKey } else { "" }
+                        $test-managementKey = if ($exists.test-managementTestKey) { [string]$exists.test-managementTestKey } else { "" }
                         $exists | Add-Member -MemberType NoteProperty -Name "previousSprintSlug" -Value $previousSprintSlug -Force
                         $exists | Add-Member -MemberType NoteProperty -Name "sprintSlug" -Value $sprintSlug -Force
                         $exists | Add-Member -MemberType NoteProperty -Name "tcDocPath" -Value "docs/TestCases/$sprintSlug/TC_$($si.key).md" -Force
@@ -136,7 +136,7 @@ if ($sw -and $sw.enabled) {
                             issueType         = $si.fields.issuetype.name
                             previousSprintSlug = $previousSprintSlug
                             sprintSlug        = $sprintSlug
-                            xrayTestKey       = $xrayKey
+                            test-managementTestKey       = $test-managementKey
                             tcDocPath         = Join-Path $repoRoot "docs/TestCases/$sprintSlug/TC_$($si.key).md"
                             changeType        = "SPRINT_CHANGE"
                             oldStatus         = $previousStatus
@@ -155,7 +155,7 @@ if ($sw -and $sw.enabled) {
 
                 $newEntry = [PSCustomObject]@{
                     issueKey        = $si.key
-                    xrayTestKey     = $null
+                    test-managementTestKey     = $null
                     sprintSlug      = $sprintSlug
                     tcDocPath       = "docs/TestCases/$sprintSlug/TC_$($si.key).md"
                     tcrDocPath      = "docs/TestCaseReview/TCR_$($si.key).md"
@@ -179,7 +179,7 @@ if ($sw -and $sw.enabled) {
                         storyKey    = $si.key
                         issueType   = $si.fields.issuetype.name
                         sprintSlug  = $sprintSlug
-                        xrayTestKey = ""
+                        test-managementTestKey = ""
                         tcDocPath   = Join-Path $repoRoot "docs/TestCases/$sprintSlug/TC_$($si.key).md"
                         changeType  = "STATUS_CHANGE"
                         oldStatus   = $null
@@ -230,9 +230,9 @@ if ($currentSprintIssueKeys.Count -gt 0) {
                 } elseif ($td.changeType -eq "CREATE_TEST_CASE" -and $td.issueKey) {
                     $stateIssue = $state.issues | Where-Object { $_.issueKey -eq [string]$td.issueKey } | Select-Object -First 1
                     if ($stateIssue) {
-                        $hasXray = $false
-                        if ($stateIssue.PSObject.Properties.Name -contains "xrayTestKey") {
-                            $hasXray = -not [string]::IsNullOrWhiteSpace([string]$stateIssue.xrayTestKey)
+                        $hastest-management = $false
+                        if ($stateIssue.PSObject.Properties.Name -contains "test-managementTestKey") {
+                            $hastest-management = -not [string]::IsNullOrWhiteSpace([string]$stateIssue.test-managementTestKey)
                         }
 
                         $hasTcDoc = $false
@@ -240,7 +240,7 @@ if ($currentSprintIssueKeys.Count -gt 0) {
                             $hasTcDoc = Test-Path (Join-Path $repoRoot [string]$stateIssue.tcDocPath)
                         }
 
-                        if ($hasXray -or $hasTcDoc) {
+                        if ($hastest-management -or $hasTcDoc) {
                             $removeFile = $true
                         }
                     }
@@ -270,8 +270,8 @@ foreach ($issue in $watchList) {
     }
 
     $f = $issResp.fields
-    $jiraUpdated = $f.updated
-    $jiraStatus = $f.status.name
+    $issue-trackerUpdated = $f.updated
+    $issue-trackerStatus = $f.status.name
 
     # Track the execution subtask independently of the parent story updated timestamp.
     # A subtask transition must be able to fire execution even when the story itself is unchanged.
@@ -285,7 +285,7 @@ foreach ($issue in $watchList) {
         $enteredDev = $subtaskStatus -match '(?i)^in\s+dev$|^dev$|^in\s+progress$'
         $wasInDev = $previousSubtaskStatus -match '(?i)^in\s+dev$|^dev$|^in\s+progress$'
         if ($enteredDev -and (-not $wasInDev)) {
-            $xrayKey = if ($issue.xrayTestKey) { [string]$issue.xrayTestKey } else { "" }
+            $test-managementKey = if ($issue.test-managementTestKey) { [string]$issue.test-managementTestKey } else { "" }
             $teKey = if ($issue.teKey) { [string]$issue.teKey } else { "" }
             $handoffTrigger = Join-Path $triggersDir "$($issue.issueKey)-execute-test-case.json"
             if (-not (Test-Path $handoffTrigger)) {
@@ -295,7 +295,7 @@ foreach ($issue in $watchList) {
                     issueType      = "Story"
                     subtaskKey     = $executionSubtask.key
                     subtaskStatus  = $subtaskStatus
-                    xrayTestKey    = $xrayKey
+                    test-managementTestKey    = $test-managementKey
                     teKey          = $teKey
                     tcDocPath      = if ($issue.tcDocPath) { Join-Path $repoRoot $issue.tcDocPath } else { "" }
                     changeType     = "EXECUTE_TEST_CASE"
@@ -308,8 +308,8 @@ foreach ($issue in $watchList) {
         }
     }
 
-    if ($jiraStatus -in $terminalStatuses) {
-        Write-Host "  Skipping terminal status story: $jiraStatus"
+    if ($issue-trackerStatus -in $terminalStatuses) {
+        Write-Host "  Skipping terminal status story: $issue-trackerStatus"
 
         $terminalTriggers = Get-ChildItem $triggersDir -Filter "$($issue.issueKey)-*.json" -ErrorAction SilentlyContinue
         foreach ($tt in $terminalTriggers) {
@@ -317,38 +317,38 @@ foreach ($issue in $watchList) {
         }
 
         $issue | Add-Member -MemberType NoteProperty -Name "status" -Value "RESOLVED" -Force
-        $issue | Add-Member -MemberType NoteProperty -Name "lastSeenStatus" -Value $jiraStatus -Force
-        $issue | Add-Member -MemberType NoteProperty -Name "lastSeenUpdated" -Value $jiraUpdated -Force
+        $issue | Add-Member -MemberType NoteProperty -Name "lastSeenStatus" -Value $issue-trackerStatus -Force
+        $issue | Add-Member -MemberType NoteProperty -Name "lastSeenUpdated" -Value $issue-trackerUpdated -Force
         $anyUpdates = $true
         continue
     }
 
-    $jiraDescText = if ($f.description) { Get-AdfPlainText -Node $f.description } else { "" }
-    $newHash = Get-DescriptionHash -Text $jiraDescText
+    $issue-trackerDescText = if ($f.description) { Get-AdfPlainText -Node $f.description } else { "" }
+    $newHash = Get-DescriptionHash -Text $issue-trackerDescText
 
     if (-not $issue.lastSeenUpdated) {
         Write-Host "  First run - seeding baseline"
         $issue | Add-Member -MemberType NoteProperty -Name "descriptionHash" -Value $newHash -Force
-        $issue | Add-Member -MemberType NoteProperty -Name "lastSeenUpdated" -Value $jiraUpdated -Force
+        $issue | Add-Member -MemberType NoteProperty -Name "lastSeenUpdated" -Value $issue-trackerUpdated -Force
         if (-not $issue.lastSeenStatus) {
-            $issue | Add-Member -MemberType NoteProperty -Name "lastSeenStatus" -Value $jiraStatus -Force
+            $issue | Add-Member -MemberType NoteProperty -Name "lastSeenStatus" -Value $issue-trackerStatus -Force
         }
         $anyUpdates = $true
         continue
     }
 
-    $wasUpdated = [datetime]$jiraUpdated -gt [datetime]$issue.lastSeenUpdated
+    $wasUpdated = [datetime]$issue-trackerUpdated -gt [datetime]$issue.lastSeenUpdated
     if (-not $wasUpdated) {
         Write-Host "  No changes since $($issue.lastSeenUpdated)"
         continue
     }
 
-    Write-Host "  Updated at $jiraUpdated (was $($issue.lastSeenUpdated))"
+    Write-Host "  Updated at $issue-trackerUpdated (was $($issue.lastSeenUpdated))"
 
     if ($newHash -ne $issue.descriptionHash) {
         Write-Host "  Description change detected"
 
-        $xrayKey = if ($issue.xrayTestKey) { $issue.xrayTestKey } else { "" }
+        $test-managementKey = if ($issue.test-managementTestKey) { $issue.test-managementTestKey } else { "" }
         $tcDoc = if ($issue.tcDocPath) { Join-Path $repoRoot $issue.tcDocPath } else { "" }
         $tcrDoc = if ($issue.tcrDocPath) { Join-Path $repoRoot $issue.tcrDocPath } else { "" }
 
@@ -356,12 +356,12 @@ foreach ($issue in $watchList) {
         @{
             issueKey       = $issue.issueKey
             storyKey       = $issue.issueKey
-            xrayTestKey    = $xrayKey
+            test-managementTestKey    = $test-managementKey
             tcDocPath      = $tcDoc
             tcrDocPath     = $tcrDoc
             changeType     = "DESCRIPTION_CHANGE"
-            newDescription = $jiraDescText
-            changedAt      = $jiraUpdated
+            newDescription = $issue-trackerDescText
+            changedAt      = $issue-trackerUpdated
             detectedAt     = $now
         } | ConvertTo-Json -Depth 5 | Set-Content $triggerFile
 
@@ -374,7 +374,7 @@ foreach ($issue in $watchList) {
                         @{
                             type = "paragraph"
                             content = @(
-                                @{ type = "text"; text = "[QA Monitor] Story description change detected at $jiraUpdated. story_monitor should process this update." }
+                                @{ type = "text"; text = "[QA Monitor] Story description change detected at $issue-trackerUpdated. story_monitor should process this update." }
                             )
                         }
                     )
@@ -392,10 +392,10 @@ foreach ($issue in $watchList) {
         $anyUpdates = $true
     }
 
-    if ($jiraStatus -ne $issue.lastSeenStatus -and $null -ne $issue.lastSeenStatus) {
-        Write-Host "  Status change detected: $($issue.lastSeenStatus) -> $jiraStatus"
+    if ($issue-trackerStatus -ne $issue.lastSeenStatus -and $null -ne $issue.lastSeenStatus) {
+        Write-Host "  Status change detected: $($issue.lastSeenStatus) -> $issue-trackerStatus"
 
-        $xrayKey = if ($issue.xrayTestKey) { $issue.xrayTestKey } else { "" }
+        $test-managementKey = if ($issue.test-managementTestKey) { $issue.test-managementTestKey } else { "" }
         $tcDoc = if ($issue.tcDocPath) { Join-Path $repoRoot $issue.tcDocPath } else { "" }
         $sprintSlug = if ($issue.sprintSlug) { $issue.sprintSlug } else { "" }
 
@@ -405,21 +405,21 @@ foreach ($issue in $watchList) {
             storyKey    = $issue.issueKey
             issueType   = $f.issuetype.name
             sprintSlug  = $sprintSlug
-            xrayTestKey = $xrayKey
+            test-managementTestKey = $test-managementKey
             tcDocPath   = $tcDoc
             changeType  = "STATUS_CHANGE"
             oldStatus   = $issue.lastSeenStatus
-            newStatus   = $jiraStatus
-            changedAt   = $jiraUpdated
+            newStatus   = $issue-trackerStatus
+            changedAt   = $issue-trackerUpdated
             detectedAt  = $now
         } | ConvertTo-Json -Depth 5 | Set-Content $statusTrigger
 
-        $issue | Add-Member -MemberType NoteProperty -Name "lastSeenStatus" -Value $jiraStatus -Force
+        $issue | Add-Member -MemberType NoteProperty -Name "lastSeenStatus" -Value $issue-trackerStatus -Force
         $anyUpdates = $true
     }
 
     if ($f.issuelinks) {
-        $xrayKey = if ($issue.xrayTestKey) { $issue.xrayTestKey } else { "" }
+        $test-managementKey = if ($issue.test-managementTestKey) { $issue.test-managementTestKey } else { "" }
 
         foreach ($link in $f.issuelinks) {
             $linked = $null
@@ -441,7 +441,7 @@ foreach ($issue in $watchList) {
 
             $newDefect = [PSCustomObject]@{
                 issueKey        = $linkedKey
-                xrayTestKey     = $xrayKey
+                test-managementTestKey     = $test-managementKey
                 tcDocPath       = if ($issue.tcDocPath) { $issue.tcDocPath } else { "" }
                 tcrDocPath      = if ($issue.tcrDocPath) { $issue.tcrDocPath } else { "" }
                 descriptionHash = $null
@@ -460,7 +460,7 @@ foreach ($issue in $watchList) {
         }
     }
 
-    $issue | Add-Member -MemberType NoteProperty -Name "lastSeenUpdated" -Value $jiraUpdated -Force
+    $issue | Add-Member -MemberType NoteProperty -Name "lastSeenUpdated" -Value $issue-trackerUpdated -Force
 }
 
 if ($anyUpdates) {

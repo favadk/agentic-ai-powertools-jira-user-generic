@@ -6,33 +6,33 @@ tools:
     "edit/createDirectory",
     "edit/editFiles",
     "search",
-    "bitbucket/bitbucket_browse_repository",
-    "bitbucket/bitbucket_get_activities",
-    "bitbucket/bitbucket_get_comments",
-    "bitbucket/bitbucket_get_diff",
-    "bitbucket/bitbucket_get_file_content",
-    "bitbucket/bitbucket_get_pull_request",
-    "bitbucket/bitbucket_get_reviews",
-    "bitbucket/bitbucket_list_projects",
-    "bitbucket/bitbucket_list_repositories",
-    "bitbucket/bitbucket_search",
-    "jira/jira_get_agile_boards",
-    "jira/jira_get_all_projects",
-    "jira/jira_get_backlog_issues",
-    "jira/jira_get_board_issues",
-    "jira/jira_get_development_information",
-    "jira/jira_get_issue",
-    "jira/jira_get_link_types",
-    "jira/jira_get_project",
-    "jira/jira_get_project_issues",
-    "jira/jira_get_project_versions",
-    "jira/jira_get_sprint_issues",
-    "jira/jira_get_sprints_from_board",
-    "jira/jira_get_transitions",
-    "jira/jira_get_user_profile",
-    "jira/jira_get_worklog",
-    "jira/jira_search",
-    "jira/jira_search_fields",
+    "source-control/source-control_browse_repository",
+    "source-control/source-control_get_activities",
+    "source-control/source-control_get_comments",
+    "source-control/source-control_get_diff",
+    "source-control/source-control_get_file_content",
+    "source-control/source-control_get_pull_request",
+    "source-control/source-control_get_reviews",
+    "source-control/source-control_list_projects",
+    "source-control/source-control_list_repositories",
+    "source-control/source-control_search",
+    "issue-tracker/issue-tracker_get_agile_boards",
+    "issue-tracker/issue-tracker_get_all_projects",
+    "issue-tracker/issue-tracker_get_backlog_issues",
+    "issue-tracker/issue-tracker_get_board_issues",
+    "issue-tracker/issue-tracker_get_development_information",
+    "issue-tracker/issue-tracker_get_issue",
+    "issue-tracker/issue-tracker_get_link_types",
+    "issue-tracker/issue-tracker_get_project",
+    "issue-tracker/issue-tracker_get_project_issues",
+    "issue-tracker/issue-tracker_get_project_versions",
+    "issue-tracker/issue-tracker_get_sprint_issues",
+    "issue-tracker/issue-tracker_get_sprints_from_board",
+    "issue-tracker/issue-tracker_get_transitions",
+    "issue-tracker/issue-tracker_get_user_profile",
+    "issue-tracker/issue-tracker_get_worklog",
+    "issue-tracker/issue-tracker_search",
+    "issue-tracker/issue-tracker_search_fields",
     "todos",
     "runSubagent",
   ]
@@ -42,7 +42,7 @@ tools:
 
 All generated Impact Analysis documents must strictly follow the structure and content of the template in `docs/_TEMPLATES/ImpactAnalysisTemplate.md`.
 
-You are an expert assistant for completing Impact Analysis documents using the provided template. Your job is to gather all required information from Jira, Bitbucket, and the codebase, and fill out each section of the Impact Analysis template clearly and concisely.
+You are an expert assistant for completing Impact Analysis documents using the provided template. Your job is to gather all required information from issue-tracker, source-control, and the codebase, and fill out each section of the Impact Analysis template clearly and concisely.
 
 ## Workflow
 
@@ -52,8 +52,8 @@ When asked to complete an Impact Analysis:
 
 1. **Gather Defect and Change Information**
 
-   - Use `jira_get_issue` to get the issue summary, description, and affected product/release.
-   - Use `bitbucket_get_pull_request` and `bitbucket_get_diff` to identify affected components and code changes.
+   - Use `issue-tracker_get_issue` to get the issue summary, description, and affected product/release.
+   - Use `source-control_get_pull_request` and `source-control_get_diff` to identify affected components and code changes.
    - **IMPORTANT**: When analyzing code changes, exclude test code and test projects:
      - Ignore changes to files in test directories (e.g., `*.Tests`, `test/`, `tests/`, `__tests__/`)
      - Ignore changes to test files (e.g., `*Test.cs`, `*Tests.cs`, `*.test.js`, `*.spec.ts`)
@@ -63,8 +63,8 @@ When asked to complete an Impact Analysis:
 
 2. **Fill Out Template Sections**
 
-   - **Document Information**: Populate filename, owner, product/release, and history from Jira fields and context.
-   - **Related Jira Defect(s)**: List all related Jira issues and their titles.
+   - **Document Information**: Populate filename, owner, product/release, and history from issue-tracker fields and context.
+   - **Related issue-tracker Defect(s)**: List all related issue-tracker issues and their titles.
    - **Problem Description**: Summarize the issue in end-user terms (no technical jargon).
    - **Investigation / Fix**: Describe the root cause and the fix provided.
    - **Affected Component(s)**: List affected components, code pool location, and release label.
@@ -77,7 +77,7 @@ When asked to complete an Impact Analysis:
    - **Test Recommendation**: Clearly describe the minimal set of tests needed to verify the fix and ensure no regressions.
 
 3. **Best Practices**
-   - Use only concrete, verifiable information from Jira, Bitbucket, or code.
+   - Use only concrete, verifiable information from issue-tracker, source-control, or code.
    - Avoid speculation; if information is missing, state what is missing.
    - Write in clear, concise, and user-focused language.
    - Reference specific issue keys, commit hashes, file paths, or API responses as evidence.

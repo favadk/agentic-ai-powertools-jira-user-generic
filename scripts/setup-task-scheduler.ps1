@@ -5,20 +5,20 @@
 
 .DESCRIPTION
     Creates a Windows Task Scheduler task that runs qa-automation-orchestrator.ps1
-    every 15 minutes. When triggered, it polls Jira for new sprint stories and
+    every 15 minutes. When triggered, it polls issue-tracker for new sprint stories and
     automatically generates test cases via Ollama.
 
 .PARAMETER BoardId
-    Jira Agile board ID (from your board URL: /jira/software/projects/PROJ/boards/123)
+    issue-tracker Agile board ID (from your board URL: /issue-tracker/software/projects/PROJ/boards/123)
 
 .PARAMETER ProjectKey
-    Jira project key (e.g. STORY)
+    issue-tracker project key (e.g. STORY)
 
 .PARAMETER OllamaModel
     Ollama model to use. Default: llama3.2  (run: ollama pull llama3.2 first)
 
 .PARAMETER IntervalMinutes
-    How often to poll Jira for new stories. Default: 15 minutes.
+    How often to poll issue-tracker for new stories. Default: 15 minutes.
 
 .EXAMPLE
     # Run as Administrator:

@@ -55,7 +55,7 @@ OPENAI_ORG_ID=${OPENAI_ORG_ID}  # Optional
 
 **Configuration:**
 ```powershell
-# scripts/xray-api.ps1
+# scripts/test-management-api.ps1
 $env:COPILOT_MODEL = "gpt-4o"
 $env:OPENAI_TEMPERATURE = 0.2  # Lower = more deterministic
 $env:OPENAI_MAX_TOKENS = 4096
@@ -84,7 +84,7 @@ ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
 
 **Configuration:**
 ```powershell
-# scripts/xray-api.ps1
+# scripts/test-management-api.ps1
 $env:COPILOT_MODEL_FALLBACK = "claude-3-5-sonnet-20241022"
 $env:ANTHROPIC_TEMPERATURE = 0.3
 $env:ANTHROPIC_MAX_TOKENS = 2048
@@ -147,7 +147,7 @@ MODEL_RETRY_BACKOFF_SECONDS=5
 
 ### PowerShell Module Configuration
 
-**In `scripts/xray-api.ps1`:**
+**In `scripts/test-management-api.ps1`:**
 
 ```powershell
 # Load model preferences
@@ -196,7 +196,7 @@ Agent Request
     └─ ... (repeat for Fallback-2, 3)
         ↓
 [All models exhausted]
-    └─ Post Jira comment: "QA agents unavailable - all LLMs offline"
+    └─ Post issue-tracker comment: "QA agents unavailable - all LLMs offline"
     └─ Alert: qa-framework@company.atlassian.net
     └─ Story remains in current status (no transition)
 ```
@@ -253,7 +253,7 @@ Agent Request
 - Live API tokens or secrets
 
 **Safe to pass:**
-- Jira issue keys (STORY-0000)
+- issue-tracker issue keys (STORY-0000)
 - Test step descriptions (anonymized)
 - Generic error messages
 - Public documentation

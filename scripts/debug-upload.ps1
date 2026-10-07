@@ -1,7 +1,7 @@
-cd "C:\Agentic-AI\agentic-ai-powertools-jira-user-generic"
-. ".\scripts\xray-api.ps1"
-$token = Get-XrayCloudToken
-$ep = "https://us.xray.cloud.getxray.app/api/v2/graphql"
+cd "C:\Agentic-AI\agentic-ai-powertools-issue-tracker-user-generic"
+. ".\scripts\test-management-api.ps1"
+$token = Get-test-managementCloudToken
+$ep = "https://us.test-management.cloud.gettest-management.app/api/v2/graphql"
 $hdrs = @{ Authorization = "Bearer $token"; "Content-Type" = "application/json" }
 $b64 = [Convert]::ToBase64String([IO.File]::ReadAllBytes(".\docs\TestExecution\evidence\STORY-0000-FullRun\step1-01-hub-redirects-to-cognito-unauth.png"))
 # First introspect to see the correct field names
