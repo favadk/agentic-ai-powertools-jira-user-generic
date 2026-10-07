@@ -1,7 +1,7 @@
-cd "C:\Agentic-AI\agentic-ai-powertools-issue-tracker-user-generic"
-. ".\scripts\test-management-api.ps1"
-$tok = Get-test-managementCloudToken
-$ep = "https://us.test-management.cloud.gettest-management.app/api/v2/graphql"
+cd "C:\Agentic-AI\agentic-ai-powertools-jira-user-generic"
+. ".\scripts\xray-api.ps1"
+$tok = Get-XrayCloudToken
+$ep = "https://us.xray.cloud.getxray.app/api/v2/graphql"
 $hdrs = @{ Authorization = "Bearer $tok"; "Content-Type" = "application/json" }
 function Invoke-Gql($b) { Invoke-RestMethod -Uri $ep -Method POST -Headers $hdrs -Body $b }
 

@@ -1,11 +1,11 @@
-. .\scripts\test-management-api.ps1
-$tok  = Get-test-managementCloudToken
-$gql  = "https://us.test-management.cloud.gettest-management.app/api/v2/graphql"
+. .\scripts\xray-api.ps1
+$tok  = Get-XrayCloudToken
+$gql  = "https://us.xray.cloud.getxray.app/api/v2/graphql"
 $hdrs = @{ Authorization = "Bearer $tok"; "Content-Type" = "application/json" }
 
 $runId = "6a5ff87b72d5b592fbee751e"
 $step4 = "2cb9dfec-5f85-4d8c-aaa7-fb885b7a7c78"
-$base  = "C:\Agentic-AI\agentic-ai-powertools-issue-tracker-user-generic\docs\TestExecution\evidence\STORY-0000-Cycle1"
+$base  = "C:\Agentic-AI\agentic-ai-powertools-jira-user-generic\docs\TestExecution\evidence\STORY-0000-Cycle1"
 
 $evidenceFiles = @(
     @{ Name = "evidence-step4-01-cognito-signin.png";             Mime = "image/png" },

@@ -1,12 +1,12 @@
 param()
-Set-Location "C:\Agentic-AI\agentic-ai-powertools-issue-tracker-user-generic"
-. ".\scripts\test-management-api.ps1"
+Set-Location "C:\Agentic-AI\agentic-ai-powertools-jira-user-generic"
+. ".\scripts\xray-api.ps1"
 
-$token = Get-test-managementCloudToken
+$token = Get-XrayCloudToken
 Write-Output "Token length: $($token.Length)"
 
 $runId = "6a5ff87b72d5b592fbee751e"
-$ep = "https://us.test-management.cloud.gettest-management.app/api/v2/graphql"
+$ep = "https://us.xray.cloud.getxray.app/api/v2/graphql"
 $hdrs = @{ Authorization = "Bearer $token"; "Content-Type" = "application/json" }
 $dir = ".\docs\TestExecution\evidence\STORY-0000-FullRun"
 

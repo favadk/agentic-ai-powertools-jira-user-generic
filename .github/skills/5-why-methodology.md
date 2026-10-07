@@ -63,6 +63,6 @@ description: 5-Why root cause analysis methodology, process steps, classificatio
 - Avoid "finger pointing" at individuals or functions.
 - Focus on identifying ways to prevent issues in the future.
 - Remember: QA is the final line of defence, not a catch-all for coding errors.
-- Use concrete facts only — base statements on verifiable data from issue-tracker, source-control, or code.
+- Use concrete facts only — base statements on verifiable data from Jira, Bitbucket, or code.
 - Avoid speculation — if information is missing, state what is missing rather than guessing.
 - Avoid stopping at surface-level causes ("the test didn't catch it") — continue asking "Why?".

@@ -71,7 +71,7 @@ This guide provides a single reference point for all project documentation, orga
 **For test planning:**
 - docs/QAPlan/ → Generated sprint QA plans
 - docs/TestCases/ → Prepared test cases
-- .github/agents/test_case_review.agent.md → Standard, impact, post-update, and test-management test-comment reviews
+- .github/agents/test_case_review.agent.md → Standard, impact, post-update, and Xray test-comment reviews
 - .github/skills/smoke-prerequisite-gate.md → Mandatory smoke and smoke-install gate for installation-related stories
 - docs/TestExecution/ → Execution cycles & evidence
 
@@ -101,7 +101,7 @@ This guide provides a single reference point for all project documentation, orga
 - Trigger system architecture (7 trigger types)
 - Agent responsibility matrix
 - Sub-task lifecycle definition
-- issue-tracker/test-management API integration patterns
+- Jira/Xray API integration patterns
 - Data model (monitor-state.json schema)
 - Design decisions & trade-offs
 
@@ -172,15 +172,15 @@ This guide provides a single reference point for all project documentation, orga
 
 #### `.github/agents/test_case_preparation.agent.md`
 **Role**: Create test cases from acceptance criteria  
-**Triggers**: CREATE_TEST_CASE (story In Dev + no test-management Test)  
+**Triggers**: CREATE_TEST_CASE (story In Dev + no Xray Test)  
 **Output**: 
 - docs/TestCases/{sprint}/TC_{STORY-KEY}.md (local)
-- test-management Test issue in issue-tracker
+- Xray Test issue in Jira
 **Handles**:
 - AC parsing
 - Context-first Q&N gate (impacted APIs + design references + code/PR evidence)
 - Test step generation (40+ steps typical)
-- test-management Test creation with all steps
+- Xray Test creation with all steps
 
 **When to use**: Starting test case creation workflow
 
@@ -188,12 +188,12 @@ This guide provides a single reference point for all project documentation, orga
 
 #### `.github/agents/test_case_review.agent.md`
 **Role**: Review test cases against acceptance criteria  
-**Triggers**: Auto-trigger on test-management Test status = "Ready for Test Review"  
+**Triggers**: Auto-trigger on Xray Test status = "Ready for Test Review"  
 **Output**: docs/TestCaseReview/TCR_{TC-KEY}.md  
 **Handles**:
 - AC vs test step gap analysis (High/Med/Low priority)
 - Impact mapping from changed files/APIs to TC coverage
-- Feedback comments on test-management Test
+- Feedback comments on Xray Test
 - Status transitions (sub-task to Closed if approved)
 
 **When to use**: After test case creation, verifying quality
@@ -206,7 +206,7 @@ This guide provides a single reference point for all project documentation, orga
 **Pre-requisites**:
 - Story status = "Waiting for Verification"
 - PR merged
-- test-management Test = "Active"
+- Xray Test = "Active"
 **Output**: docs/TestExecution/{sprint}/TE_{STORY-KEY}_Cycle{N}.md  
 **Handles**:
 - Step-by-step execution guidance
@@ -271,7 +271,7 @@ This guide provides a single reference point for all project documentation, orga
 - Test execution via Protractor
 - Result parsing & status transitions
 - Regression suite integration
-- issue-tracker defect creation for failures
+- Jira defect creation for failures
 
 **When to use**: Running automated tests
 
@@ -284,7 +284,7 @@ This guide provides a single reference point for all project documentation, orga
 - CREATE_TEST_CASE → test_case_preparation
 - DESCRIPTION_CHANGE → test_case_preparation (AC update loop)
 - STATUS_CHANGE → evaluate & route appropriately
-- SPRINT_CHANGE → create a fresh sprint TE and relink story, test-management Test, and TE
+- SPRINT_CHANGE → create a fresh sprint TE and relink story, Xray Test, and TE
 - EXECUTE_TEST_CASE → verify TE/test-run readiness and hand off to test_case_execution
 - PO_RESPONSE → resume test_case_preparation
 - READY_TO_RUN → test_case_execution
@@ -317,25 +317,25 @@ This guide provides a single reference point for all project documentation, orga
 - Gate 0: Story status = "Waiting for Verification"
 - Gate 0B: Sprint TE presence
 - Gate 0-Dev: PR merged
-- Gate 0D: test-management Test = Active
-- Sprint carry-over: never reuse a previous-sprint TE; verify story, test-management Test, and new TE in the active sprint
+- Gate 0D: Xray Test = Active
+- Sprint carry-over: never reuse a previous-sprint TE; verify story, Xray Test, and new TE in the active sprint
 - Pre-requisites per agent
 
 **When to use**: Verifying execution can begin
 
 ---
 
-#### `.github/skills/test-management-integration.md`
-**Purpose**: test-management Cloud API patterns and conventions  
+#### `.github/skills/xray-integration.md`
+**Purpose**: Xray Cloud API patterns and conventions  
 **Covers**:
-- Test creation (New-test-managementTest)
-- Step addition (Import-test-managementCloudTestSteps)
-- Test Execution creation (New-test-managementTestExecution)
-- Step result updates (Set-test-managementStepResult)
-- Evidence attachment (Add-test-managementStepEvidence)
-- Status transitions (Set-test-managementTestRunStatus)
+- Test creation (New-XrayTest)
+- Step addition (Import-XrayCloudTestSteps)
+- Test Execution creation (New-XrayTestExecution)
+- Step result updates (Set-XrayStepResult)
+- Evidence attachment (Add-XrayStepEvidence)
+- Status transitions (Set-XrayTestRunStatus)
 
-**When to use**: Understanding test-management workflows, debugging test-management API calls
+**When to use**: Understanding Xray workflows, debugging Xray API calls
 
 ---
 
@@ -368,17 +368,17 @@ This guide provides a single reference point for all project documentation, orga
 
 **Location**: `scripts/`
 
-#### `scripts/test-management-api.ps1`
-**Purpose**: test-management Cloud API helper functions  
+#### `scripts/xray-api.ps1`
+**Purpose**: Xray Cloud API helper functions  
 **Key Functions**:
-- New-test-managementTest
-- Import-test-managementCloudTestSteps
-- New-test-managementTestExecution
-- Set-test-managementStepResult
-- Add-test-managementStepEvidence
-- Set-test-managementTestRunStatus
+- New-XrayTest
+- Import-XrayCloudTestSteps
+- New-XrayTestExecution
+- Set-XrayStepResult
+- Add-XrayStepEvidence
+- Set-XrayTestRunStatus
 
-**When to use**: Any test-management API interaction
+**When to use**: Any Xray API interaction
 
 ---
 
@@ -545,7 +545,7 @@ Template for project compatibility matrix (browsers, OS, devices)
 
 | Resource | Link |
 |----------|------|
-| Project Repo | https://github.com/your-org/agentic-ai-powertools-issue-tracker-user-generic |
+| Project Repo | https://github.com/your-org/agentic-ai-powertools-jira-user-generic |
 | README | [README.md](../README.md) |
 | Architecture | [FRAMEWORK-ARCHITECTURE.md](FRAMEWORK-ARCHITECTURE.md) |
 | Deployment | [DEPLOYMENT-GUIDE.md](DEPLOYMENT-GUIDE.md) |

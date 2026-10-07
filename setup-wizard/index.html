@@ -160,8 +160,8 @@
   <!-- Progress bar -->
   <div class="progress" id="progressBar">
     <div class="step-item active" data-step="1"><div class="step-dot">1</div><div class="step-label">Project</div></div>
-    <div class="step-item" data-step="2"><div class="step-dot">2</div><div class="step-label">issue-tracker &amp; test-management</div></div>
-    <div class="step-item" data-step="3"><div class="step-dot">3</div><div class="step-label">source-control</div></div>
+    <div class="step-item" data-step="2"><div class="step-dot">2</div><div class="step-label">Jira &amp; Xray</div></div>
+    <div class="step-item" data-step="3"><div class="step-dot">3</div><div class="step-label">Bitbucket</div></div>
     <div class="step-item" data-step="4"><div class="step-dot">4</div><div class="step-label">Docs &amp; Links</div></div>
     <div class="step-item" data-step="5"><div class="step-dot">5</div><div class="step-label">AI Models</div></div>
     <div class="step-item" data-step="6"><div class="step-dot">6</div><div class="step-label">Integrations</div></div>
@@ -183,18 +183,18 @@
             <div class="hint">Folder where the QA framework will be installed. Will be created if it doesn't exist.</div>
           </div>
           <div class="field">
-            <label>issue-tracker Project Key <span class="req">*</span></label>
-            <input type="text" id="issue-trackerProjectKey" placeholder="PROJ" style="text-transform:uppercase"/>
+            <label>Jira Project Key <span class="req">*</span></label>
+            <input type="text" id="JiraProjectKey" placeholder="PROJ" style="text-transform:uppercase"/>
             <div class="hint">E.g. <code>STORY</code> or <code>CDS2</code></div>
           </div>
           <div class="field">
-            <label>issue-tracker Agile Board ID <span class="opt">(optional)</span></label>
-            <input type="text" id="issue-trackerBoardId" placeholder="440" />
+            <label>Jira Agile Board ID <span class="opt">(optional)</span></label>
+            <input type="text" id="JiraBoardId" placeholder="440" />
             <div class="hint">Used for continuous sprint monitoring. Find it in the board URL: <code>/boards/440</code></div>
           </div>
           <div class="field form-full">
-            <label>issue-tracker Base URL <span class="req">*</span></label>
-            <input type="text" id="issue-trackerBaseUrl" placeholder="mycompany.atlassian.net" />
+            <label>Jira Base URL <span class="req">*</span></label>
+            <input type="text" id="JiraBaseUrl" placeholder="mycompany.atlassian.net" />
             <div class="hint">Without <code>https://</code> &mdash; e.g. <code>acme.atlassian.net</code></div>
           </div>
           <div class="field">
@@ -207,12 +207,12 @@
     </div>
   </div>
 
-  <!-- =================== STEP 2: issue-tracker & test-management =================== -->
+  <!-- =================== STEP 2: Jira & Xray =================== -->
   <div class="step-panel" id="panel-2">
     <div class="card">
       <div class="card-header">
-        <h2>Step 2 &mdash; issue-tracker &amp; test-management Authentication</h2>
-        <p>API credentials for issue-tracker Cloud and test-management Cloud. These are stored locally in <code>.vscode/mcp.local.json</code> and never committed to Git.</p>
+        <h2>Step 2 &mdash; Jira &amp; Xray Authentication</h2>
+        <p>API credentials for Jira Cloud and Xray Cloud. These are stored locally in <code>.vscode/mcp.local.json</code> and never committed to Git.</p>
       </div>
       <div class="card-body">
         <div class="info-box warn">
@@ -221,31 +221,31 @@
           The generated <code>mcp.local.json</code> is automatically added to <code>.gitignore</code>.
         </div>
         <div class="form-grid">
-          <div class="section-title">issue-tracker Cloud</div>
+          <div class="section-title">Jira Cloud</div>
           <div class="field">
-            <label>issue-tracker Email <span class="req">*</span></label>
-            <input type="email" id="issue-trackerEmail" placeholder="you@company.com" />
+            <label>Jira Email <span class="req">*</span></label>
+            <input type="email" id="JiraEmail" placeholder="you@company.com" />
           </div>
           <div class="field">
-            <label>issue-tracker API Token <span class="req">*</span></label>
-            <input type="password" id="issue-trackerToken" placeholder="ATATxxxxxxxxxxxxxxxx" />
+            <label>Jira API Token <span class="req">*</span></label>
+            <input type="password" id="JiraToken" placeholder="ATATxxxxxxxxxxxxxxxx" />
             <div class="hint">Generate at: <code>id.atlassian.com/manage-profile/security/api-tokens</code></div>
           </div>
-          <div class="section-title">test-management Cloud</div>
+          <div class="section-title">Xray Cloud</div>
           <div class="field">
-            <label>test-management Client ID <span class="req">*</span></label>
-            <input type="text" id="test-managementClientId" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" />
-            <div class="hint">From test-management Cloud &rarr; API Keys section</div>
+            <label>Xray Client ID <span class="req">*</span></label>
+            <input type="text" id="XrayClientId" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" />
+            <div class="hint">From Xray Cloud &rarr; API Keys section</div>
           </div>
           <div class="field">
-            <label>test-management Client Secret <span class="req">*</span></label>
-            <input type="password" id="test-managementClientSecret" placeholder="xxxxxxxxxxxxxxxxxxxxxxxx" />
+            <label>Xray Client Secret <span class="req">*</span></label>
+            <input type="password" id="XrayClientSecret" placeholder="xxxxxxxxxxxxxxxxxxxxxxxx" />
           </div>
-          <div class="section-title">knowledge-base (optional — same token as issue-tracker by default)</div>
+          <div class="section-title">Confluence (optional — same token as Jira by default)</div>
           <div class="field">
-            <label>knowledge-base Base URL <span class="opt">(optional)</span></label>
-            <input type="text" id="knowledge-baseUrl" placeholder="mycompany.atlassian.net/wiki" />
-            <div class="hint">Leave blank to use the same issue-tracker URL</div>
+            <label>Confluence Base URL <span class="opt">(optional)</span></label>
+            <input type="text" id="ConfluenceUrl" placeholder="mycompany.atlassian.net/wiki" />
+            <div class="hint">Leave blank to use the same Jira URL</div>
           </div>
         </div>
         <div class="btn-row">
@@ -256,28 +256,28 @@
     </div>
   </div>
 
-  <!-- =================== STEP 3: source-control =================== -->
+  <!-- =================== STEP 3: Bitbucket =================== -->
   <div class="step-panel" id="panel-3">
     <div class="card">
       <div class="card-header">
-        <h2>Step 3 &mdash; source-control Repository</h2>
-        <p>Coordinates of the automation test code repository in source-control.</p>
+        <h2>Step 3 &mdash; Bitbucket Repository</h2>
+        <p>Coordinates of the automation test code repository in Bitbucket.</p>
       </div>
       <div class="card-body">
         <div class="form-grid">
           <div class="field">
-            <label>source-control Server Hostname <span class="req">*</span></label>
-            <input type="text" id="source-controlServer" placeholder="git.company.com" />
+            <label>Bitbucket Server Hostname <span class="req">*</span></label>
+            <input type="text" id="BitbucketServer" placeholder="git.company.com" />
             <div class="hint">Without <code>https://</code></div>
           </div>
           <div class="field">
-            <label>source-control Project Key <span class="req">*</span></label>
-            <input type="text" id="source-controlProjectKey" placeholder="QA" style="text-transform:uppercase"/>
+            <label>Bitbucket Project Key <span class="req">*</span></label>
+            <input type="text" id="BitbucketProjectKey" placeholder="QA" style="text-transform:uppercase"/>
           </div>
           <div class="field">
             <label>Repository Slug <span class="req">*</span></label>
-            <input type="text" id="source-controlRepo" placeholder="automation-tests" />
-            <div class="hint">The repo slug from the source-control URL</div>
+            <input type="text" id="BitbucketRepo" placeholder="automation-tests" />
+            <div class="hint">The repo slug from the Bitbucket URL</div>
           </div>
           <div class="field">
             <label>Default / Source Branch <span class="req">*</span></label>
@@ -314,7 +314,7 @@
           <strong>&#x1F4DA; How agents use these links</strong>
           Before creating any test case, agents load each URL and shared folder listed here via <code>fetch_webpage</code> and local file reads.
           Product help pages override assumptions when writing expected results.
-          knowledge-base pages provide field definitions and API specs.
+          Confluence pages provide field definitions and API specs.
           Shared folders provide design docs, test data, and release notes.
         </div>
         <div class="form-grid">
@@ -332,8 +332,8 @@
           </div>
           <div class="field form-full">
             <label>Additional Reference URL 1 <span class="opt">(optional)</span></label>
-            <input type="text" id="RefUrl1" placeholder="https://knowledge-base.mycompany.com/display/PROJ/Design+Spec" />
-            <div class="hint">Design spec, architecture doc, or feature wiki page (knowledge-base, SharePoint, Notion, etc.)</div>
+            <input type="text" id="RefUrl1" placeholder="https://confluence.mycompany.com/display/PROJ/Design+Spec" />
+            <div class="hint">Design spec, architecture doc, or feature wiki page (Confluence, SharePoint, Notion, etc.)</div>
           </div>
           <div class="field form-full">
             <label>Additional Reference URL 2 <span class="opt">(optional)</span></label>
@@ -357,16 +357,16 @@
             <div class="hint">Agents check here for version-specific changes when creating regression test cases for defects or version-increment stories.</div>
           </div>
 
-          <div class="section-title">knowledge-base Reference Pages</div>
+          <div class="section-title">Confluence Reference Pages</div>
           <div class="field">
-            <label>QA knowledge-base Space Key <span class="opt">(optional)</span></label>
-            <input type="text" id="knowledge-baseQASpaceKey" placeholder="QA" />
-            <div class="hint">knowledge-base space containing QA documentation and test guides</div>
+            <label>QA Confluence Space Key <span class="opt">(optional)</span></label>
+            <input type="text" id="ConfluenceQASpaceKey" placeholder="QA" />
+            <div class="hint">Confluence space containing QA documentation and test guides</div>
           </div>
           <div class="field">
             <label>Feature Docs Page ID <span class="opt">(optional)</span></label>
-            <input type="text" id="knowledge-baseFeaturePageId" placeholder="987654321" />
-            <div class="hint">knowledge-base page ID of the feature specifications index. Agents resolve child pages per story feature area.</div>
+            <input type="text" id="ConfluenceFeaturePageId" placeholder="987654321" />
+            <div class="hint">Confluence page ID of the feature specifications index. Agents resolve child pages per story feature area.</div>
           </div>
 
         </div>
@@ -603,12 +603,12 @@
     <div class="card">
       <div class="card-header">
         <h2>Step 6 &mdash; Optional Integrations</h2>
-        <p>Teams webhooks for automated notifications when Sprint Test Executions are created. These are optional — the framework defaults to issue-tracker comments if not configured.</p>
+        <p>Teams webhooks for automated notifications when Sprint Test Executions are created. These are optional — the framework defaults to Jira comments if not configured.</p>
       </div>
       <div class="card-body">
         <div class="info-box">
           <strong>&#x1F4AC; How notifications work</strong>
-          By default the framework posts a issue-tracker comment tagging @PO and @PM when a Sprint TE is created.
+          By default the framework posts a Jira comment tagging @PO and @PM when a Sprint TE is created.
           If you provide Teams webhook URLs below, notifications will also be sent to your Teams channels.
         </div>
         <div class="form-grid">
@@ -630,15 +630,15 @@
             <label>Secondary Webhook URL <span class="opt">(optional)</span></label>
             <input type="text" id="TeamsWebhook2" placeholder="https://outlook.office.com/webhook/..." />
           </div>
-          <div class="section-title">knowledge-base</div>
+          <div class="section-title">Confluence</div>
           <div class="field">
-            <label>knowledge-base Space Key <span class="opt">(optional)</span></label>
-            <input type="text" id="knowledge-baseSpaceKey" placeholder="QA" />
-            <div class="hint">Used for publishing QA reports to knowledge-base</div>
+            <label>Confluence Space Key <span class="opt">(optional)</span></label>
+            <input type="text" id="ConfluenceSpaceKey" placeholder="QA" />
+            <div class="hint">Used for publishing QA reports to Confluence</div>
           </div>
           <div class="field">
-            <label>knowledge-base Parent Page ID <span class="opt">(optional)</span></label>
-            <input type="text" id="knowledge-baseParentId" placeholder="123456789" />
+            <label>Confluence Parent Page ID <span class="opt">(optional)</span></label>
+            <input type="text" id="ConfluenceParentId" placeholder="123456789" />
             <div class="hint">Parent page where QA reports will be published</div>
           </div>
         </div>
@@ -746,18 +746,18 @@
 // Sourced from mcp.local.json + automation-repository-config.md
 // ===========================
 const EXISTING_CONFIG = {
-  TargetPath:           'C:\\Agentic-AI\\agentic-ai-powertools-issue-tracker-user-generic',
-  issue-trackerBaseUrl:          'issue-tracker.example.com',
-  issue-trackerEmail:            'favad.khan@exampleqa.local',
-  issue-trackerToken:            'DUMMY_JIRA_TOKEN_FOR_LOCAL_TESTING_ONLY',
-  issue-trackerProjectKey:       'STORY',
-  issue-trackerBoardId:          '440',
-  test-managementClientId:         '32A143092D234A279FF6D9A7025DBD47',
-  test-managementClientSecret:     '563a10290811c92356ca275d83fb060ac7ec8224ab620daa19a980d17fe5f02d',
-  knowledge-baseUrl:        'issue-tracker.example.com/wiki',
-  source-controlServer:      'source-control.example.com',
-  source-controlProjectKey:  'SIDDEV',
-  source-controlRepo:        'ac_portal_e2e',
+  TargetPath:           'C:\\Agentic-AI\\agentic-ai-powertools-jira-user-generic',
+  JiraBaseUrl:          'issue-tracker.example.com',
+  JiraEmail:            'favad.khan@exampleqa.local',
+  JiraToken:            'DUMMY_JIRA_TOKEN_FOR_LOCAL_TESTING_ONLY',
+  JiraProjectKey:       'STORY',
+  JiraBoardId:          '440',
+  XrayClientId:         '32A143092D234A279FF6D9A7025DBD47',
+  XrayClientSecret:     '563a10290811c92356ca275d83fb060ac7ec8224ab620daa19a980d17fe5f02d',
+  ConfluenceUrl:        'issue-tracker.example.com/wiki',
+  BitbucketServer:      'source-control.example.com',
+  BitbucketProjectKey:  'SIDDEV',
+  BitbucketRepo:        'ac_portal_e2e',
   DefaultBranch:        'windows-STORY-0000-new-release-fix-latest',
   PrTargetBranch:       'release-fr1.4',
   LocalRepoPath:        'C:\\automation\\06102026\\UI_Protractor_Tests',
@@ -769,8 +769,8 @@ const EXISTING_CONFIG = {
   SharedDocFolder:      '',
   TestDataFolder:       '',
   ReleaseNotesFolder:   '',
-  knowledge-baseQASpaceKey: '',
-  knowledge-baseFeaturePageId: '',
+  ConfluenceQASpaceKey: '',
+  ConfluenceFeaturePageId: '',
   // Step 5 — model config (pre-fill defaults; user adds API keys manually for security)
   OpenAITemperature:    '0.2',
   OpenAIMaxTokens:      '4096',
@@ -779,8 +779,8 @@ const EXISTING_CONFIG = {
   ModelTimeout:         '60',
   ModelRetryCount:      '3',
   // Step 6 integrations
-  knowledge-baseSpaceKey:   '',
-  knowledge-baseParentId:   '',
+  ConfluenceSpaceKey:   '',
+  ConfluenceParentId:   '',
   TeamsChannel1Name:    '',
   TeamsWebhook1:        '',
   TeamsChannel2Name:    '',
@@ -836,9 +836,9 @@ function goTo(n) {
 
 function validateStep(n) {
   const required = {
-    1: ['TargetPath','issue-trackerBaseUrl','issue-trackerProjectKey'],
-    2: ['issue-trackerEmail','issue-trackerToken','test-managementClientId','test-managementClientSecret'],
-    3: ['source-controlServer','source-controlProjectKey','source-controlRepo','DefaultBranch','PrTargetBranch','LocalRepoPath'],
+    1: ['TargetPath','JiraBaseUrl','JiraProjectKey'],
+    2: ['JiraEmail','JiraToken','XrayClientId','XrayClientSecret'],
+    3: ['BitbucketServer','BitbucketProjectKey','BitbucketRepo','DefaultBranch','PrTargetBranch','LocalRepoPath'],
     4: []
   };
   let ok = true;
@@ -916,12 +916,12 @@ async function runSetup() {
 
   // Build config payload
   const cfg = {
-    targetPath: v('TargetPath'), issue-trackerBaseUrl: v('issue-trackerBaseUrl'),
-    issue-trackerEmail: v('issue-trackerEmail'), issue-trackerToken: v('issue-trackerToken'),
-    issue-trackerProjectKey: v('issue-trackerProjectKey'), issue-trackerBoardId: v('issue-trackerBoardId'),
-    test-managementClientId: v('test-managementClientId'), test-managementClientSecret: v('test-managementClientSecret'),
-    source-controlServer: v('source-controlServer'), source-controlProjectKey: v('source-controlProjectKey'),
-    source-controlRepo: v('source-controlRepo'), defaultBranch: v('DefaultBranch'),
+    targetPath: v('TargetPath'), jiraBaseUrl: v('JiraBaseUrl'),
+    jiraEmail: v('JiraEmail'), jiraToken: v('JiraToken'),
+    jiraProjectKey: v('JiraProjectKey'), jiraBoardId: v('JiraBoardId'),
+    xrayClientId: v('XrayClientId'), xrayClientSecret: v('XrayClientSecret'),
+    bitbucketServer: v('BitbucketServer'), bitbucketProjectKey: v('BitbucketProjectKey'),
+    bitbucketRepo: v('BitbucketRepo'), defaultBranch: v('DefaultBranch'),
     prTargetBranch: v('PrTargetBranch'), localRepoPath: v('LocalRepoPath'),
     llmProvider: activeProvider,
     ollamaModel: document.getElementById('OllamaModel')?.value,
@@ -1015,19 +1015,19 @@ function buildSH() {
   sh += `# ---- QA Framework Setup ----\n`;
   sh += `pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/setup-qa-framework.ps1 \\\n`;
   sh += `  -TargetPath '${escSH(v('TargetPath'))}' \\\n`;
-  sh += `  -issue-trackerBaseUrl '${escSH(v('issue-trackerBaseUrl'))}' \\\n`;
-  sh += `  -issue-trackerEmail '${escSH(v('issue-trackerEmail'))}' \\\n`;
-  sh += `  -issue-trackerToken '${escSH(v('issue-trackerToken'))}' \\\n`;
-  sh += `  -issue-trackerProjectKey '${escSH(v('issue-trackerProjectKey'))}' \\\n`;
-  sh += `  -test-managementClientId '${escSH(v('test-managementClientId'))}' \\\n`;
-  sh += `  -test-managementClientSecret '${escSH(v('test-managementClientSecret'))}' \\\n`;
-  sh += `  -source-controlServer '${escSH(v('source-controlServer'))}' \\\n`;
-  sh += `  -source-controlProjectKey '${escSH(v('source-controlProjectKey'))}' \\\n`;
-  sh += `  -source-controlRepo '${escSH(v('source-controlRepo'))}' \\\n`;
+  sh += `  -JiraBaseUrl '${escSH(v('JiraBaseUrl'))}' \\\n`;
+  sh += `  -JiraEmail '${escSH(v('JiraEmail'))}' \\\n`;
+  sh += `  -JiraToken '${escSH(v('JiraToken'))}' \\\n`;
+  sh += `  -JiraProjectKey '${escSH(v('JiraProjectKey'))}' \\\n`;
+  sh += `  -XrayClientId '${escSH(v('XrayClientId'))}' \\\n`;
+  sh += `  -XrayClientSecret '${escSH(v('XrayClientSecret'))}' \\\n`;
+  sh += `  -BitbucketServer '${escSH(v('BitbucketServer'))}' \\\n`;
+  sh += `  -BitbucketProjectKey '${escSH(v('BitbucketProjectKey'))}' \\\n`;
+  sh += `  -BitbucketRepo '${escSH(v('BitbucketRepo'))}' \\\n`;
   sh += `  -DefaultBranch '${escSH(v('DefaultBranch'))}' \\\n`;
   sh += `  -PrTargetBranch '${escSH(v('PrTargetBranch'))}' \\\n`;
   sh += `  -LocalRepoPath '${escSH(v('LocalRepoPath'))}'`;
-  if (v('issue-trackerBoardId'))        sh += ` \\\n  -issue-trackerBoardId '${escSH(v('issue-trackerBoardId'))}'`;
+  if (v('JiraBoardId'))        sh += ` \\\n  -JiraBoardId '${escSH(v('JiraBoardId'))}'`;
   if (v('HelpPortalUrl'))      sh += ` \\\n  -HelpPortalUrl '${escSH(v('HelpPortalUrl'))}'`;
   if (v('SwaggerUrl'))         sh += ` \\\n  -SwaggerUrl '${escSH(v('SwaggerUrl'))}'`;
   if (v('RefUrl1'))            sh += ` \\\n  -RefUrl1 '${escSH(v('RefUrl1'))}'`;
@@ -1048,7 +1048,7 @@ function buildPS() {
     ? (activeProvider === 'hybrid' ? document.getElementById('HybridFallback').value : document.getElementById('OllamaModel').value)
     : '';
 
-  let cmd = `# Run from the QA Framework source folder (agentic-ai-powertools-issue-tracker-user-generic)\n`;
+  let cmd = `# Run from the QA Framework source folder (agentic-ai-powertools-jira-user-generic)\n`;
 
   if (needsOllama) {
     cmd += `\n# ---- Step 1: Select Ollama model ----\n`;
@@ -1099,19 +1099,19 @@ function buildPS() {
 
   cmd    += `.\\scripts\\setup-qa-framework.ps1 \`\n`;
   cmd    += `    -TargetPath           '${escPS(v('TargetPath'))}' \`\n`;
-  cmd    += `    -issue-trackerBaseUrl          '${escPS(v('issue-trackerBaseUrl'))}' \`\n`;
-  cmd    += `    -issue-trackerEmail            '${escPS(v('issue-trackerEmail'))}' \`\n`;
-  cmd    += `    -issue-trackerToken            '${escPS(v('issue-trackerToken'))}' \`\n`;
-  cmd    += `    -issue-trackerProjectKey       '${escPS(v('issue-trackerProjectKey'))}' \`\n`;
-  cmd    += `    -test-managementClientId         '${escPS(v('test-managementClientId'))}' \`\n`;
-  cmd    += `    -test-managementClientSecret     '${escPS(v('test-managementClientSecret'))}' \`\n`;
-  cmd    += `    -source-controlServer      '${escPS(v('source-controlServer'))}' \`\n`;
-  cmd    += `    -source-controlProjectKey  '${escPS(v('source-controlProjectKey'))}' \`\n`;
-  cmd    += `    -source-controlRepo        '${escPS(v('source-controlRepo'))}' \`\n`;
+  cmd    += `    -JiraBaseUrl          '${escPS(v('JiraBaseUrl'))}' \`\n`;
+  cmd    += `    -JiraEmail            '${escPS(v('JiraEmail'))}' \`\n`;
+  cmd    += `    -JiraToken            '${escPS(v('JiraToken'))}' \`\n`;
+  cmd    += `    -JiraProjectKey       '${escPS(v('JiraProjectKey'))}' \`\n`;
+  cmd    += `    -XrayClientId         '${escPS(v('XrayClientId'))}' \`\n`;
+  cmd    += `    -XrayClientSecret     '${escPS(v('XrayClientSecret'))}' \`\n`;
+  cmd    += `    -BitbucketServer      '${escPS(v('BitbucketServer'))}' \`\n`;
+  cmd    += `    -BitbucketProjectKey  '${escPS(v('BitbucketProjectKey'))}' \`\n`;
+  cmd    += `    -BitbucketRepo        '${escPS(v('BitbucketRepo'))}' \`\n`;
   cmd    += `    -DefaultBranch        '${escPS(v('DefaultBranch'))}' \`\n`;
   cmd    += `    -PrTargetBranch       '${escPS(v('PrTargetBranch'))}' \`\n`;
   cmd    += `    -LocalRepoPath        '${escPS(v('LocalRepoPath'))}'`;
-  if (v('issue-trackerBoardId'))        cmd += ` \`\n    -issue-trackerBoardId             '${escPS(v('issue-trackerBoardId'))}'`;
+  if (v('JiraBoardId'))        cmd += ` \`\n    -JiraBoardId             '${escPS(v('JiraBoardId'))}'`;
   if (v('HelpPortalUrl'))      cmd += ` \`\n    -HelpPortalUrl           '${escPS(v('HelpPortalUrl'))}'`;
   if (v('SwaggerUrl'))         cmd += ` \`\n    -SwaggerUrl              '${escPS(v('SwaggerUrl'))}'`;
   if (v('RefUrl1'))            cmd += ` \`\n    -RefUrl1                 '${escPS(v('RefUrl1'))}'`;
@@ -1124,42 +1124,42 @@ function buildPS() {
 }
 
 function buildMcp() {
-  const issue-trackerUrl = 'https://' + v('issue-trackerBaseUrl').replace(/^https?:\/\//,'');
-  const confUrl = v('knowledge-baseUrl') ? 'https://' + v('knowledge-baseUrl').replace(/^https?:\/\//,'') : issue-trackerUrl;
+  const jiraUrl = 'https://' + v('JiraBaseUrl').replace(/^https?:\/\//,'');
+  const confUrl = v('ConfluenceUrl') ? 'https://' + v('ConfluenceUrl').replace(/^https?:\/\//,'') : jiraUrl;
   const mcp = {
     servers: {
-      issue-tracker: {
+      jira: {
         env: {
-          issue-tracker_URL:            issue-trackerUrl,
-          issue-tracker_EMAIL:          v('issue-trackerEmail'),
-          issue-tracker_PERSONAL_TOKEN: v('issue-trackerToken')
+          JIRA_URL:            jiraUrl,
+          JIRA_EMAIL:          v('JiraEmail'),
+          JIRA_PERSONAL_TOKEN: v('JiraToken')
         }
       },
-      test-management: {
+      xray: {
         env: {
-          test-management_CLIENT_ID:     v('test-managementClientId'),
-          test-management_CLIENT_SECRET: v('test-managementClientSecret'),
-          issue-tracker_URL:           issue-trackerUrl
+          XRAY_CLIENT_ID:     v('XrayClientId'),
+          XRAY_CLIENT_SECRET: v('XrayClientSecret'),
+          JIRA_URL:           jiraUrl
         }
       },
-      source-control: {
+      bitbucket: {
         env: {
-          source-control_SERVER_URL: 'https://' + v('source-controlServer').replace(/^https?:\/\//,''),
-          source-control_USERNAME:   v('issue-trackerEmail'),
-          source-control_TOKEN:      v('issue-trackerToken')
+          BITBUCKET_SERVER_URL: 'https://' + v('BitbucketServer').replace(/^https?:\/\//,''),
+          BITBUCKET_USERNAME:   v('JiraEmail'),
+          BITBUCKET_TOKEN:      v('JiraToken')
         }
       },
-      knowledge-base: {
+      confluence: {
         env: {
-          knowledge-base_URL:           confUrl,
-          knowledge-base_EMAIL:         v('issue-trackerEmail'),
-          knowledge-base_PERSONAL_TOKEN: v('issue-trackerToken')
+          CONFLUENCE_URL:           confUrl,
+          CONFLUENCE_EMAIL:         v('JiraEmail'),
+          CONFLUENCE_PERSONAL_TOKEN: v('JiraToken')
         }
       }
     }
   };
-  if (v('knowledge-baseSpaceKey'))  mcp.servers.knowledge-base.env.knowledge-base_SPACE_KEY   = v('knowledge-baseSpaceKey');
-  if (v('knowledge-baseParentId'))  mcp.servers.knowledge-base.env.knowledge-base_PARENT_PAGE = v('knowledge-baseParentId');
+  if (v('ConfluenceSpaceKey'))  mcp.servers.confluence.env.CONFLUENCE_SPACE_KEY   = v('ConfluenceSpaceKey');
+  if (v('ConfluenceParentId'))  mcp.servers.confluence.env.CONFLUENCE_PARENT_PAGE = v('ConfluenceParentId');
   document.getElementById('mcpCode').textContent = JSON.stringify(mcp, null, 2);
 }
 
@@ -1303,13 +1303,13 @@ function buildRefLinks() {
     { label: 'Release Notes Folder',        id: 'ReleaseNotesFolder' },
   ];
   const confItems = [
-    { label: 'QA knowledge-base Space Key',   id: 'knowledge-baseQASpaceKey' },
-    { label: 'Feature Docs Page ID',      id: 'knowledge-baseFeaturePageId' },
+    { label: 'QA Confluence Space Key',   id: 'ConfluenceQASpaceKey' },
+    { label: 'Feature Docs Page ID',      id: 'ConfluenceFeaturePageId' },
   ];
 
   let out = `# Project Reference Sources\n`;
   out    += `# Auto-generated by Setup Wizard — loaded by agents at Step 0-Ref\n`;
-  out    += `# Project: ${v('issue-trackerProjectKey')} | ${v('issue-trackerBaseUrl')}\n\n`;
+  out    += `# Project: ${v('JiraProjectKey')} | ${v('JiraBaseUrl')}\n\n`;
 
   out += `## Documentation Help Links\n\n`;
   out += `Agents fetch each URL below via \`fetch_webpage\` before creating test cases.\n`;
@@ -1332,9 +1332,9 @@ function buildRefLinks() {
   });
   if (!hasFolder) out += `| *(none configured — add folder paths above)* | — | — |\n`;
 
-  out += `\n## knowledge-base Reference\n\n`;
+  out += `\n## Confluence Reference\n\n`;
   confItems.forEach(c => { const val = v(c.id); if (val) out += `- **${c.label}**: \`${val}\`\n`; });
-  if (!v('knowledge-baseQASpaceKey') && !v('knowledge-baseFeaturePageId')) out += `*(none configured)*\n`;
+  if (!v('ConfluenceQASpaceKey') && !v('ConfluenceFeaturePageId')) out += `*(none configured)*\n`;
 
   out += `\n## Agent Instructions\n\n`;
   out += `\`\`\`\nAt Step 0-Ref, before creating any test case:\n1. Fetch each URL in "Documentation Help Links" using fetch_webpage\n2. Scan each path in "Shared Folder Locations" for .md, .docx, .pdf files matching the story feature\n3. Extract: field definitions, expected behaviours, API response formats, valid test data values\n4. Use extracted content as authoritative reference — it overrides assumptions in expected results\n5. Log: "[Ref] Help link: {label} — {N} relevant sections extracted"\n\`\`\``;
@@ -1347,7 +1347,7 @@ function buildTeams() {
   const w2 = v('TeamsWebhook2'), c2 = v('TeamsChannel2Name');
   if (!w1 && !w2) {
     document.getElementById('teamsCode').textContent =
-      '# No Teams webhooks configured.\n# The framework will use issue-tracker comments to notify @PO and @PM when a Sprint TE is created.\n# To enable Teams notifications, add the webhook URLs below and paste into automation-repository-config.md.';
+      '# No Teams webhooks configured.\n# The framework will use Jira comments to notify @PO and @PM when a Sprint TE is created.\n# To enable Teams notifications, add the webhook URLs below and paste into automation-repository-config.md.';
     return;
   }
   let t = `## Teams Notification Channels\n\n`;
@@ -1356,7 +1356,7 @@ function buildTeams() {
   if (w2) t += `| ${c2 || 'Secondary Channel'} | \`${w2}\` |\n`;
   t    += `\n`;
   t    += `> Agents post to these channels when a Sprint Test Execution is created.\n`;
-  t    += `> If webhook delivery fails, a issue-tracker comment fallback is used automatically.\n\n`;
+  t    += `> If webhook delivery fails, a Jira comment fallback is used automatically.\n\n`;
   t    += `### PowerShell snippet (paste into monitor scripts)\n\`\`\`powershell\n`;
   if (w1) t += `$TeamsWebhook1 = '${w1}'\n`;
   if (w2) t += `$TeamsWebhook2 = '${w2}'\n`;
@@ -1367,10 +1367,10 @@ function buildTeams() {
 function buildSummary() {
   const items = [
     `Target project: <strong>${v('TargetPath')}</strong>`,
-    `issue-tracker: <strong>${v('issue-trackerBaseUrl')}</strong> &nbsp;|&nbsp; Project key: <strong>${v('issue-trackerProjectKey')}</strong>`,
-    `Board ID for sprint watch: <strong>${v('issue-trackerBoardId') || '(not set — optional)'}</strong>`,
-    `test-management Cloud Client ID: <strong>${v('test-managementClientId').slice(0,8)}…</strong>`,
-    `source-control: <strong>${v('source-controlServer')}</strong> / ${v('source-controlProjectKey')} / ${v('source-controlRepo')}`,
+    `Jira: <strong>${v('JiraBaseUrl')}</strong> &nbsp;|&nbsp; Project key: <strong>${v('JiraProjectKey')}</strong>`,
+    `Board ID for sprint watch: <strong>${v('JiraBoardId') || '(not set — optional)'}</strong>`,
+    `Xray Cloud Client ID: <strong>${v('XrayClientId').slice(0,8)}…</strong>`,
+    `Bitbucket: <strong>${v('BitbucketServer')}</strong> / ${v('BitbucketProjectKey')} / ${v('BitbucketRepo')}`,
     `Help links: <strong>${[v('HelpPortalUrl'),v('SwaggerUrl'),v('RefUrl1'),v('RefUrl2')].filter(Boolean).length} URL(s) configured</strong>`,
     `Shared folders: <strong>${[v('SharedDocFolder'),v('TestDataFolder'),v('ReleaseNotesFolder')].filter(Boolean).length} path(s) configured</strong>`,
     `AI Provider: <strong>${
@@ -1379,7 +1379,7 @@ function buildSummary() {
       activeProvider === 'anthropic' ? '🔮 Anthropic — ' + document.getElementById('ModelPrimaryAnthropic').value + (v('AnthropicApiKey') ? '' : ' ⚠️ API key missing') :
       '🔀 Hybrid — ' + document.getElementById('HybridPrimary').value + ' + ollama/' + document.getElementById('HybridFallback').value + ' fallback'
     }</strong>`,
-    `Teams webhooks: <strong>${(v('TeamsWebhook1')||v('TeamsWebhook2')) ? 'configured' : 'not set (using issue-tracker comment fallback)'}</strong>`,
+    `Teams webhooks: <strong>${(v('TeamsWebhook1')||v('TeamsWebhook2')) ? 'configured' : 'not set (using Jira comment fallback)'}</strong>`,
     `Register scheduled tasks: <strong>${vb('RegisterScheduler') ? 'Yes (run as Admin)' : 'No (run setup-story-monitor-scheduler.ps1 manually)'}</strong>`
   ];
   document.getElementById('summaryBox').innerHTML =
@@ -1455,10 +1455,10 @@ function downloadMcp() {
   URL.revokeObjectURL(url);
 }
 
-// Auto-fill issue-trackerBoardId help text
-document.getElementById('issue-trackerBaseUrl').addEventListener('blur', function() {
-  // mirror issue-tracker URL into knowledge-base URL placeholder if empty
-  const conf = document.getElementById('knowledge-baseUrl');
+// Auto-fill JiraBoardId help text
+document.getElementById('JiraBaseUrl').addEventListener('blur', function() {
+  // mirror Jira URL into Confluence URL placeholder if empty
+  const conf = document.getElementById('ConfluenceUrl');
   if (!conf.value && this.value) conf.placeholder = this.value + '/wiki';
 });
 </script>

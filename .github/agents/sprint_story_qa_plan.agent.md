@@ -6,22 +6,22 @@ tools:
     "edit/createDirectory",
     "edit/editFiles",
     "search",
-    "issue-tracker/issue-tracker_get_agile_boards",
-    "issue-tracker/issue-tracker_get_all_projects",
-    "issue-tracker/issue-tracker_get_backlog_issues",
-    "issue-tracker/issue-tracker_get_board_issues",
-    "issue-tracker/issue-tracker_get_issue",
-    "issue-tracker/issue-tracker_get_project",
-    "issue-tracker/issue-tracker_get_project_issues",
-    "issue-tracker/issue-tracker_get_sprint_issues",
-    "issue-tracker/issue-tracker_get_sprints_from_board",
-    "issue-tracker/issue-tracker_search",
+    "jira/jira_get_agile_boards",
+    "jira/jira_get_all_projects",
+    "jira/jira_get_backlog_issues",
+    "jira/jira_get_board_issues",
+    "jira/jira_get_issue",
+    "jira/jira_get_project",
+    "jira/jira_get_project_issues",
+    "jira/jira_get_sprint_issues",
+    "jira/jira_get_sprints_from_board",
+    "jira/jira_search",
     "todos",
     "runSubagent",
   ]
 instructions:
   - ".github/skills/qa-artifact-naming.md"
-  - ".github/skills/issue-tracker-sprint-query.md"
+  - ".github/skills/jira-sprint-query.md"
 ---
 
 # Sprint Story QA Plan Agent
@@ -36,12 +36,12 @@ For each User Story entering a sprint, a consistent, repeatable QA lifecycle mus
 
 ### Step 1 — Identify the Sprint and Stories
 
-1. Ask the user for the **issue-tracker project key** (e.g., `CDS2REP`) if not provided.
-2. Use `issue-tracker_get_agile_boards` to find the relevant board for the project.
-3. Use `issue-tracker_get_sprints_from_board` to find the **active sprint**.
-4. Use `issue-tracker_get_sprint_issues` to fetch all issues in the active sprint.
+1. Ask the user for the **Jira project key** (e.g., `CDS2REP`) if not provided.
+2. Use `jira_get_agile_boards` to find the relevant board for the project.
+3. Use `jira_get_sprints_from_board` to find the **active sprint**.
+4. Use `jira_get_sprint_issues` to fetch all issues in the active sprint.
 5. Filter for **User Stories only** (issue type = "Story"). Exclude Defects, Tasks, Sub-tasks.
-6. For each story, use `issue-tracker_get_issue` to fetch: Summary, Description, Acceptance Criteria, Story Points, Assignee, Status.
+6. For each story, use `jira_get_issue` to fetch: Summary, Description, Acceptance Criteria, Story Points, Assignee, Status.
 
 ### Step 2 — Assess Each Story (includes Triage)
 
@@ -55,7 +55,7 @@ For each User Story, run the following steps:
 
 This determines whether the story needs a **new test case** or an **enhancement to an existing one**.
 
-1. Use `issue-tracker_search` to find any test-management Test directly linked to the story:
+1. Use `jira_search` to find any Xray Test directly linked to the story:
    ```
    issueType = Test AND issue in linkedIssues("{STORY-KEY}")
    ```
@@ -66,10 +66,10 @@ This determines whether the story needs a **new test case** or an **enhancement 
    ```
    Compare each result's summary/description against the story's AC. Flag any that cover the same feature area.
 
-3. For each candidate test found, retrieve its test-management status:
+3. For each candidate test found, retrieve its Xray status:
    ```powershell
-   cd "C:\Agentic-AI\agentic-ai-powertools-issue-tracker-user-generic"
-   . .\scripts\test-management-api.ps1
+   cd "C:\Agentic-AI\agentic-ai-powertools-jira-user-generic"
+   . .\scripts\xray-api.ps1
    Get-StoryStatus -IssueKey "{CANDIDATE-TEST-KEY}"
    ```
 
@@ -103,7 +103,7 @@ Each `QAP_{STORY-KEY}.md` must contain the following sections:
 | Field              | Value                              |
 |--------------------|------------------------------------|
 | Story Key          | `{STORY-KEY}`                      |
-| Story Summary      | `{Summary from issue-tracker}`              |
+| Story Summary      | `{Summary from Jira}`              |
 | Sprint             | `{Sprint Name}`                    |
 | QA Owner           | `{Assigned tester or TBD}`         |
 | Plan Created       | `{Date}`                           |
@@ -114,7 +114,7 @@ Each `QAP_{STORY-KEY}.md` must contain the following sections:
 ### 2. Story Overview
 
 - **Description**: Concise summary of what the story delivers (user-facing terms, no technical jargon).
-- **Acceptance Criteria**: Bullet list copied from issue-tracker, verbatim.
+- **Acceptance Criteria**: Bullet list copied from Jira, verbatim.
 
 ### 3. QA Lifecycle Checklist
 
@@ -143,7 +143,7 @@ Use this checklist for the full QA lifecycle. Each stage links to the relevant s
 
 ### 5. Dependencies and Notes
 
-- List any dependent stories or issue-tracker issues that must be completed before testing can begin.
+- List any dependent stories or Jira issues that must be completed before testing can begin.
 - Note any environment, data, or access prerequisites for the tester.
 - Flag if a Defect raised during this story's testing should be linked back to the story key.
 
@@ -156,7 +156,7 @@ The story is considered QA-complete when:
 - [ ] Execution evidence reviewed and signed off
 - [ ] Automation code written (if Automation Target = Yes/Partial)
 - [ ] Automation code reviewed and merged
-- [ ] Automation suite run; results published to issue-tracker/knowledge-base
+- [ ] Automation suite run; results published to Jira/Confluence
 - [ ] No open High/Critical defects linked to this story
 
 ---
@@ -164,8 +164,8 @@ The story is considered QA-complete when:
 ## Output Rules
 
 - Save each QA Plan as `docs/QAPlan/QAP_{STORY-KEY}.md`. Create the directory if it does not exist.
-- Do NOT publish documents to issue-tracker or knowledge-base automatically. All outputs are local unless the user explicitly requests publishing.
-- Use concrete information from issue-tracker only. Never invent or assume AC, story details, or owner names.
+- Do NOT publish documents to Jira or Confluence automatically. All outputs are local unless the user explicitly requests publishing.
+- Use concrete information from Jira only. Never invent or assume AC, story details, or owner names.
 - If AC is missing from a story, flag it clearly in the plan under Section 2 and mark Stage 1 as "Blocked — AC required".
 
 > For file naming see `.github/skills/qa-artifact-naming.md`.

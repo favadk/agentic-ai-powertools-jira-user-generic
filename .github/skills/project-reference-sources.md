@@ -1,5 +1,5 @@
 ---
-description: Project-specific documentation URLs, shared folder paths, and knowledge-base references. Loaded by agents at Step 0-Ref before creating or reviewing any test case.
+description: Project-specific documentation URLs, shared folder paths, and Confluence references. Loaded by agents at Step 0-Ref before creating or reviewing any test case.
 ---
 
 # Project Reference Sources
@@ -36,7 +36,7 @@ Agents scan these folders for design docs, test data, and release notes.
 
 ---
 
-## knowledge-base Reference
+## Confluence Reference
 
 - **QA Space Key**: *(configure in Setup Wizard — Step 4)*
 - **Feature Docs Page ID**: *(configure in Setup Wizard — Step 4)*
@@ -63,7 +63,7 @@ If a configured URL redirects to a login page or returns restricted content, log
 
 1. Swagger/OpenAPI spec (exact response format)
 2. Product Help Portal (user-visible expected behaviour)
-3. knowledge-base feature docs (internal design intent)
+3. Confluence feature docs (internal design intent)
 4. Shared doc folder files (supplementary context)
 5. Story ACs (baseline — used when none of the above is available)
 

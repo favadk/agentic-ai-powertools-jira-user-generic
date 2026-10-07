@@ -3,21 +3,21 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
-namespace test-management.Mcp;
+namespace Xray.Mcp;
 
 /// <summary>
-/// HTTP client wrapper for test-management Cloud REST API v2.
-/// Auth endpoint: https://test-management.cloud.gettest-management.app/api/v2/authenticate
-/// Base URL:      https://us.test-management.cloud.gettest-management.app/api/v2
+/// HTTP client wrapper for Xray Cloud REST API v2.
+/// Auth endpoint: https://xray.cloud.getxray.app/api/v2/authenticate
+/// Base URL:      https://us.xray.cloud.getxray.app/api/v2
 /// </summary>
-internal static class test-managementClient
+internal static class XrayClient
 {
-    private const string AuthEndpoint = "https://test-management.cloud.gettest-management.app/api/v2/authenticate";
-    private const string BaseUrl = "https://us.test-management.cloud.gettest-management.app/api/v2";
+    private const string AuthEndpoint = "https://xray.cloud.getxray.app/api/v2/authenticate";
+    private const string BaseUrl = "https://us.xray.cloud.getxray.app/api/v2";
 
     // ─── Authentication ───────────────────────────────────────────────────────
 
-    /// <summary>Obtain a short-lived Bearer token from test-management Cloud.</summary>
+    /// <summary>Obtain a short-lived Bearer token from Xray Cloud.</summary>
     public static async Task<string> GetTokenAsync(string clientId, string clientSecret)
     {
         using var http = new HttpClient();
@@ -30,7 +30,7 @@ internal static class test-managementClient
         var body = await response.Content.ReadAsStringAsync();
 
         if (!response.IsSuccessStatusCode)
-            throw new InvalidOperationException($"test-management auth failed ({response.StatusCode}): {body}");
+            throw new InvalidOperationException($"Xray auth failed ({response.StatusCode}): {body}");
 
         // Response is a plain quoted string, e.g. "eyJ..."
         return body.Trim('"');
@@ -39,9 +39,9 @@ internal static class test-managementClient
     // ─── Test Import ──────────────────────────────────────────────────────────
 
     /// <summary>
-    /// Import (or overwrite) test steps for one or more test-management Test issues
+    /// Import (or overwrite) test steps for one or more Xray Test issues
     /// using the /import/test endpoint.  The <paramref name="jsonPayload"/>
-    /// must be a JSON array conforming to the test-management Cloud import schema.
+    /// must be a JSON array conforming to the Xray Cloud import schema.
     /// </summary>
     public static async Task<JsonNode?> ImportTestStepsAsync(string token, string jsonPayload)
     {
@@ -52,7 +52,7 @@ internal static class test-managementClient
         var body = await response.Content.ReadAsStringAsync();
 
         if (!response.IsSuccessStatusCode)
-            throw new InvalidOperationException($"test-management import failed ({response.StatusCode}): {body}");
+            throw new InvalidOperationException($"Xray import failed ({response.StatusCode}): {body}");
 
         return JsonNode.Parse(body);
     }

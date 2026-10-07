@@ -14,8 +14,8 @@
 4. [Component Design](#4-component-design)
 5. [QA Lifecycle — Stage by Stage](#5-qa-lifecycle--stage-by-stage)
 6. [Team Auto-Discovery Pattern](#6-team-auto-discovery-pattern)
-7. [test-management Integration Design](#7-test-management-integration-design)
-8. [source-control Automation Integration](#8-source-control-automation-integration)
+7. [Xray Integration Design](#7-xray-integration-design)
+8. [Bitbucket Automation Integration](#8-bitbucket-automation-integration)
 9. [PO Response Monitor](#9-po-response-monitor)
 10. [How to Set Up (New Project)](#10-how-to-set-up-new-project)
 11. [How to Use (Day-to-Day)](#11-how-to-use-day-to-day)
@@ -28,14 +28,14 @@
 
 ## 1. Executive Summary
 
-The **Agentic AI QA Framework** replaces manual, repetitive QA administrative work with a suite of GitHub Copilot agents that automate the full QA lifecycle — from test case creation through automation code review — for any software project using issue-tracker, test-management, and source-control.
+The **Agentic AI QA Framework** replaces manual, repetitive QA administrative work with a suite of GitHub Copilot agents that automate the full QA lifecycle — from test case creation through automation code review — for any software project using Jira, Xray, and Bitbucket.
 
 **Key outcomes:**
 
 | Metric | Before | After |
 |--------|--------|-------|
 | Time to produce a test case document | 2–4 hours per story | < 5 minutes |
-| test-management test creation | Manual, error-prone | Automatic, step-accurate |
+| Xray test creation | Manual, error-prone | Automatic, step-accurate |
 | PO clarification loop | Manual email/comment tracking | Automated polling + auto-resume |
 | Automation code PR | Manual branch + PR creation | Automatic branch, commit, PR |
 | Evidence review | Manual screenshot audit | Guided, structured per-step review |
@@ -45,10 +45,10 @@ The **Agentic AI QA Framework** replaces manual, repetitive QA administrative wo
 
 ## 2. Problem Statement
 
-Traditional QA processes for issue-tracker-backed software projects suffer from:
+Traditional QA processes for Jira-backed software projects suffer from:
 
-1. **Manual test case authoring** — QA engineers spend significant time writing, formatting, and uploading test cases to test-management
-2. **Context switching** — moving between issue-tracker, test-management, source-control, and VS Code introduces friction and errors
+1. **Manual test case authoring** — QA engineers spend significant time writing, formatting, and uploading test cases to Xray
+2. **Context switching** — moving between Jira, Xray, Bitbucket, and VS Code introduces friction and errors
 3. **Inconsistent quality** — test cases vary in depth and structure depending on the author
 4. **Blocked cycle detection** — when a TC is blocked on PO clarification, no automated mechanism prompts the team
 5. **Portability gap** — QA tooling configured for one project cannot easily be reused for another
@@ -68,17 +68,17 @@ graph TD
     end
 
     subgraph MCPLayer["MCP Server Layer (.vscode/mcp.local.json)"]
-        issue-trackerMCP["issue-tracker MCP Server"]
-        test-managementMCP["test-management MCP Server"]
-        source-controlMCP["source-control MCP Server"]
-        knowledge-baseMCP["knowledge-base MCP Server"]
+        JiraMCP["Jira MCP Server"]
+        XrayMCP["Xray MCP Server"]
+        BitbucketMCP["Bitbucket MCP Server"]
+        ConfluenceMCP["Confluence MCP Server"]
     end
 
     subgraph ExternalSystems["External Systems"]
-        issue-trackerCloud["issue-tracker Cloud\n(REST API v3)"]
-        test-managementCloud["test-management Cloud\n(JWT Auth)"]
-        source-controlServer["source-control Server\n(Self-hosted)"]
-        knowledge-base["knowledge-base"]
+        JiraCloud["Jira Cloud\n(REST API v3)"]
+        XrayCloud["Xray Cloud\n(JWT Auth)"]
+        BitbucketServer["Bitbucket Server\n(Self-hosted)"]
+        Confluence["Confluence"]
     end
 
     subgraph Scheduler["Windows Background Service (Task Scheduler)"]
@@ -87,7 +87,7 @@ graph TD
         TaskScheduler3["QA-Process-Test-Comment-Reviews\n(every 30 min, after monitors)"]
         MonitorScript1["monitor-po-responses.ps1\nDetects: PO comments"]
         MonitorScript2["monitor-story-changes.ps1\nDetects: description edits, status changes"]
-        ReviewProcessor["process-qa-review-triggers.ps1\nReviews story and linked test-management test comments"]
+        ReviewProcessor["process-qa-review-triggers.ps1\nReviews story and linked Xray test comments"]
         TriggerFiles["scripts/triggers/\n{KEY}-response-{COMMENT_ID}.json (PO_RESPONSE)\n{KEY}-description.json (DESCRIPTION_CHANGE)\n{KEY}-status-change.json (STATUS_CHANGE)"]
         StateFile["scripts/monitor-state.json\ndescriptionHash, lastSeenUpdated,\nlastSeenStatus, sprintWatch config"]
     end
@@ -96,17 +96,17 @@ graph TD
     Agents --> Skills
     Agents --> Docs
     Agents --> MCPLayer
-    MCPLayer --> issue-trackerMCP --> issue-trackerCloud
-    MCPLayer --> test-managementMCP --> test-managementCloud
-    MCPLayer --> source-controlMCP --> source-controlServer
-    MCPLayer --> knowledge-baseMCP --> knowledge-base
-    TaskScheduler1 --> MonitorScript1 --> issue-trackerCloud
-    TaskScheduler2 --> MonitorScript2 --> issue-trackerCloud
+    MCPLayer --> JiraMCP --> JiraCloud
+    MCPLayer --> XrayMCP --> XrayCloud
+    MCPLayer --> BitbucketMCP --> BitbucketServer
+    MCPLayer --> ConfluenceMCP --> Confluence
+    TaskScheduler1 --> MonitorScript1 --> JiraCloud
+    TaskScheduler2 --> MonitorScript2 --> JiraCloud
     MonitorScript1 --> TriggerFiles
     MonitorScript2 --> TriggerFiles
     TaskScheduler3 --> ReviewProcessor
     TriggerFiles --> ReviewProcessor
-    ReviewProcessor --> issue-trackerCloud
+    ReviewProcessor --> JiraCloud
     MonitorScript2 --> StateFile
     TriggerFiles --> Agents
 ```
@@ -118,7 +118,7 @@ graph TD
 | **Presentation** | GitHub Copilot Chat (VS Code) | User interaction — natural language |
 | **Agent** | `.github/agents/*.agent.md` | Workflow orchestration — step-by-step instructions for Copilot |
 | **Skill** | `.github/skills/*.md` | Shared domain knowledge loaded by agents |
-| **Integration** | MCP Servers (`.vscode/mcp.json`) | API connectivity to issue-tracker, test-management, source-control, knowledge-base |
+| **Integration** | MCP Servers (`.vscode/mcp.json`) | API connectivity to Jira, Xray, Bitbucket, Confluence |
 | **Persistence** | `docs/` folder | Local QA artifact storage (markdown files) |
 | **Background** | Windows Task Scheduler | Autonomous PO response polling |
 
@@ -130,28 +130,28 @@ graph TD
 
 Each agent is a markdown file with YAML frontmatter declaring:
 - `model` — the Copilot model to use
-- `tools` — allowed MCP tools (e.g., `issue-tracker/*`, `test-management/*`, `source-control/*`)
+- `tools` — allowed MCP tools (e.g., `jira/*`, `xray/*`, `bitbucket/*`)
 - `instructions` — path to skill files to load
 
-The agent body contains numbered steps that Copilot executes sequentially. Agents are stateful within a conversation session and produce both local markdown artifacts and remote issue-tracker/test-management/source-control updates.
+The agent body contains numbered steps that Copilot executes sequentially. Agents are stateful within a conversation session and produce both local markdown artifacts and remote Jira/Xray/Bitbucket updates.
 
 **Agent inventory:**
 
 | Agent file | Purpose |
 |-----------|---------|
 | `sprint_story_qa_plan.agent.md` | Generates QA plan for all stories in the active sprint |
-| `test_case_preparation.agent.md` | Creates test cases from story AC; uploads to test-management; enforces context-first clarification gate (impacted APIs + design refs + code evidence) |
-| `test_case_review.agent.md` | Reviews TC coverage against AC; maps findings to impacted APIs/changed files and design references; owns test-management test-comment assessment, evidence requests, and test-level review verdicts |
+| `test_case_preparation.agent.md` | Creates test cases from story AC; uploads to Xray; enforces context-first clarification gate (impacted APIs + design refs + code evidence) |
+| `test_case_review.agent.md` | Reviews TC coverage against AC; maps findings to impacted APIs/changed files and design references; owns Xray test-comment assessment, evidence requests, and test-level review verdicts |
 | `test_case_execution.agent.md` | Guides manual execution step-by-step; attaches evidence |
 | `test_case_evidence_review.agent.md` | Validates execution screenshots and outcomes |
 | `automation_code_preparation.agent.md` | Generates Protractor automation spec from test cases |
-| `automation_code_review.agent.md` | Reviews automation code; raises source-control PR |
-| `automation_run_publish.agent.md` | Runs automation suite; publishes results to issue-tracker |
-| `story_monitor.agent.md` | Processes trigger files from both monitors; routes by `changeType`: `PO_RESPONSE` (resumes blocked TC cycle; delegates linked-test-management comments to `test_case_review` Mode D), `DESCRIPTION_CHANGE` (diffs ACs, updates TC doc + test-management steps, chains to review), `STATUS_CHANGE` (notifies team, deprecates/flags TCs), `SPRINT_CHANGE` (creates a fresh TE and relinks story/test to the new sprint) |
+| `automation_code_review.agent.md` | Reviews automation code; raises Bitbucket PR |
+| `automation_run_publish.agent.md` | Runs automation suite; publishes results to Jira |
+| `story_monitor.agent.md` | Processes trigger files from both monitors; routes by `changeType`: `PO_RESPONSE` (resumes blocked TC cycle; delegates linked-Xray comments to `test_case_review` Mode D), `DESCRIPTION_CHANGE` (diffs ACs, updates TC doc + Xray steps, chains to review), `STATUS_CHANGE` (notifies team, deprecates/flags TCs), `SPRINT_CHANGE` (creates a fresh TE and relinks story/test to the new sprint) |
 | `impact_analysis.agent.md` | Generates impact analysis for code changes |
 | `root_cause_analysis.agent.md` | Generates 5-Why RCA documents for defects |
 | `code_review_basic_ondisk.agent.md` | Local code review against target branch |
-| `code_review_basic_source-control.agent.md` | source-control PR code review with inline comments |
+| `code_review_basic_bitbucket.agent.md` | Bitbucket PR code review with inline comments |
 
 ### 4.2 Skill Files (`.github/skills/`)
 
@@ -160,34 +160,34 @@ Skills are shared markdown documents loaded by agents at runtime. They encode do
 | Skill file | Purpose |
 |-----------|---------|
 | `story-team-discovery.md` | How to discover the 5-person team from sub-tasks |
-| `test-management-integration.md` | test-management API patterns, JWT auth, test/execution creation |
-| `automation-repository-config.md` | source-control coordinates, branches, local repo path *(project-specific)* |
+| `xray-integration.md` | Xray API patterns, JWT auth, test/execution creation |
+| `automation-repository-config.md` | Bitbucket coordinates, branches, local repo path *(project-specific)* |
 | `qa-artifact-naming.md` | Document naming conventions |
 | `qa-prioritization-framework.md` | Test priority rules |
 | `story-execution-readiness.md` | Criteria for when a story is ready for testing |
 | `evidence-quality-standards.md` | Screenshot/evidence acceptance rules |
 | `automation-code-standards.md` | Protractor code style, folder structure |
-| `defect-creation-pattern.md` | How to raise issue-tracker Defects from failing steps |
-| `issue-tracker-sprint-query.md` | Board → Sprint → Story discovery workflow |
+| `defect-creation-pattern.md` | How to raise Jira Defects from failing steps |
+| `jira-sprint-query.md` | Board → Sprint → Story discovery workflow |
 | `code-review-criteria.md` | Code quality checklist for reviews |
-| `5-why-methodology.md` | RCA methodology reference || `test-environment-compatibility.md` | Cross-browser, cross-OS, cross-DB compatibility matrix, tier-based coverage, per-env test-management executions, evidence and defect tagging rules |
-| `test-execution-sprint-linking.md` | Sprint TE presence gate — auto-creates sprint Test Execution, notifies PO/PM via issue-tracker comment and Teams webhooks (CID Scurm Team Chat + AC1 Daily Stand-up), bulk-adds all active sprint tests; transitions TE to `In Dev` before execution; enforces hard block in `test_case_execution` Step 0B if the story is not on the current sprint board or the test is not linked to a sprint TE |
+| `5-why-methodology.md` | RCA methodology reference || `test-environment-compatibility.md` | Cross-browser, cross-OS, cross-DB compatibility matrix, tier-based coverage, per-env Xray executions, evidence and defect tagging rules |
+| `test-execution-sprint-linking.md` | Sprint TE presence gate — auto-creates sprint Test Execution, notifies PO/PM via Jira comment and Teams webhooks (CID Scurm Team Chat + AC1 Daily Stand-up), bulk-adds all active sprint tests; transitions TE to `In Dev` before execution; enforces hard block in `test_case_execution` Step 0B if the story is not on the current sprint board or the test is not linked to a sprint TE |
 | `smoke-prerequisite-gate.md` | Requires smoke then smoke-install as the first two steps for stories mentioning driver, Linux/Windows update, add-on, OpenLab CDS, or KVM; execution stops if either suite fails |
 ### 4.3 Scripts (`scripts/`)
 
 | Script | Purpose |
 |-------|---------|
 | `setup-qa-framework.ps1` | Bootstrapper — one-command setup for new projects |
-| `test-management-api.ps1` | test-management REST API helpers (reusable functions) |
-| `monitor-po-responses.ps1` | Scheduled payload — polls issue-tracker for new **comments** on blocked issues, scoped to active sprint non-terminal Story issues; when configured, also watches linked test comment streams (`qnWatchIssue` / `test-managementTestKey`) and records the source/resolution issue so `test_case_review` can resolve test-level feedback on the test-management Test |
-| `process-qa-review-triggers.ps1` | Scheduled processor — classifies linked-test-management test comments with local Ollama using story, TC, and test-management-step evidence; writes `TCR_{TEST-KEY}_Comments.md`, posts a verdict/evidence request on the test-management Test, and never edits test-management steps |
-| `monitor-story-changes.ps1` | Scheduled payload — polls issue-tracker for **description/AC edits**, **status changes**, and sprint carry-over on active sprint non-terminal Story issues; emits `SPRINT_CHANGE` for carry-over stories, ignores out-of-sprint legacy entries, excludes legacy trigger types from active processing, and auto-cleans triggers for terminal-status stories |
-| `process-qa-agent-triggers.ps1` | Scheduled handoff worker — verifies current-sprint TE/test-management-run readiness through `test-management-api.ps1`, requires and invokes a configured automation runner, syncs manifest-backed automated step results/evidence to test-management, and records blocked handoffs when the runner or sync fails |
-| `automation-runner.ps1` | Local automation runner — chains the source-control Protractor smoke-install flow and STORY-0000 feature spec, requires `IP_ADDRESS`, `OLS_NAME`, and `OLD_CID_NAME` for install/upgrade evidence, and writes the evidence manifest consumed by test-management sync |
+| `xray-api.ps1` | Xray REST API helpers (reusable functions) |
+| `monitor-po-responses.ps1` | Scheduled payload — polls Jira for new **comments** on blocked issues, scoped to active sprint non-terminal Story issues; when configured, also watches linked test comment streams (`qnWatchIssue` / `xrayTestKey`) and records the source/resolution issue so `test_case_review` can resolve test-level feedback on the Xray Test |
+| `process-qa-review-triggers.ps1` | Scheduled processor — classifies linked-Xray test comments with local Ollama using story, TC, and Xray-step evidence; writes `TCR_{TEST-KEY}_Comments.md`, posts a verdict/evidence request on the Xray Test, and never edits Xray steps |
+| `monitor-story-changes.ps1` | Scheduled payload — polls Jira for **description/AC edits**, **status changes**, and sprint carry-over on active sprint non-terminal Story issues; emits `SPRINT_CHANGE` for carry-over stories, ignores out-of-sprint legacy entries, excludes legacy trigger types from active processing, and auto-cleans triggers for terminal-status stories |
+| `process-qa-agent-triggers.ps1` | Scheduled handoff worker — verifies current-sprint TE/Xray-run readiness through `xray-api.ps1`, requires and invokes a configured automation runner, syncs manifest-backed automated step results/evidence to Xray, and records blocked handoffs when the runner or sync fails |
+| `automation-runner.ps1` | Local automation runner — chains the Bitbucket Protractor smoke-install flow and STORY-0000 feature spec, requires `IP_ADDRESS`, `OLS_NAME`, and `OLD_CID_NAME` for install/upgrade evidence, and writes the evidence manifest consumed by Xray sync |
 | `build-agent-activity-log.ps1` | Dashboard data builder — scans QA artifacts and trigger files to generate `scripts/agent-activity-log.json` with `currentSprint`, `changeLogUpdates`, and `pendingUserActions` for the monitoring dashboard |
 | `setup-task-scheduler.ps1` | Registers the QA Automation Orchestrator as a scheduled task |
 | `setup-story-monitor-scheduler.ps1` | Registers **both** QA monitors (`QA-Monitor-PO-Responses` + `QA-Monitor-Story-Changes`) as scheduled tasks; self-elevates via UAC if not admin |
-| `monitor-health-check.ps1` | Verifies both monitors, `QA-Process-Test-Comment-Reviews`, stale triggers, and issue-tracker connectivity; sends Event Log and issue-tracker notifications for failures |
+| `monitor-health-check.ps1` | Verifies both monitors, `QA-Process-Test-Comment-Reviews`, stale triggers, and Jira connectivity; sends Event Log and Jira notifications for failures |
 
 **VS Code Tasks** (`.vscode/tasks.json`):
 
@@ -227,61 +227,61 @@ sequenceDiagram
     participant TCR as TC Reviewer
     participant ER as Evidence Reviewer
     participant Copilot as Copilot Agents
-    participant issue-tracker
-    participant test-management
-    participant source-control
+    participant Jira
+    participant Xray
+    participant Bitbucket
 
-    Note over Copilot,issue-tracker: Stage 0 — Sprint QA Plan
-    Copilot->>issue-tracker: Get active sprint + stories
+    Note over Copilot,Jira: Stage 0 — Sprint QA Plan
+    Copilot->>Jira: Get active sprint + stories
     Copilot->>QA: docs/QAPlan/QAP_{KEY}.md
 
-    Note over Copilot,test-management: Stage 1 — Test Case Preparation
-    Copilot->>issue-tracker: Fetch story AC
+    Note over Copilot,Xray: Stage 1 — Test Case Preparation
+    Copilot->>Jira: Fetch story AC
     Copilot->>QA: docs/TestCases/TC_{KEY}.md
-    Copilot->>test-management: Create Test issue with steps
-    Copilot->>issue-tracker: Post comment with test-management link
+    Copilot->>Xray: Create Test issue with steps
+    Copilot->>Jira: Post comment with Xray link
 
     alt AC is BLOCKED (PO clarification needed)
-        Copilot->>issue-tracker: Post @PO comment requesting clarification
+        Copilot->>Jira: Post @PO comment requesting clarification
         Copilot->>Copilot: Write monitor-state.json (WAITING_PO_RESPONSE)
         Note over Copilot: monitor-po-responses.ps1 polls every 30 min
-        PO->>issue-tracker: Reply to comment
+        PO->>Jira: Reply to comment
         Copilot->>Copilot: Trigger file written (changeType=PO_RESPONSE) → story_monitor
     end
     alt PO edits story description / AC text
         Note over Copilot: monitor-story-changes.ps1 detects SHA-256 hash change
         Copilot->>Copilot: Trigger file written (changeType=DESCRIPTION_CHANGE)
-        Copilot->>Copilot: story_monitor diffs ACs → updates affected TC steps + test-management
-        Copilot->>issue-tracker: Post change summary comment
+        Copilot->>Copilot: story_monitor diffs ACs → updates affected TC steps + Xray
+        Copilot->>Jira: Post change summary comment
         Copilot->>Copilot: Auto-chains to test_case_review Mode C
     end
     alt Story status changes (e.g. In Progress → Done / Cancelled)
         Note over Copilot: monitor-story-changes.ps1 detects status field change
         Copilot->>Copilot: Trigger file written (changeType=STATUS_CHANGE)
         Copilot->>Copilot: story_monitor evaluates impact → deprecates or flags TCs
-        Copilot->>issue-tracker: Post status-change notification comment
+        Copilot->>Jira: Post status-change notification comment
     end
 
     Note over Copilot,TCR: Stage 2 — Test Case Review
     Copilot->>TCR: docs/TestCaseReview/TCR_{KEY}.md
-    Copilot->>issue-tracker: Post review findings
+    Copilot->>Jira: Post review findings
 
-    Note over Copilot,test-management: Stage 3 — Test Execution
-    Copilot->>test-management: Create Test Execution issue
+    Note over Copilot,Xray: Stage 3 — Test Execution
+    Copilot->>Xray: Create Test Execution issue
     loop Each test step
         Copilot->>QA: Prompt for screenshot evidence
-        Copilot->>test-management: Set step result + attach evidence
+        Copilot->>Xray: Set step result + attach evidence
     end
     Copilot->>QA: docs/TestExecution/TE_{KEY}.md
 
     Note over Copilot,ER: Stage 4 — Evidence Review
     Copilot->>ER: docs/EvidenceReview/ER_{KEY}.md
 
-    Note over Copilot,source-control: Stage 5–7 — Automation (if applicable)
-    Copilot->>source-control: Read existing spec files
-    Copilot->>source-control: Create branch automation/{KEY}
-    Copilot->>source-control: Commit automation spec
-    Copilot->>source-control: Raise PR → release branch
+    Note over Copilot,Bitbucket: Stage 5–7 — Automation (if applicable)
+    Copilot->>Bitbucket: Read existing spec files
+    Copilot->>Bitbucket: Create branch automation/{KEY}
+    Copilot->>Bitbucket: Commit automation spec
+    Copilot->>Bitbucket: Raise PR → release branch
     Copilot->>Dev: @mention for review
 ```
 
@@ -289,10 +289,10 @@ sequenceDiagram
 
 | From Stage | Condition to advance |
 |-----------|---------------------|
-| 0 → 1 | Story has AC in issue-tracker |
-| 1 → 2 | test-management Test created; all ACs mapped |
+| 0 → 1 | Story has AC in Jira |
+| 1 → 2 | Xray Test created; all ACs mapped |
 | 2 → 3 | TC Reviewer approved (no Critical/High findings) |
-| 3 → 4 | All test-management steps have Pass/Fail result + evidence |
+| 3 → 4 | All Xray steps have Pass/Fail result + evidence |
 | 4 → 5 | Evidence Reviewer approved |
 | 5 → 6 | Automation code generated; Dev input resolved |
 | 6 → 7 | PR merged to release branch |
@@ -305,10 +305,10 @@ Every agent begins with **Team Discovery (Step 1a)** — automatically finding t
 
 ```mermaid
 flowchart TD
-    A[Fetch story via issue-tracker_get_issue] --> B[Extract fields.reporter = PO]
+    A[Fetch story via jira_get_issue] --> B[Extract fields.reporter = PO]
     A --> C[Extract fields.subtasks array]
     C --> D{For each sub-task}
-    D --> E[Fetch sub-task individually\nissue-tracker_get_issue for assignee]
+    D --> E[Fetch sub-task individually\njira_get_issue for assignee]
     E --> F{Classify by summary keyword}
     F -->|execution review, evidence review| G[Evidence Reviewer]
     F -->|test case review, tc review| H[TC Reviewer]
@@ -337,39 +337,39 @@ flowchart TD
 
 ---
 
-## 7. test-management Integration Design
+## 7. Xray Integration Design
 
-The framework uses **test-management Cloud REST API** with JWT authentication:
+The framework uses **Xray Cloud REST API** with JWT authentication:
 
 ```
-POST https://us.test-management.cloud.gettest-management.app/api/v2/authenticate
+POST https://us.xray.cloud.getxray.app/api/v2/authenticate
 → returns JWT token (valid 24h)
 
-POST https://us.test-management.cloud.gettest-management.app/api/v2/graphql
+POST https://us.xray.cloud.getxray.app/api/v2/graphql
 → create Test issues, add steps, set results, attach evidence
 ```
 
-**`scripts/test-management-api.ps1`** provides reusable functions:
+**`scripts/xray-api.ps1`** provides reusable functions:
 
 | Function | Purpose |
 |----------|---------|
-| `New-test-managementTest` | Create test-management Test issue in issue-tracker |
-| `New-test-managementTestExecution` | Create Test Execution and link to Test |
-| `Get-test-managementTestRunId` | Retrieve test run ID for a test within an execution |
-| `Get-test-managementTestRunSteps` | List all steps with their IDs |
-| `Set-test-managementStepResult` | Mark a step Pass/Fail/Blocked |
-| `Add-test-managementStepEvidence` | Attach screenshot to a step |
-| `Set-test-managementTestRunStatus` | Set overall test run status |
+| `New-XrayTest` | Create Xray Test issue in Jira |
+| `New-XrayTestExecution` | Create Test Execution and link to Test |
+| `Get-XrayTestRunId` | Retrieve test run ID for a test within an execution |
+| `Get-XrayTestRunSteps` | List all steps with their IDs |
+| `Set-XrayStepResult` | Mark a step Pass/Fail/Blocked |
+| `Add-XrayStepEvidence` | Attach screenshot to a step |
+| `Set-XrayTestRunStatus` | Set overall test run status |
 
 Credentials are read automatically from `.vscode/mcp.local.json` (never hard-coded).
 
 ---
 
-## 8. source-control Automation Integration
+## 8. Bitbucket Automation Integration
 
 For automation-eligible stories, the framework:
 
-1. **Reads** existing automation specs from source-control (via `source-control_browse_repository`)
+1. **Reads** existing automation specs from Bitbucket (via `bitbucket_browse_repository`)
 2. **Generates** a new Protractor spec (`Tests/Feature tests/{STORY-KEY}.spec.js`)
 3. **Creates branch** `automation/{STORY-KEY}` off the default branch
 4. **Commits** the spec file
@@ -399,11 +399,11 @@ stateDiagram-v2
     Active --> WaitingPO: TC blocked on AC\nagent writes monitor-state.json\n(WAITING_PO_RESPONSE)
     WaitingPO --> WaitingPO: monitor-po-responses.ps1\npolls every 30 min
     WaitingPO --> POResponded: Comment detected\ntrigger file: changeType=PO_RESPONSE
-    POResponded --> TCUpdated: story_monitor:\n- reads trigger\n- updates TC doc\n- updates test-management step\n- chains to test_case_review
+    POResponded --> TCUpdated: story_monitor:\n- reads trigger\n- updates TC doc\n- updates Xray step\n- chains to test_case_review
     TCUpdated --> Active
 
     Active --> DescriptionChanged: monitor-story-changes.ps1\ndetects SHA-256 hash change\ntrigger file: changeType=DESCRIPTION_CHANGE
-    DescriptionChanged --> TCUpdated2: story_monitor:\n- diffs old vs new ACs\n- updates affected TC steps\n- pushes test-management step updates\n- chains to test_case_review Mode C
+    DescriptionChanged --> TCUpdated2: story_monitor:\n- diffs old vs new ACs\n- updates affected TC steps\n- pushes Xray step updates\n- chains to test_case_review Mode C
     TCUpdated2 --> Active
 
     Active --> StatusChanged: monitor-story-changes.ps1\ndetects status field change\ntrigger file: changeType=STATUS_CHANGE
@@ -424,7 +424,7 @@ stateDiagram-v2
   },
   "issues": [{
     "issueKey": "PROJ-1234",
-    "test-managementTestKey": "PROJ-5678",
+    "xrayTestKey": "PROJ-5678",
     "descriptionHash": "<SHA-256 of description plain text>",
     "lastSeenUpdated": "2026-07-21T10:00:00Z",
     "lastSeenStatus": "In Progress",
@@ -439,7 +439,7 @@ stateDiagram-v2
 
 | Field | Present in |
 |-------|------|
-| `issueKey`, `storyKey`, `test-managementTestKey`, `tcDocPath` | All types |
+| `issueKey`, `storyKey`, `xrayTestKey`, `tcDocPath` | All types |
 | `sourceIssueKey`, `sourceIssueType`, `resolutionIssueKey`, `commentId` | `PO_RESPONSE`; identifies the exact comment source and per-comment processing target |
 | `changeType` | All types (`PO_RESPONSE` / `DESCRIPTION_CHANGE` / `STATUS_CHANGE`) |
 | `commentText`, `poDisplayName`, `blockedStep` | `PO_RESPONSE` only |
@@ -459,9 +459,9 @@ PO response triggers are emitted one-per-comment (`{KEY}-response-{COMMENT_ID}.j
 ### Prerequisites
 
 - VS Code with GitHub Copilot extension
-- issue-tracker Cloud API token
-- test-management Cloud client ID + secret
-- source-control Server token
+- Jira Cloud API token
+- Xray Cloud client ID + secret
+- Bitbucket Server token
 - Windows (for Task Scheduler monitor)
 
 ### Step 1 — Clone the framework repo
@@ -476,15 +476,15 @@ cd agentic-ai-powertools
 ```powershell
 .\scripts\setup-qa-framework.ps1 `
     -TargetPath          "C:\Projects\MyNewProject" `
-    -issue-trackerBaseUrl         "mycompany.atlassian.net" `
-    -issue-trackerEmail           "user@company.com" `
-    -issue-trackerToken           "ATATT3x..." `
-    -issue-trackerProjectKey      "PROJ" `
-    -test-managementClientId        "..." `
-    -test-managementClientSecret    "..." `
-    -source-controlServer     "git.company.com" `
-    -source-controlProjectKey "MYTEAM" `
-    -source-controlRepo       "my-e2e-tests" `
+    -JiraBaseUrl         "mycompany.atlassian.net" `
+    -JiraEmail           "user@company.com" `
+    -JiraToken           "ATATT3x..." `
+    -JiraProjectKey      "PROJ" `
+    -XrayClientId        "..." `
+    -XrayClientSecret    "..." `
+    -BitbucketServer     "git.company.com" `
+    -BitbucketProjectKey "MYTEAM" `
+    -BitbucketRepo       "my-e2e-tests" `
     -DefaultBranch       "main" `
     -PrTargetBranch      "release" `
     -LocalRepoPath       "C:\automation\my-project" `
@@ -555,34 +555,34 @@ All QA artifacts are stored locally under `docs/`:
 | # | Use Case | Agents involved |
 |---|---------|----------------|
 | 1 | Auto-generate test cases from story AC | `test_case_preparation` |
-| 2 | Create test-management Test issue with all steps | `test_case_preparation` |
+| 2 | Create Xray Test issue with all steps | `test_case_preparation` |
 | 3 | Review TC coverage against each AC | `test_case_review` |
 | 4 | Handle BLOCKED test case (AC missing) — @PO, wait, auto-resume | `test_case_preparation`, `story_monitor` |
 | 5 | Execute tests step-by-step with screenshot evidence | `test_case_execution` |
 | 6 | Validate execution evidence quality | `test_case_evidence_review` |
 | 7 | Generate Protractor automation spec | `automation_code_preparation` |
 | 8 | Review automation code quality | `automation_code_review` |
-| 9 | Create source-control branch + PR automatically | `automation_code_review` |
-| 10 | Run automation suite + publish results to issue-tracker | `automation_run_publish` |
-| 11 | Auto-discover team roles from issue-tracker sub-tasks | All agents (via skill) |
-| 12 | Send @mention comments in issue-tracker at correct lifecycle gate | All agents |
+| 9 | Create Bitbucket branch + PR automatically | `automation_code_review` |
+| 10 | Run automation suite + publish results to Jira | `automation_run_publish` |
+| 11 | Auto-discover team roles from Jira sub-tasks | All agents (via skill) |
+| 12 | Send @mention comments in Jira at correct lifecycle gate | All agents |
 | 13 | Sprint-level QA planning across multiple stories | `sprint_story_qa_plan` |
 | 14 | Impact analysis for code changes | `impact_analysis` |
 | 15 | 5-Why Root Cause Analysis for defects | `root_cause_analysis` |
-| 16 | Code review with source-control inline comments | `code_review_basic_source-control` |
+| 16 | Code review with Bitbucket inline comments | `code_review_basic_bitbucket` |
 | 17 | One-command framework setup for new project | `setup-qa-framework.ps1` |
 | 18 | Detect cross-environment requirements from AC keywords | `test_case_preparation` (via skill) |
 | 19 | Resolve project compatibility matrix (browser/OS/DB/device) | `test_case_preparation`, `test_case_execution`, `test_case_review` |
 | 20 | Generate env-annotated test steps and Environment Coverage section in TC | `test_case_preparation` |
-| 21 | Create separate test-management Test Executions per environment combination | `test_case_execution` |
+| 21 | Create separate Xray Test Executions per environment combination | `test_case_execution` |
 | 22 | Enforce environment-visible evidence (browser bar, OS taskbar, DB version) | `test_case_execution`, `test_case_evidence_review` |
 | 23 | Tag defects with browser/OS/DB labels and environment-prefixed summary | `test_case_execution` |
 | 24 | Flag missing cross-env coverage in TC review findings | `test_case_review` |
-| 25 | Detect story AC/description edits and auto-update affected TC steps + test-management | `monitor-story-changes.ps1`, `story_monitor` |
+| 25 | Detect story AC/description edits and auto-update affected TC steps + Xray | `monitor-story-changes.ps1`, `story_monitor` |
 | 26 | Detect story status transitions, open execution window for QA statuses (`Waiting for Verification`, `Ready for QA`, `In QA`, `Ready for Testing`, `Testing`, `In Testing`), and deprecate/flag linked test cases | `monitor-story-changes.ps1`, `story_monitor` |
 | 27 | Sprint-wide automatic story watch — all sprint issues monitored without manual config | `monitor-story-changes.ps1` (sprintWatch mode) |
 | 28 | Route story change triggers by type (PO_RESPONSE / DESCRIPTION_CHANGE / STATUS_CHANGE / SPRINT_CHANGE) | `story_monitor` |
-| 29 | Detect sprint carry-over and create a fresh TE with verified story, test-management Test, and TE membership in the new sprint | `monitor-story-changes.ps1`, `story_monitor`, `test_case_execution` |
+| 29 | Detect sprint carry-over and create a fresh TE with verified story, Xray Test, and TE membership in the new sprint | `monitor-story-changes.ps1`, `story_monitor`, `test_case_execution` |
 | 30 | Dispatch verified TE/test-run work to interactive test execution | `process-qa-agent-triggers.ps1`, `test_case_execution` |
 
 ---
@@ -594,7 +594,7 @@ All QA artifacts are stored locally under `docs/`:
 | **Agents as markdown files** | VS Code's `.agent.md` format — no custom extension needed; version-controlled alongside code |
 | **Skills as separate files** | Shared knowledge is loaded per-agent; single source of truth for patterns like team discovery |
 | **Credentials in `mcp.local.json`** | Git-ignored; readable by MCP servers; no secrets in agent files |
-| **Sub-task fetch via `issue-tracker_get_issue`** | JQL `parent=` is unsupported in this issue-tracker instance; per-sub-task fetch is reliable |
+| **Sub-task fetch via `jira_get_issue`** | JQL `parent=` is unsupported in this Jira instance; per-sub-task fetch is reliable |
 | **Priority keyword classification** | Most-specific-first avoids "test case review" being misclassified as "Tester" |
 | **Line-by-line string building** | PowerShell here-string limitations with backticks/code-fences make line arrays safer for generated scripts |
 | **ConvertTo-Json for mcp.local.json** | Eliminates all string-escaping risk; JSON structure validated by .NET |
@@ -607,8 +607,8 @@ All QA artifacts are stored locally under `docs/`:
 
 - **Windows-only** for the Task Scheduler monitor (core agents work cross-platform)
 - **Protractor-specific** automation generation (can be extended for other frameworks)
-- **issue-tracker Cloud** required for team discovery (issue-tracker Data Center has different sub-task API behaviour)
-- **test-management Cloud** required (test-management Server has a different API)
+- **Jira Cloud** required for team discovery (Jira Data Center has different sub-task API behaviour)
+- **Xray Cloud** required (Xray Server has a different API)
 
 ---
 
@@ -627,7 +627,7 @@ If sprintWatch.enabled:
        → Auto-update sprintId + sprintName in monitor-state.json
        → New sprint detected — zero manual intervention needed between sprints
   4. GET /rest/agile/1.0/sprint/{sprintId}/issue?fields=key,summary,issuetype,status
-       (NOTE: /rest/api/3/search?jql=sprint=... returns HTTP 410 Gone on this issue-tracker
+       (NOTE: /rest/api/3/search?jql=sprint=... returns HTTP 410 Gone on this Jira
         Cloud instance — permanently replaced by the Agile REST endpoint above)
   5. Filter results: keep only issuetype in (Story, Defect, Bug)
   6. For each issue not already in watchList:
@@ -647,7 +647,7 @@ For each watched issue:
      b. newHash = SHA-256(plain_text)
      c. If newHash != stored descriptionHash:
           → Write DESCRIPTION_CHANGE trigger file to scripts/triggers/
-          → Optional: POST auto-ack comment to issue-tracker (-PostAck flag)
+          → Optional: POST auto-ack comment to Jira (-PostAck flag)
           → Windows toast notification
      d. If fields.status.name != lastSeenStatus:
           → Write STATUS_CHANGE trigger file to scripts/triggers/
@@ -664,7 +664,7 @@ function Get-AdfPlainText(node):
 ```
 
 **Key design decisions:**
-- Agile REST endpoint (`/rest/agile/1.0/...`) is used for all sprint queries — the issue-tracker Cloud instance used by STORY returns HTTP **410 Gone** for JQL-based sprint searches (`/rest/api/3/search?jql=sprint=...`). This is a permanent restriction.
+- Agile REST endpoint (`/rest/agile/1.0/...`) is used for all sprint queries — the Jira Cloud instance used by STORY returns HTTP **410 Gone** for JQL-based sprint searches (`/rest/api/3/search?jql=sprint=...`). This is a permanent restriction.
 - `sprintName` is left empty (`""`) in new `monitor-state.json` files generated by `setup-qa-framework.ps1` — it is auto-populated on the first monitor run.
 - The guard `if (-not $sw.sprintName) { skip }` prevents crashes on first run before detection completes.
 
@@ -676,7 +676,7 @@ function Get-AdfPlainText(node):
 |---------|---------------|
 | API tokens never in repo | Stored in `.vscode/mcp.local.json` (git-ignored) |
 | Least-privilege tokens | Each MCP server uses only the token it needs |
-| No token logging | `test-management-api.ps1` reads tokens at runtime; never prints them |
+| No token logging | `xray-api.ps1` reads tokens at runtime; never prints them |
 | `.gitignore` auto-updated | Bootstrapper adds `mcp.local.json` entry automatically |
-| test-management JWT short-lived | JWT tokens expire in 24h; refreshed per session |
+| Xray JWT short-lived | JWT tokens expire in 24h; refreshed per session |
 | ADF comment injection | `@mention` ADF format validated — no raw HTML injection |

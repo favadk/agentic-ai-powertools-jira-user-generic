@@ -13,6 +13,6 @@ builder.Logging.AddConsole(opts =>
 builder.Services
     .AddMcpServer()
     .WithStdioServerTransport()
-    .WithToolsFromAssembly(typeof(test-managementTools).Assembly);
+    .WithToolsFromAssembly(typeof(XrayTools).Assembly);
 
 await builder.Build().RunAsync();

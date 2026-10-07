@@ -6,29 +6,29 @@
 .DESCRIPTION
     Triggered by monitor-story-changes.ps1 when it writes a WINDOWS_UPDATE trigger file.
     Executes the following steps automatically:
-        1. Link test-management Test STORY-0000 to the story
+        1. Link Xray Test STORY-0000 to the story
         2. Create branch qualify/monthly-windows-update-<Month-YYYY> from master
         3. Fetch latest cumulative KB article IDs from Microsoft Update Catalog
         4. Update SoftwareManager.js (kbArticles, softwareVersions, softwareDependencies,
            softwareVersionsReleaseDates) for win10 21H2 and win11 24H2
         5. Commit and push the branch
-        6. Trigger the automation-server job with the standard params
+        6. Trigger the Jenkins job with the standard params
 
 .PARAMETER TriggerFile
     Path to the WINDOWS_UPDATE trigger JSON file written by the monitor.
 
-.PARAMETER automation-serverJobPath
-    automation-server job path (e.g. "job/AC_Project/job/RunProtractorTests").
+.PARAMETER JenkinsJobPath
+    Jenkins job path (e.g. "job/AC_Project/job/RunProtractorTests").
     Defaults to value in constantData.json runTestsJobPath.
 
 .EXAMPLE
-    . .\scripts\test-management-api.ps1
+    . .\scripts\xray-api.ps1
     .\scripts\handle-windows-update.ps1 -TriggerFile scripts/triggers/STORY-0000-windows-update.json
 #>
 param(
     [Parameter(Mandatory)][string]$TriggerFile,
-    [string]$automation-serverJobPath    = "",
-    [string]$automation-serverBaseUrl    = "https://app.example.com
+    [string]$JenkinsJobPath    = "",
+    [string]$JenkinsBaseUrl    = "https://app.example.com
     [string]$AutomationRepoDir = "C:\automation\06102026\UI_Protractor_Tests",
     [string]$GitRepoDir        = "C:\automation\ac_repo_fr13"
 )
@@ -37,10 +37,10 @@ $ErrorActionPreference = "Stop"
 
 # --- Load helpers ------------------------------------------------------------
 $repoRoot = Split-Path $PSScriptRoot -Parent
-. (Join-Path $PSScriptRoot "test-management-api.ps1")
-$creds    = Get-test-managementCreds
+. (Join-Path $PSScriptRoot "xray-api.ps1")
+$creds    = Get-XrayCreds
 $encoded  = $creds.Headers.Authorization
-$issue-trackerBase = "https://app.example.com
+$jiraBase = "https://app.example.com
 
 # --- Read trigger -------------------------------------------------------------
 $trigger  = Get-Content $TriggerFile -Raw | ConvertFrom-Json
@@ -96,14 +96,14 @@ Write-Host "  Month: $monthFull $year  ->  Branch: $branchName"
 # --- STEP 1: Link STORY-0000 to the story -------------------------------------
 Write-Host ""
 Write-Host "STEP 1 -- Linking STORY-0000 to $storyKey..."
-$existingLinks = Invoke-RestMethod -Uri "$issue-trackerBase/rest/api/3/issue/$storyKey`?fields=issuelinks" `
+$existingLinks = Invoke-RestMethod -Uri "$jiraBase/rest/api/3/issue/$storyKey`?fields=issuelinks" `
     -Headers @{Authorization=$encoded;Accept="application/json"}
 $alreadyLinked = $existingLinks.fields.issuelinks | Where-Object { $_.inwardIssue.key -eq 'STORY-0000' }
 if ($alreadyLinked) {
     Write-Host "  STORY-0000 already linked. Skipping."
 } else {
     $linkBody = '{"type":{"name":"Test"},"inwardIssue":{"key":"STORY-0000"},"outwardIssue":{"key":"' + $storyKey + '"}}'
-    $r = Invoke-WebRequest -Uri "$issue-trackerBase/rest/api/3/issueLink" -Method POST `
+    $r = Invoke-WebRequest -Uri "$jiraBase/rest/api/3/issueLink" -Method POST `
         -Headers @{Authorization=$encoded;Accept="application/json"} `
         -Body $linkBody -ContentType "application/json" -UseBasicParsing
     Write-Host "  Linked STORY-0000 -> $storyKey (HTTP $($r.StatusCode))"
@@ -251,19 +251,19 @@ try {
     Pop-Location
 }
 
-# --- STEP 6: Trigger automation-server job ---------------------------------------------
+# --- STEP 6: Trigger Jenkins job ---------------------------------------------
 Write-Host ""
-Write-Host "STEP 6 -- Ensuring single Test Execution then triggering automation-server..."
+Write-Host "STEP 6 -- Ensuring single Test Execution then triggering Jenkins..."
 
 # Reuse existing TE linked to this story+STORY-0000. Create one only if none exists.
-$existingLinks = Invoke-RestMethod -Uri "$issue-trackerBase/rest/api/3/issue/$storyKey`?fields=issuelinks" `
+$existingLinks = Invoke-RestMethod -Uri "$jiraBase/rest/api/3/issue/$storyKey`?fields=issuelinks" `
     -Headers @{Authorization=$encoded;Accept="application/json"}
 $existingTE = $existingLinks.fields.issuelinks |
     Where-Object { $_.outwardIssue.key -match "^STORY-" } |
     ForEach-Object { $_.outwardIssue.key } |
     Where-Object {
         try {
-            $te = Invoke-RestMethod -Uri "$issue-trackerBase/rest/api/3/issue/$_`?fields=issuetype" `
+            $te = Invoke-RestMethod -Uri "$jiraBase/rest/api/3/issue/$_`?fields=issuetype" `
                 -Headers @{Authorization=$encoded;Accept="application/json"}
             $te.fields.issuetype.name -eq "Test Execution"
         } catch { $false }
@@ -274,7 +274,7 @@ if ($existingTE) {
     $teKey = $existingTE
 } else {
     Write-Host "  No existing TE found -- creating one..."
-    $teKey = New-test-managementTestExecution -ProjectKey "STORY" -StoryKey $storyKey `
+    $teKey = New-XrayTestExecution -ProjectKey "STORY" -StoryKey $storyKey `
         -TestKeys @("STORY-0000") `
         -Summary "TE: $storyKey $summary - Cycle 1" `
         -Environment "TST-51"
@@ -282,22 +282,22 @@ if ($existingTE) {
 }
 Write-Host "  Test Execution in use: $teKey"
 
-# automation-server job path from config (runTestsJobPath) or parameter
+# Jenkins job path from config (runTestsJobPath) or parameter
 $constantData = Get-Content (Join-Path $AutomationRepoDir "TestData\constantData.json") -Raw | ConvertFrom-Json
-$resolvedJobPath = if ($automation-serverJobPath) { $automation-serverJobPath }
+$resolvedJobPath = if ($JenkinsJobPath) { $JenkinsJobPath }
                    elseif ($constantData.runTestsJobPath) { $constantData.runTestsJobPath }
                    else { $null }
 
 if (-not $resolvedJobPath) {
-    Write-Warning "  automation-server job path not configured (set runTestsJobPath in constantData.json or pass -automation-serverJobPath)."
+    Write-Warning "  Jenkins job path not configured (set runTestsJobPath in constantData.json or pass -JenkinsJobPath)."
     Write-Warning "  Manual run command:"
     Write-Host    "  BRANCH=origin/$branchName SPEC='./Tests/Story tests/STORY-0000.spec.js' BASE_URL=https://app.example.com OLS_NAME=scs-perfPhy-SRV.scs.ExampleOrg.com"
 } else {
-    $automation-serverUser  = $env:automation-server_USER
-    $automation-serverToken = $env:automation-server_TOKEN
-    if (-not $automation-serverUser -or -not $automation-serverToken) {
-        Write-Warning "  automation-server_USER or automation-server_TOKEN not set -- cannot trigger job automatically."
-        Write-Warning "  Trigger manually at: $automation-serverBaseUrl/$resolvedJobPath/buildWithParameters"
+    $jenkinsUser  = $env:JENKINS_USER
+    $jenkinsToken = $env:JENKINS_TOKEN
+    if (-not $jenkinsUser -or -not $jenkinsToken) {
+        Write-Warning "  JENKINS_USER or JENKINS_TOKEN not set -- cannot trigger job automatically."
+        Write-Warning "  Trigger manually at: $JenkinsBaseUrl/$resolvedJobPath/buildWithParameters"
     } else {
         $bp1 = "BRANCH=$([Uri]::EscapeDataString('origin/' + $branchName))"
         $bp2 = "CONF=storyTests"
@@ -305,15 +305,15 @@ if (-not $resolvedJobPath) {
         $bp4 = "BASE_URL=$([Uri]::EscapeDataString('https://app.example.com))"
         $bp5 = 'OLS_NAME=' + [Uri]::EscapeDataString('scs-perfPhy-SRV.scs.ExampleOrg.com')
         $buildParams = "$bp1&$bp2&$bp3&$bp4&$bp5"
-        $triggerUrl  = "$automation-serverBaseUrl/$resolvedJobPath/buildWithParameters?$buildParams"
-        $automation-serverCred = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes("${automation-serverUser}:${automation-serverToken}"))
+        $triggerUrl  = "$JenkinsBaseUrl/$resolvedJobPath/buildWithParameters?$buildParams"
+        $jenkinsCred = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes("${jenkinsUser}:${jenkinsToken}"))
         try {
             $jr = Invoke-WebRequest -Uri $triggerUrl -Method POST `
-                -Headers @{Authorization="Basic $automation-serverCred"} -UseBasicParsing
-            Write-Host "  automation-server job triggered: HTTP $($jr.StatusCode)"
-            Write-Host "  Job URL: $automation-serverBaseUrl/$resolvedJobPath"
+                -Headers @{Authorization="Basic $jenkinsCred"} -UseBasicParsing
+            Write-Host "  Jenkins job triggered: HTTP $($jr.StatusCode)"
+            Write-Host "  Job URL: $JenkinsBaseUrl/$resolvedJobPath"
         } catch {
-            Write-Warning "  automation-server trigger failed: $_"
+            Write-Warning "  Jenkins trigger failed: $_"
         }
     }
 }

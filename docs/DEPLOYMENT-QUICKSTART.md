@@ -29,14 +29,14 @@ Use this mode for learning, workshops, and internal demos.
 5. Ask a safe test prompt, such as:
 
 ```text
-List available issue-tracker tools
+List available Jira tools
 ```
 
 Expected result:
 
 - The workspace starts with placeholder settings.
 - No production credentials are required.
-- No real issue-tracker/source-control/knowledge-base changes are made.
+- No real Jira/Bitbucket/Confluence changes are made.
 
 ## Option B: Real Environment Mode
 

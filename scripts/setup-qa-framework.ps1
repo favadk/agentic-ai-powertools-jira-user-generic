@@ -20,15 +20,15 @@
     # Fully parameterised
     .\scripts\setup-qa-framework.ps1 `
         -TargetPath            "C:\MyProject" `
-        -issue-trackerBaseUrl           "mycompany.atlassian.net" `
-        -issue-trackerEmail             "user@company.com" `
-        -issue-trackerToken             "ATATT3x..." `
-        -issue-trackerProjectKey        "PROJ" `
-        -test-managementClientId          "ABC123" `
-        -test-managementClientSecret      "xyz..." `
-        -source-controlServer       "git.company.com" `
-        -source-controlProjectKey   "MYPROJ" `
-        -source-controlRepo         "my-e2e-tests" `
+        -JiraBaseUrl           "mycompany.atlassian.net" `
+        -JiraEmail             "user@company.com" `
+        -JiraToken             "ATATT3x..." `
+        -JiraProjectKey        "PROJ" `
+        -XrayClientId          "ABC123" `
+        -XrayClientSecret      "xyz..." `
+        -BitbucketServer       "git.company.com" `
+        -BitbucketProjectKey   "MYPROJ" `
+        -BitbucketRepo         "my-e2e-tests" `
         -DefaultBranch         "main" `
         -PrTargetBranch        "release" `
         -LocalRepoPath         "C:\automation\my-project" `
@@ -38,19 +38,19 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory)][string]$TargetPath,
-    [string]$issue-trackerBaseUrl,
-    [string]$issue-trackerEmail,
-    [string]$issue-trackerToken,
-    [string]$issue-trackerProjectKey,
-    [string]$test-managementClientId,
-    [string]$test-managementClientSecret,
-    [string]$source-controlServer,
-    [string]$source-controlProjectKey,
-    [string]$source-controlRepo,
+    [string]$JiraBaseUrl,
+    [string]$JiraEmail,
+    [string]$JiraToken,
+    [string]$JiraProjectKey,
+    [string]$XrayClientId,
+    [string]$XrayClientSecret,
+    [string]$BitbucketServer,
+    [string]$BitbucketProjectKey,
+    [string]$BitbucketRepo,
     [string]$DefaultBranch,
     [string]$PrTargetBranch,
     [string]$LocalRepoPath,
-    [string]$issue-trackerBoardId,
+    [string]$JiraBoardId,
     [switch]$RegisterScheduler,
     [switch]$Force
 )
@@ -88,24 +88,24 @@ Write-Host '=== QA Agent Framework Setup ===' -ForegroundColor Cyan
 Write-Host "Target: $TargetPath" -ForegroundColor Yellow
 Write-Host ''
 
-$issue-trackerBaseUrl         = Read-Value -Current $issue-trackerBaseUrl         -Prompt 'issue-tracker base URL (e.g. company.atlassian.net)'
-$issue-trackerEmail           = Read-Value -Current $issue-trackerEmail           -Prompt 'issue-tracker email'
-$issue-trackerToken           = Read-Value -Current $issue-trackerToken           -Prompt 'issue-tracker API token' -Secret
-$issue-trackerProjectKey      = Read-Value -Current $issue-trackerProjectKey      -Prompt 'issue-tracker project key (e.g. PROJ)'
-$test-managementClientId        = Read-Value -Current $test-managementClientId        -Prompt 'test-management Cloud client ID'
-$test-managementClientSecret    = Read-Value -Current $test-managementClientSecret    -Prompt 'test-management Cloud client secret' -Secret
-$source-controlServer     = Read-Value -Current $source-controlServer     -Prompt 'source-control server hostname (e.g. git.company.com)'
-$source-controlProjectKey = Read-Value -Current $source-controlProjectKey -Prompt 'source-control project key'
-$source-controlRepo       = Read-Value -Current $source-controlRepo       -Prompt 'source-control repo slug'
+$JiraBaseUrl         = Read-Value -Current $JiraBaseUrl         -Prompt 'Jira base URL (e.g. company.atlassian.net)'
+$JiraEmail           = Read-Value -Current $JiraEmail           -Prompt 'Jira email'
+$JiraToken           = Read-Value -Current $JiraToken           -Prompt 'Jira API token' -Secret
+$JiraProjectKey      = Read-Value -Current $JiraProjectKey      -Prompt 'Jira project key (e.g. PROJ)'
+$XrayClientId        = Read-Value -Current $XrayClientId        -Prompt 'Xray Cloud client ID'
+$XrayClientSecret    = Read-Value -Current $XrayClientSecret    -Prompt 'Xray Cloud client secret' -Secret
+$BitbucketServer     = Read-Value -Current $BitbucketServer     -Prompt 'Bitbucket server hostname (e.g. git.company.com)'
+$BitbucketProjectKey = Read-Value -Current $BitbucketProjectKey -Prompt 'Bitbucket project key'
+$BitbucketRepo       = Read-Value -Current $BitbucketRepo       -Prompt 'Bitbucket repo slug'
 $DefaultBranch       = Read-Value -Current $DefaultBranch       -Prompt 'Default/source branch name'
 $PrTargetBranch      = Read-Value -Current $PrTargetBranch      -Prompt 'PR target branch name'
 $LocalRepoPath       = Read-Value -Current $LocalRepoPath       -Prompt 'Local path to automation repo clone'
-$issue-trackerBoardId         = Read-Value -Current $issue-trackerBoardId         -Prompt 'issue-tracker Agile board ID (for sprint watch, e.g. 440 -- press Enter to skip)'
+$JiraBoardId         = Read-Value -Current $JiraBoardId         -Prompt 'Jira Agile board ID (for sprint watch, e.g. 440 -- press Enter to skip)'
 
-$issue-trackerBaseUrl        = $issue-trackerBaseUrl -replace '^https?://','' -replace '/$',''
-$issue-trackerUrl            = 'https://' + $issue-trackerBaseUrl
-$source-controlUrl       = 'https://' + $source-controlServer
-$source-controlBrowseUrl = $source-controlUrl + '/projects/' + $source-controlProjectKey + '/repos/' + $source-controlRepo + '/browse'
+$JiraBaseUrl        = $JiraBaseUrl -replace '^https?://','' -replace '/$',''
+$JiraUrl            = 'https://' + $JiraBaseUrl
+$BitbucketUrl       = 'https://' + $BitbucketServer
+$BitbucketBrowseUrl = $BitbucketUrl + '/projects/' + $BitbucketProjectKey + '/repos/' + $BitbucketRepo + '/browse'
 
 # ---------------------------------------------------------------------------
 # 2. Create folder structure
@@ -151,12 +151,12 @@ Get-ChildItem (Join-Path $sourceRoot '.github\skills') -Filter '*.md' |
         }
     }
 
-$test-managementSrc = Join-Path $sourceRoot 'scripts\test-management-api.ps1'
-if (Test-Path $test-managementSrc) {
-    $test-managementDest = Join-Path $TargetPath 'scripts\test-management-api.ps1'
-    if ($Force -or -not (Test-Path $test-managementDest)) {
-        Copy-Item $test-managementSrc $test-managementDest -Force
-        Write-Host '  Script: test-management-api.ps1' -ForegroundColor DarkGray
+$xraySrc = Join-Path $sourceRoot 'scripts\xray-api.ps1'
+if (Test-Path $xraySrc) {
+    $xrayDest = Join-Path $TargetPath 'scripts\xray-api.ps1'
+    if ($Force -or -not (Test-Path $xrayDest)) {
+        Copy-Item $xraySrc $xrayDest -Force
+        Write-Host '  Script: xray-api.ps1' -ForegroundColor DarkGray
     }
 }
 
@@ -182,28 +182,28 @@ $fence = '```'
 $nl    = [System.Environment]::NewLine
 
 $autoDoc  = '---' + $nl
-$autoDoc += 'description: source-control repository coordinates for the automation codebase' + $nl
+$autoDoc += 'description: Bitbucket repository coordinates for the automation codebase' + $nl
 $autoDoc += '---' + $nl + $nl
 $autoDoc += '# Automation Repository Configuration' + $nl + $nl
 $autoDoc += 'All automation agents must load this skill before reading or writing automation code.' + $nl + $nl
-$autoDoc += '> **source-control Server** (self-hosted) -- base URL: `' + $source-controlUrl + '`' + $nl + $nl
+$autoDoc += '> **Bitbucket Server** (self-hosted) -- base URL: `' + $BitbucketUrl + '`' + $nl + $nl
 $autoDoc += '---' + $nl + $nl
 $autoDoc += '## Repository Coordinates' + $nl + $nl
 $autoDoc += '| Setting              | Value |' + $nl
 $autoDoc += '|----------------------|-------|' + $nl
-$autoDoc += '| **source-control Server** | `' + $source-controlServer      + '` |' + $nl
-$autoDoc += '| **Project Key**      | `' + $source-controlProjectKey  + '` |' + $nl
-$autoDoc += '| **Repository Slug**  | `' + $source-controlRepo        + '` |' + $nl
-$autoDoc += '| **Browse URL**       | `' + $source-controlBrowseUrl   + '` |' + $nl
+$autoDoc += '| **Bitbucket Server** | `' + $BitbucketServer      + '` |' + $nl
+$autoDoc += '| **Project Key**      | `' + $BitbucketProjectKey  + '` |' + $nl
+$autoDoc += '| **Repository Slug**  | `' + $BitbucketRepo        + '` |' + $nl
+$autoDoc += '| **Browse URL**       | `' + $BitbucketBrowseUrl   + '` |' + $nl
 $autoDoc += '| **Default Branch**   | `' + $DefaultBranch        + '` |' + $nl
 $autoDoc += '| **PR Target Branch** | `' + $PrTargetBranch       + '` |' + $nl + $nl
 $autoDoc += '> Automation branches follow the pattern `automation/{STORY-KEY}` and PRs target `' + $PrTargetBranch + '`.' + $nl + $nl
 $autoDoc += '---' + $nl + $nl
 $autoDoc += '## How to Browse the Repository' + $nl + $nl
 $autoDoc += $fence + $nl
-$autoDoc += 'source-control_browse_repository(projectKey: "' + $source-controlProjectKey + '", repoSlug: "' + $source-controlRepo + '", path: "")' + $nl
-$autoDoc += 'source-control_get_file_content(projectKey: "' + $source-controlProjectKey + '", repoSlug: "' + $source-controlRepo + '", path: "{file_path}", branch: "' + $DefaultBranch + '")' + $nl
-$autoDoc += 'source-control_search(projectKey: "' + $source-controlProjectKey + '", repoSlug: "' + $source-controlRepo + '", query: "{search_term}")' + $nl
+$autoDoc += 'bitbucket_browse_repository(projectKey: "' + $BitbucketProjectKey + '", repoSlug: "' + $BitbucketRepo + '", path: "")' + $nl
+$autoDoc += 'bitbucket_get_file_content(projectKey: "' + $BitbucketProjectKey + '", repoSlug: "' + $BitbucketRepo + '", path: "{file_path}", branch: "' + $DefaultBranch + '")' + $nl
+$autoDoc += 'bitbucket_search(projectKey: "' + $BitbucketProjectKey + '", repoSlug: "' + $BitbucketRepo + '", query: "{search_term}")' + $nl
 $autoDoc += $fence + $nl + $nl
 $autoDoc += '---' + $nl + $nl
 $autoDoc += '## Local Repository Path' + $nl + $nl
@@ -221,25 +221,25 @@ Write-Host 'Generating .vscode/mcp.local.json...' -ForegroundColor Cyan
 
 $mcpObject = [ordered]@{
     servers = [ordered]@{
-        issue-tracker = [ordered]@{
+        jira = [ordered]@{
             env = [ordered]@{
-                issue-tracker_URL            = $issue-trackerUrl
-                issue-tracker_EMAIL          = $issue-trackerEmail
-                issue-tracker_PERSONAL_TOKEN = $issue-trackerToken
+                JIRA_URL            = $JiraUrl
+                JIRA_EMAIL          = $JiraEmail
+                JIRA_PERSONAL_TOKEN = $JiraToken
             }
         }
-        test-management = [ordered]@{
+        xray = [ordered]@{
             env = [ordered]@{
-                test-management_CLIENT_ID     = $test-managementClientId
-                test-management_CLIENT_SECRET = $test-managementClientSecret
-                issue-tracker_URL           = $issue-trackerUrl
+                XRAY_CLIENT_ID     = $XrayClientId
+                XRAY_CLIENT_SECRET = $XrayClientSecret
+                JIRA_URL           = $JiraUrl
             }
         }
-        source-control = [ordered]@{
+        bitbucket = [ordered]@{
             env = [ordered]@{
-                source-control_SERVER_URL = $source-controlUrl
-                source-control_USERNAME   = $issue-trackerEmail
-                source-control_TOKEN      = $issue-trackerToken
+                BITBUCKET_SERVER_URL = $BitbucketUrl
+                BITBUCKET_USERNAME   = $JiraEmail
+                BITBUCKET_TOKEN      = $JiraToken
             }
         }
     }
@@ -274,7 +274,7 @@ $dq = '"'   # double-quote
 $monLines = [System.Collections.Generic.List[string]]::new()
 $monLines.Add('<#')
 $monLines.Add('.SYNOPSIS')
-$monLines.Add('    Polls issue-tracker for PO responses on BLOCKED test cases and writes trigger files.')
+$monLines.Add('    Polls Jira for PO responses on BLOCKED test cases and writes trigger files.')
 $monLines.Add('    Auto-generated by setup-qa-framework.ps1 -- update $WorkspaceRoot if workspace moves.')
 $monLines.Add('#>')
 $monLines.Add('')
@@ -283,10 +283,10 @@ $monLines.Add('$StateFile      = Join-Path $WorkspaceRoot ' + $dq + 'scripts\mon
 $monLines.Add('$TriggersFolder = Join-Path $WorkspaceRoot ' + $dq + 'scripts\triggers' + $dq)
 $monLines.Add('')
 $monLines.Add('$mcpCfg    = Get-Content (Join-Path $WorkspaceRoot ' + $dq + '.vscode\mcp.local.json' + $dq + ') -Raw | ConvertFrom-Json')
-$monLines.Add('$issue-trackerUrl   = $mcpCfg.servers.issue-tracker.env.issue-tracker_URL')
-$monLines.Add('$issue-trackerEmail = $mcpCfg.servers.issue-tracker.env.issue-tracker_EMAIL')
-$monLines.Add('$issue-trackerToken = $mcpCfg.servers.issue-tracker.env.issue-tracker_PERSONAL_TOKEN')
-$monLines.Add('$encoded   = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($issue-trackerEmail + ' + $q + ':' + $q + ' + $issue-trackerToken))')
+$monLines.Add('$jiraUrl   = $mcpCfg.servers.jira.env.JIRA_URL')
+$monLines.Add('$jiraEmail = $mcpCfg.servers.jira.env.JIRA_EMAIL')
+$monLines.Add('$jiraToken = $mcpCfg.servers.jira.env.JIRA_PERSONAL_TOKEN')
+$monLines.Add('$encoded   = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($jiraEmail + ' + $q + ':' + $q + ' + $jiraToken))')
 $monLines.Add('$headers   = @{ Authorization = ' + $dq + 'Basic $encoded' + $dq + '; Accept = ' + $dq + 'application/json' + $dq + ' }')
 $monLines.Add('')
 $monLines.Add('if (-not (Test-Path $TriggersFolder)) { New-Item -ItemType Directory $TriggersFolder | Out-Null }')
@@ -308,7 +308,7 @@ $monLines.Add('$commentId   = $state.commentId')
 $monLines.Add('$lastChecked = $state.lastCheckedAt')
 $monLines.Add('Write-Host (' + $dq + 'Polling ' + $dq + ' + $issueKey + ' + $dq + ' for PO response to comment ' + $dq + ' + $commentId + ' + $dq + '...' + $dq + ')')
 $monLines.Add('')
-$monLines.Add('$r = Invoke-RestMethod ($issue-trackerUrl + ' + $dq + '/rest/api/3/issue/' + $dq + ' + $issueKey + ' + $dq + '/comment' + $dq + ') -Headers $headers')
+$monLines.Add('$r = Invoke-RestMethod ($jiraUrl + ' + $dq + '/rest/api/3/issue/' + $dq + ' + $issueKey + ' + $dq + '/comment' + $dq + ') -Headers $headers')
 $monLines.Add('$newComments = $r.comments | Where-Object { $_.id -ne $commentId -and $_.created -gt $lastChecked }')
 $monLines.Add('')
 $monLines.Add('if ($newComments.Count -gt 0) {')
@@ -362,7 +362,7 @@ Write-Host 'Generating scripts\monitor-state.json...' -ForegroundColor Cyan
 
 $stateJsonPath = Join-Path $TargetPath 'scripts\monitor-state.json'
 if ($Force -or -not (Test-Path $stateJsonPath)) {
-    $boardIdVal  = if ($issue-trackerBoardId -match '^\d+$') { [int]$issue-trackerBoardId } else { $null }
+    $boardIdVal  = if ($JiraBoardId -match '^\d+$') { [int]$JiraBoardId } else { $null }
     $stateObj = [ordered]@{
         lastUpdated = (Get-Date -Format 'o')
         sprintWatch = [ordered]@{
@@ -431,9 +431,9 @@ Write-Host 'Copying copilot-instructions.md...' -ForegroundColor Cyan
 $ciSrc  = Join-Path $sourceRoot '.github\copilot-instructions.md'
 $ciDest = Join-Path $TargetPath '.github\copilot-instructions.md'
 if (Test-Path $ciSrc) {
-    $ciContent = (Get-Content $ciSrc -Raw) -replace '\bSTORY\b', $issue-trackerProjectKey
+    $ciContent = (Get-Content $ciSrc -Raw) -replace '\bSTORY\b', $JiraProjectKey
     Write-Utf8 -Path $ciDest -Content $ciContent
-    Write-Host ('  Written: copilot-instructions.md (project key: ' + $issue-trackerProjectKey + ')') -ForegroundColor DarkGray
+    Write-Host ('  Written: copilot-instructions.md (project key: ' + $JiraProjectKey + ')') -ForegroundColor DarkGray
 }
 
 # ---------------------------------------------------------------------------
@@ -464,9 +464,9 @@ Write-Host '==========================================' -ForegroundColor Green
 Write-Host '  QA Framework setup complete!' -ForegroundColor Green
 Write-Host '==========================================' -ForegroundColor Green
 Write-Host ''
-Write-Host ('Project   : ' + $issue-trackerProjectKey)
-Write-Host ('issue-tracker      : ' + $issue-trackerUrl)
-Write-Host ('source-control : ' + $source-controlUrl + ' / ' + $source-controlProjectKey + ' / ' + $source-controlRepo)
+Write-Host ('Project   : ' + $JiraProjectKey)
+Write-Host ('Jira      : ' + $JiraUrl)
+Write-Host ('Bitbucket : ' + $BitbucketUrl + ' / ' + $BitbucketProjectKey + ' / ' + $BitbucketRepo)
 Write-Host ('PR target : ' + $PrTargetBranch)
 Write-Host ('Repo path : ' + $LocalRepoPath)
 Write-Host ''

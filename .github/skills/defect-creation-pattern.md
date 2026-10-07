@@ -1,5 +1,5 @@
 ---
-description: Standard pattern for raising issue-tracker Defects and Sub-tasks with full TC and AC traceability — includes structured description with steps to reproduce, expected/actual results, screenshots, and logs
+description: Standard pattern for raising Jira Defects and Sub-tasks with full TC and AC traceability — includes structured description with steps to reproduce, expected/actual results, screenshots, and logs
 ---
 
 # Defect Creation Pattern
@@ -38,7 +38,7 @@ The description field **must** include all of the following sections. Do not ski
 **AC Reference**: AC-{nn} — {AC text summary}
 **Environment**: {Environment e.g. SIT/TEST https://app.example.com
 **Build / Version**: {e.g. CID Hub 1.4.0 2a250245}
-**Test Execution**: {test-management-EXEC-KEY} Step {i}
+**Test Execution**: {XRAY-EXEC-KEY} Step {i}
 
 ---
 
@@ -74,7 +74,7 @@ The description field **must** include all of the following sections. Do not ski
 
 ## Creation Method — Use batch_create_issues (REQUIRED)
 
-`issue-tracker_create_issue` does not reliably accept a description field. Always use `issue-tracker_batch_create_issues` so the description can be embedded in the JSON payload at creation time.
+`jira_create_issue` does not reliably accept a description field. Always use `jira_batch_create_issues` so the description can be embedded in the JSON payload at creation time.
 
 ### Sub-task under a story (preferred for in-sprint findings)
 
@@ -128,12 +128,12 @@ The description field **must** include all of the following sections. Do not ski
 
 ### Standalone Defect (regression / out-of-sprint findings ONLY)
 
-Only use this when the failing story is **not** in the current active sprint. Use the same JSON structure but replace `"issuetype": { "name": "Sub-task" }` with `"issuetype": { "name": "Defect" }` and remove the `"parent"` field. Then add a `issue-tracker_create_issue_link` to link the Defect → "relates to" → `{STORY-KEY}`.
+Only use this when the failing story is **not** in the current active sprint. Use the same JSON structure but replace `"issuetype": { "name": "Sub-task" }` with `"issuetype": { "name": "Defect" }` and remove the `"parent"` field. Then add a `jira_create_issue_link` to link the Defect → "relates to" → `{STORY-KEY}`.
 
 ## Issue Linking (Defect only — out-of-sprint)
 
 After creating a standalone Defect, create an issue link:
-- Use `issue-tracker_get_link_types` to confirm available link types.
+- Use `jira_get_link_types` to confirm available link types.
 - **Link type**: `relates to` or `is tested by` (whichever is available).
 - **Direction**: Defect → relates to → `{STORY-KEY}`.
 

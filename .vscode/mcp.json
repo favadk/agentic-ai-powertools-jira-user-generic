@@ -1,37 +1,37 @@
-﻿{
+{
   "inputs": [],
   "servers": {
-    "issue-tracker": {
+    "jira": {
       "type": "stdio",
-      "command": "${workspaceFolder}/.tools/IssueTracker.Mcp.exe",
+      "command": "${workspaceFolder}/.tools/Jira.Mcp.exe",
       "env": {
-        "ISSUE_TRACKER_URL": "https://app.example.com",
-        "ISSUE_TRACKER_TOKEN": "DUMMY_ISSUE_TRACKER_TOKEN_FOR_LOCAL_TESTING_ONLY",
-        "ISSUE_TRACKER_SSL_VERIFY": "false"
+        "JIRA_URL": "https://app.example.com
+        "JIRA_PERSONAL_TOKEN": "DUMMY_JIRA_TOKEN_FOR_LOCAL_TESTING_ONLY",
+        "JIRA_SSL_VERIFY": "false"
       }
     },
-    "source-control": {
+    "bitbucket": {
       "type": "stdio",
-      "command": "${workspaceFolder}/.tools/SourceControl.Mcp.exe",
+      "command": "${workspaceFolder}/.tools/Bitbucket.Mcp.exe",
       "env": {
-        "SOURCE_CONTROL_URL": "https://app.example.com",
-        "SOURCE_CONTROL_TOKEN": "DUMMY_SOURCE_CONTROL_TOKEN_FOR_LOCAL_TESTING_ONLY",
-        "SOURCE_CONTROL_DEFAULT_PROJECT": "DEMO"
+        "BITBUCKET_URL": "https://app.example.com
+        "BITBUCKET_TOKEN": "DUMMY_BITBUCKET_TOKEN_FOR_LOCAL_TESTING_ONLY",
+        "BITBUCKET_DEFAULT_PROJECT": "DEMO"
       }
     },
-    "knowledge-base": {
+    "confluence": {
       "type": "stdio",
-      "command": "${workspaceFolder}/.tools/KnowledgeBase.Mcp.exe",
+      "command": "${workspaceFolder}/.tools/Confluence.Mcp.exe",
       "env": {
-        "KNOWLEDGE_BASE_URL": "https://app.example.com",
-        "KNOWLEDGE_BASE_TOKEN": "DUMMY_KNOWLEDGE_BASE_TOKEN_FOR_LOCAL_TESTING_ONLY",
-        "KNOWLEDGE_BASE_SSL_VERIFY": "false"
+        "CONFLUENCE_URL": "https://app.example.com
+        "CONFLUENCE_PERSONAL_TOKEN": "DUMMY_CONFLUENCE_TOKEN_FOR_LOCAL_TESTING_ONLY",
+        "CONFLUENCE_SSL_VERIFY": "false"
       }
     },
-    "assist-hub": {
-      "type": "https",
-      "url": "https://app.example.com",
-      "comment": "Replace URL with your own environment endpoint"
-    }
+  "lc-asssisthub": {
+    "url": "https://app.example.com
+		"type": "https",
+    "comment": "Replace URL with your own AssistHub URL for your environment"
+	}
   }
 }

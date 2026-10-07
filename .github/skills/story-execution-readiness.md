@@ -8,12 +8,12 @@ Before beginning any test execution activity, verify **both** gates below. If ei
 
 ---
 
-## Gate 1 — issue-tracker Story Status
+## Gate 1 — Jira Story Status
 
 The story must be in **"Waiting for Verification"** status (or an equivalent status in the project workflow that signals development is complete and the story is ready for QA sign-off).
 
 **How to check:**
-1. Use `issue-tracker_get_issue` to retrieve the story.
+1. Use `jira_get_issue` to retrieve the story.
 2. Read `fields.status.name`.
 3. Accepted statuses: `Waiting for Verification`, `Ready for Testing`, `In QA` — confirm the exact name used in the project.
 
@@ -28,7 +28,7 @@ The story must be in **"Waiting for Verification"** status (or an equivalent sta
 The story's development section must show that a feature branch has been created, code has been committed, and the pull request has been **merged** to the target branch.
 
 **How to check:**
-1. Use `issue-tracker_get_development_information` with the story key.
+1. Use `jira_get_development_information` with the story key.
 2. Verify all three conditions:
 
 | Condition                 | Field to check                              | Required value          |

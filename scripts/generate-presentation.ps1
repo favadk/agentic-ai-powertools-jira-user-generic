@@ -93,7 +93,7 @@ $tTitle = Add-TextBox $s1 "Agentic AI QA Framework" 40 100 ($SW-80) 100 44 $true
 # Subtitle
 Add-TextBox $s1 "Automating the Full QA Lifecycle with GitHub Copilot" 40 210 ($SW-80) 60 22 $false $LTBLUE 2 | Out-Null
 # Tag line
-Add-TextBox $s1 "issue-tracker  |  test-management  |  source-control  |  GitHub Copilot" 40 280 ($SW-80) 40 16 $false $LTBLUE 2 | Out-Null
+Add-TextBox $s1 "Jira  |  Xray  |  Bitbucket  |  GitHub Copilot" 40 280 ($SW-80) 40 16 $false $LTBLUE 2 | Out-Null
 # Footer
 Add-TextBox $s1 "Engineering Productivity — Technology Strategy" 40 ($SH-85) ($SW-80) 30 14 $false $WHITE 2 | Out-Null
 
@@ -134,8 +134,8 @@ Add-HeaderBar $s3 "The Problem — QA Bottlenecks in Agile Sprints" $NAVY $WHITE
 Add-SlideNum $s3 3 14
 
 $problems = @(
-    [PSCustomObject]@{Icon="?"; Title="Slow test case creation"; Desc="2–4 hours per story, manually written and uploaded to test-management"},
-    [PSCustomObject]@{Icon="??"; Title="Context switching"; Desc="issue-tracker ? test-management ? source-control ? VS Code — each switch costs time and introduces errors"},
+    [PSCustomObject]@{Icon="?"; Title="Slow test case creation"; Desc="2–4 hours per story, manually written and uploaded to Xray"},
+    [PSCustomObject]@{Icon="??"; Title="Context switching"; Desc="Jira ? Xray ? Bitbucket ? VS Code — each switch costs time and introduces errors"},
     [PSCustomObject]@{Icon="??"; Title="Inconsistent quality"; Desc="Test cases vary in depth and structure across team members and sprints"},
     [PSCustomObject]@{Icon="??"; Title="No BLOCKED AC tracking"; Desc="When PO clarification is needed, no automated mechanism tracks the reply or resumes work"},
     [PSCustomObject]@{Icon="??"; Title="Zero portability"; Desc="QA tooling configured for one project cannot be reused on another without significant rework"},
@@ -160,11 +160,11 @@ Set-BG $s4 $WHITE
 Add-HeaderBar $s4 "The Solution — Agentic AI QA Framework"
 Add-SlideNum $s4 4 14
 
-Add-TextBox $s4 "A suite of 13 GitHub Copilot agents that automate every stage of the QA lifecycle — from test case creation through automation publishing — for any issue-tracker/test-management/source-control project." 40 85 ($SW-80) 50 15 $false $DARK 1 | Out-Null
+Add-TextBox $s4 "A suite of 13 GitHub Copilot agents that automate every stage of the QA lifecycle — from test case creation through automation publishing — for any Jira/Xray/Bitbucket project." 40 85 ($SW-80) 50 15 $false $DARK 1 | Out-Null
 
 $cols = @(
     [PSCustomObject]@{Title="Agent-Driven"; Items=@("13 specialist agents","Natural language interface","No code changes needed","Works inside VS Code")},
-    [PSCustomObject]@{Title="Fully Integrated"; Items=@("issue-tracker REST API v3","test-management Cloud API","source-control Server","knowledge-base")},
+    [PSCustomObject]@{Title="Fully Integrated"; Items=@("Jira REST API v3","Xray Cloud API","Bitbucket Server","Confluence")},
     [PSCustomObject]@{Title="Zero-Friction Setup"; Items=@("Single PowerShell command","Auto-generates config","Project-agnostic framework","Team-shareable via Git")}
 )
 
@@ -194,9 +194,9 @@ Add-SlideNum $s5 5 14
 
 # Layers (bottom-up)
 $layers = @(
-    [PSCustomObject]@{Label="External APIs";     Detail="issue-tracker Cloud  |  test-management Cloud  |  source-control Server  |  knowledge-base";   Color=$LGRAY; FColor=$DGRAY},
-    [PSCustomObject]@{Label="MCP Server Layer";  Detail="issue-tracker MCP  |  test-management MCP  |  source-control MCP  |  knowledge-base MCP";     Color=$LTBLUE; FColor=$NAVY},
-    [PSCustomObject]@{Label="Skill Library";     Detail="13 shared skills: team discovery, test-management patterns, automation config, env compatibility, naming conventions"; Color=$BLUE; FColor=$WHITE},
+    [PSCustomObject]@{Label="External APIs";     Detail="Jira Cloud  |  Xray Cloud  |  Bitbucket Server  |  Confluence";   Color=$LGRAY; FColor=$DGRAY},
+    [PSCustomObject]@{Label="MCP Server Layer";  Detail="Jira MCP  |  Xray MCP  |  Bitbucket MCP  |  Confluence MCP";     Color=$LTBLUE; FColor=$NAVY},
+    [PSCustomObject]@{Label="Skill Library";     Detail="13 shared skills: team discovery, Xray patterns, automation config, env compatibility, naming conventions"; Color=$BLUE; FColor=$WHITE},
     [PSCustomObject]@{Label="Agent Layer";        Detail="13 QA lifecycle agents — each orchestrates a specific stage end-to-end";              Color=$NAVY; FColor=$WHITE},
     [PSCustomObject]@{Label="Developer / QA";    Detail="GitHub Copilot Chat inside VS Code — natural language commands";                        Color=$DARK; FColor=$WHITE}
 )
@@ -221,13 +221,13 @@ Add-SlideNum $s6 6 14
 
 $stages = @(
     [PSCustomObject]@{N="0"; Label="Sprint QA Plan";         Agent="sprint_story_qa_plan";          Output="QAP_{KEY}.md"},
-    [PSCustomObject]@{N="1"; Label="Test Case Preparation";  Agent="test_case_preparation";         Output="TC_{KEY}.md + test-management Test"},
+    [PSCustomObject]@{N="1"; Label="Test Case Preparation";  Agent="test_case_preparation";         Output="TC_{KEY}.md + Xray Test"},
     [PSCustomObject]@{N="2"; Label="Test Case Review";       Agent="test_case_review";              Output="TCR_{KEY}.md"},
-    [PSCustomObject]@{N="3"; Label="Test Execution";         Agent="test_case_execution";           Output="TE_{KEY}.md + test-management results"},
+    [PSCustomObject]@{N="3"; Label="Test Execution";         Agent="test_case_execution";           Output="TE_{KEY}.md + Xray results"},
     [PSCustomObject]@{N="4"; Label="Evidence Review";        Agent="test_case_evidence_review";     Output="ER_{KEY}.md"},
-    [PSCustomObject]@{N="5"; Label="Automation Code";        Agent="automation_code_preparation";   Output="AUT_{KEY}.md + source-control PR"},
+    [PSCustomObject]@{N="5"; Label="Automation Code";        Agent="automation_code_preparation";   Output="AUT_{KEY}.md + Bitbucket PR"},
     [PSCustomObject]@{N="6"; Label="Automation Review";      Agent="automation_code_review";        Output="AUTR_{KEY}.md"},
-    [PSCustomObject]@{N="7"; Label="Run & Publish";          Agent="automation_run_publish";        Output="AUTRPT_{KEY}.md + issue-tracker defects"}
+    [PSCustomObject]@{N="7"; Label="Run & Publish";          Agent="automation_run_publish";        Output="AUTRPT_{KEY}.md + Jira defects"}
 )
 
 $y = 88; $x = 28
@@ -258,7 +258,7 @@ Add-SlideNum $s7 7 14
 Add-TextBox $s7 "Every agent automatically identifies the 5-person team for any story — no user input required." 40 85 ($SW-80) 30 14 $false $DARK 1 | Out-Null
 
 $roles = @(
-    [PSCustomObject]@{Role="Product Owner (PO)"; Source="issue-tracker story fields.reporter"},
+    [PSCustomObject]@{Role="Product Owner (PO)"; Source="Jira story fields.reporter"},
     [PSCustomObject]@{Role="Developer";           Source="Sub-task with: implementation / development / backend / frontend keywords"},
     [PSCustomObject]@{Role="Tester";              Source="Sub-task with: testing / qa / test case creation / verification keywords"},
     [PSCustomObject]@{Role="TC Reviewer";         Source="Sub-task with: test case review / tc review keywords (not execution)"},
@@ -287,12 +287,12 @@ Set-BG $s8 $WHITE
 Add-HeaderBar $s8 "Environment Compatibility - Built-in Cross-Platform Coverage"
 Add-SlideNum $s8 8 14
 
-Add-TextBox $s8 "A new skill auto-detects required browsers, OS, databases, and devices from story AC keywords, then drives structured coverage and separate test-management executions per environment." 40 85 ($SW-80) 45 13 $false $DARK 1 | Out-Null
+Add-TextBox $s8 "A new skill auto-detects required browsers, OS, databases, and devices from story AC keywords, then drives structured coverage and separate Xray executions per environment." 40 85 ($SW-80) 45 13 $false $DARK 1 | Out-Null
 
 $eCols = @(
     [PSCustomObject]@{Title="Auto-Detection"; Items=@("Scans story AC and labels","Detects Browser / OS / DB / Device","Feature-area tier matching","Zero manual input needed")},
     [PSCustomObject]@{Title="Coverage Tiers"; Items=@("P1 Full matrix - auth/security","P2 Primary + secondary (default)","P3 Smoke only - backend/admin","Set once per project")},
-    [PSCustomObject]@{Title="Agent Outputs"; Items=@("Env Coverage table in TC doc","Separate test-management exec per env","Env-visible screenshot proof","Env-labelled defect reports")}
+    [PSCustomObject]@{Title="Agent Outputs"; Items=@("Env Coverage table in TC doc","Separate Xray exec per env","Env-visible screenshot proof","Env-labelled defect reports")}
 )
 $x = 30
 foreach ($ec in $eCols) {
@@ -317,7 +317,7 @@ Set-BG $s9 $WHITE
 Add-HeaderBar $s9 "Sprint TE Management - Auto-Link, Gate & Notify"
 Add-SlideNum $s9 9 14
 
-Add-TextBox $s9 "Every test-management Test must be linked to a Sprint Test Execution (TE) before execution begins. The framework automates TE creation, notification, and gating end-to-end." 40 85 ($SW-80) 42 13 $false $DARK 1 | Out-Null
+Add-TextBox $s9 "Every Xray Test must be linked to a Sprint Test Execution (TE) before execution begins. The framework automates TE creation, notification, and gating end-to-end." 40 85 ($SW-80) 42 13 $false $DARK 1 | Out-Null
 
 $teFeatures = @(
     [PSCustomObject]@{Title="Auto-TE Creation";    Desc="No sprint TE? One is created automatically and moved into the active sprint.";                     Color=$NAVY},
@@ -337,8 +337,8 @@ foreach ($f in $teFeatures) {
 Add-Rect $s9 $LTBLUE 30 372 ($SW-60) 128 | Out-Null
 Add-TextBox $s9 "Skill: test-execution-sprint-linking.md  |  Applied in: test_case_preparation (step 7e) + test_case_execution (step 0B)" 50 378 ($SW-90) 26 11 $false $NAVY 1 | Out-Null
 Add-TextBox $s9 "STORY Teams channels:  CID Scurm Team Chat   |   AC1 Daily Stand-up" 50 408 ($SW-90) 20 11 $true $DARK 1 | Out-Null
-Add-TextBox $s9 "Bulk-add: all active sprint tests are added to the TE in a single call  |  Fallback: issue-tracker comment @PO @PM if Teams unavailable" 50 432 ($SW-90) 20 11 $false $DGRAY 1 | Out-Null
-Add-TextBox $s9 "TE must be in 'In Dev' status  |  Framework auto-transitions if needed  |  issue-tracker get_transitions + transition_issue" 50 456 ($SW-90) 20 11 $false $DGRAY 1 | Out-Null
+Add-TextBox $s9 "Bulk-add: all active sprint tests are added to the TE in a single call  |  Fallback: Jira comment @PO @PM if Teams unavailable" 50 432 ($SW-90) 20 11 $false $DGRAY 1 | Out-Null
+Add-TextBox $s9 "TE must be in 'In Dev' status  |  Framework auto-transitions if needed  |  Jira get_transitions + transition_issue" 50 456 ($SW-90) 20 11 $false $DGRAY 1 | Out-Null
 Add-TextBox $s9 "If test not in sprint TE: BLOCKED message shown with remediation steps  |  Run test_case_preparation to resolve" 50 478 ($SW-90) 20 11 $false $DGRAY 1 | Out-Null
 
 Write-Host "  Slide 9 done"
@@ -361,9 +361,9 @@ Add-TextBox $s10 "After (Framework)" 510 91 145 22 12 $true $WHITE 2 | Out-Null
 
 $rows = @(
     [PSCustomObject]@{Task="Test case document"; Before="2–4 hrs / story"; After="< 5 min"},
-    [PSCustomObject]@{Task="test-management Test creation + steps"; Before="30–60 min"; After="Automatic"},
+    [PSCustomObject]@{Task="Xray Test creation + steps"; Before="30–60 min"; After="Automatic"},
     [PSCustomObject]@{Task="TC review document"; Before="1–2 hrs"; After="< 10 min"},
-    [PSCustomObject]@{Task="Execution report + test-management results"; Before="1–3 hrs"; After="< 20 min"},
+    [PSCustomObject]@{Task="Execution report + Xray results"; Before="1–3 hrs"; After="< 20 min"},
     [PSCustomObject]@{Task="BLOCKED AC — PO tracking"; Before="Manual (often missed)"; After="Automated 30-min poll"},
     [PSCustomObject]@{Task="Automation spec + PR creation"; Before="2–4 hrs / story"; After="< 15 min"},
     [PSCustomObject]@{Task="Framework setup for new project"; Before="Days of config"; After="1 command, ~5 min"}
@@ -391,8 +391,8 @@ Add-SlideNum $s11 11 14
 
 $impacts = @(
     [PSCustomObject]@{Title="~80% reduction"; Sub="in QA admin time per story"; Color=$GREEN},
-    [PSCustomObject]@{Title="Zero rework"; Sub="from test-management step mismatches"; Color=$BLUE},
-    [PSCustomObject]@{Title="100% traceability"; Sub="AC ? Test Case ? test-management ? Evidence"; Color=$NAVY}
+    [PSCustomObject]@{Title="Zero rework"; Sub="from Xray step mismatches"; Color=$BLUE},
+    [PSCustomObject]@{Title="100% traceability"; Sub="AC ? Test Case ? Xray ? Evidence"; Color=$NAVY}
 )
 
 $x = 30
@@ -437,10 +437,10 @@ Add-Rect $s12 $DARK 30 120 ($SW-60) 155 | Out-Null
 $cmd = @(
     '.\scripts\setup-qa-framework.ps1 `',
     '    -TargetPath       "C:\Projects\MyNewProject" `',
-    '    -issue-trackerBaseUrl      "mycompany.atlassian.net" `',
-    '    -issue-trackerProjectKey   "PROJ" `',
-    '    -test-managementClientId     "..." `',
-    '    -source-controlServer  "git.company.com" `',
+    '    -JiraBaseUrl      "mycompany.atlassian.net" `',
+    '    -JiraProjectKey   "PROJ" `',
+    '    -XrayClientId     "..." `',
+    '    -BitbucketServer  "git.company.com" `',
     '    -RegisterScheduler'
 )
 Add-TextBox $s12 ($cmd -join "`n") 45 126 ($SW-90) 144 11 $false $GREEN 1 | Out-Null
@@ -476,7 +476,7 @@ Add-SlideNum $s13 13 14
 $phases = @(
     [PSCustomObject]@{Phase="Phase 1 — Pilot"; Duration="Sprint 1–2"; Items=@("Deploy to 1 project team","Full TC lifecycle (stages 1–4)","Collect time-savings metrics","Refine agent instructions"); Color=$NAVY},
     [PSCustomObject]@{Phase="Phase 2 — Expand"; Duration="Sprint 3–4"; Items=@("Onboard 2–3 more projects","Enable automation stages 5–7","Activate PO Response Monitor","Document team-specific patterns"); Color=$BLUE},
-    [PSCustomObject]@{Phase="Phase 3 — Scale"; Duration="Q3+"; Items=@("Central Git repo for all projects","Self-service setup via bootstrapper","Metrics dashboard (knowledge-base)","Extend to new frameworks"); Color=$GREEN}
+    [PSCustomObject]@{Phase="Phase 3 — Scale"; Duration="Q3+"; Items=@("Central Git repo for all projects","Self-service setup via bootstrapper","Metrics dashboard (Confluence)","Extend to new frameworks"); Color=$GREEN}
 )
 
 $x = 20
@@ -491,7 +491,7 @@ foreach ($ph in $phases) {
 
 Add-Rect $s13 $LTBLUE 20 370 ($SW-40) 120 | Out-Null
 Add-TextBox $s13 "Prerequisites (already in place for Phase 1):" 40 375 500 20 12 $true $NAVY 1 | Out-Null
-$prereqs = "?  GitHub Copilot Enterprise license    ?  issue-tracker Cloud API token    ?  test-management Cloud credentials    ?  VS Code on developer machines"
+$prereqs = "?  GitHub Copilot Enterprise license    ?  Jira Cloud API token    ?  Xray Cloud credentials    ?  VS Code on developer machines"
 Add-TextBox $s13 $prereqs 40 398 ($SW-80) 40 11 $false $DARK 1 | Out-Null
 Add-TextBox $s13 "Est. Phase 1 effort: 0.5 days for initial setup + 1 sprint of parallel running to validate time savings." 40 440 ($SW-80) 40 11 $false $DGRAY 1 | Out-Null
 

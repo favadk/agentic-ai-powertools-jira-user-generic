@@ -9,7 +9,7 @@
 | **Filename**       | QAP_{STORY-KEY}.md                           |
 |--------------------|----------------------------------------------|
 | **Story Key**      | `{STORY-KEY}`                                |
-| **Story Summary**  | `{Story Summary from issue-tracker}`                  |
+| **Story Summary**  | `{Story Summary from Jira}`                  |
 | **Sprint**         | `{Sprint Name}`                              |
 | **QA Owner**       | `{Assigned tester or TBD}`                   |
 | **Plan Created**   | `{Date}`                                     |
@@ -29,7 +29,7 @@
 - **AC-02**: `{Acceptance criterion 2}`
 - **AC-03**: `{Acceptance criterion 3}`
 
-> *If AC is missing from issue-tracker, this field will read: ⚠️ AC NOT AVAILABLE — plan is blocked until AC is provided by the Product Owner.*
+> *If AC is missing from Jira, this field will read: ⚠️ AC NOT AVAILABLE — plan is blocked until AC is provided by the Product Owner.*
 
 ---
 
@@ -88,7 +88,7 @@ The story is considered **QA-complete** when all applicable items below are chec
 - [ ] Test cases reviewed and approved
 - [ ] All test cases executed; pass/fail recorded in execution report
 - [ ] Execution evidence reviewed and signed off
-- [ ] All defects raised in issue-tracker as type "Defect" with correct severity and story link
+- [ ] All defects raised in Jira as type "Defect" with correct severity and story link
 - [ ] Automation code written *(if Automation Target = Yes/Partial)*
 - [ ] Automation code reviewed and merged *(if Automation Target = Yes/Partial)*
 - [ ] Automation suite run; results published to agreed channel *(if Automation Target = Yes/Partial)*

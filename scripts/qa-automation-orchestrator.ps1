@@ -1,7 +1,7 @@
 <#
 .SYNOPSIS
-    QA Automation Orchestrator — automatically processes new issue-tracker sprint stories
-    through the QA lifecycle (TC generation, test-management issue creation, issue-tracker comment)
+    QA Automation Orchestrator — automatically processes new Jira sprint stories
+    through the QA lifecycle (TC generation, Xray issue creation, Jira comment)
     using a local Ollama LLM for test case generation.
 
 .DESCRIPTION
@@ -10,18 +10,18 @@
       1. Fetches all stories in the current active sprint for the given board
       2. Compares against a local state file to find NEW unprocessed stories
       3. For each new story:
-         a. Fetches full issue-tracker story details and AC
+         a. Fetches full Jira story details and AC
          b. Calls local Ollama to generate test cases from AC
          c. Saves a TC_<STORY-KEY>.md document locally
-         d. Creates an test-management Test issue in issue-tracker with all steps populated
-         e. Posts a comment on the issue-tracker story with the test-management Test link
+         d. Creates an Xray Test issue in Jira with all steps populated
+         e. Posts a comment on the Jira story with the Xray Test link
          f. Marks the story as processed in the state file
 
 .PARAMETER BoardId
-    issue-tracker Agile board ID (find it in the board URL: /issue-tracker/software/projects/PROJ/boards/123)
+    Jira Agile board ID (find it in the board URL: /jira/software/projects/PROJ/boards/123)
 
 .PARAMETER ProjectKey
-    issue-tracker project key (e.g. STORY, CDS2REP)
+    Jira project key (e.g. STORY, CDS2REP)
 
 .PARAMETER OllamaModel
     Ollama model to use for test case generation. Default: llama3.2
@@ -30,18 +30,18 @@
 .PARAMETER OllamaUrl
     Ollama local server URL. Default: http://localhost:11434
 
-.PARAMETER issue-trackerAcField
-    issue-tracker field name holding Acceptance Criteria. Default: description
+.PARAMETER JiraAcField
+    Jira field name holding Acceptance Criteria. Default: description
     Common alternatives: customfield_10016, customfield_10020
 
 .PARAMETER DryRun
-    Validate and generate locally without creating any issue-tracker/test-management issues.
+    Validate and generate locally without creating any Jira/Xray issues.
 
 .EXAMPLE
     # Normal run:
     .\scripts\qa-automation-orchestrator.ps1 -BoardId 42 -ProjectKey STORY
 
-    # Dry run (no issue-tracker changes):
+    # Dry run (no Jira changes):
     .\scripts\qa-automation-orchestrator.ps1 -BoardId 42 -ProjectKey STORY -DryRun
 
     # Use a different model:
@@ -51,9 +51,9 @@
     Prerequisites:
     - Ollama installed and running locally (https://ollama.com)
     - Ollama model pulled: ollama pull llama3.2
-    - issue-tracker credentials in .vscode/mcp.local.json or as environment variables:
-        $env:issue-tracker_EMAIL, $env:issue-tracker_PERSONAL_TOKEN, $env:issue-tracker_URL
-    - scripts/test-management-api.ps1 and scripts/generate-test-cases-ollama.ps1 present
+    - Jira credentials in .vscode/mcp.local.json or as environment variables:
+        $env:JIRA_EMAIL, $env:JIRA_PERSONAL_TOKEN, $env:JIRA_URL
+    - scripts/xray-api.ps1 and scripts/generate-test-cases-ollama.ps1 present
 
     State file: scripts/qa-automation-state.json
     Logs:       scripts/qa-automation.log
@@ -65,7 +65,7 @@ param(
     [Parameter(Mandatory)][string] $ProjectKey,
     [string] $OllamaModel  = "llama3.2",
     [string] $OllamaUrl    = "http://localhost:11434",
-    [string] $issue-trackerAcField  = "description",
+    [string] $JiraAcField  = "description",
     [switch] $DryRun
 )
 
@@ -77,13 +77,13 @@ $ErrorActionPreference = "Stop"
 # ---------------------------------------------------------------------------
 $scriptDir   = $PSScriptRoot
 $repoRoot    = Split-Path $scriptDir -Parent
-$test-managementScript  = Join-Path $scriptDir "test-management-api.ps1"
+$xrayScript  = Join-Path $scriptDir "xray-api.ps1"
 $ollamaScript = Join-Path $scriptDir "generate-test-cases-ollama.ps1"
 
-if (-not (Test-Path $test-managementScript))   { throw "Missing: $test-managementScript" }
+if (-not (Test-Path $xrayScript))   { throw "Missing: $xrayScript" }
 if (-not (Test-Path $ollamaScript)) { throw "Missing: $ollamaScript" }
 
-. $test-managementScript
+. $xrayScript
 . $ollamaScript
 
 # ---------------------------------------------------------------------------
@@ -122,10 +122,10 @@ function Save-State ($state) {
 }
 
 # ---------------------------------------------------------------------------
-# issue-tracker helpers
+# Jira helpers
 # ---------------------------------------------------------------------------
 function Get-ActiveSprint ($boardId, $creds) {
-    $resp = Invoke-issue-trackerApi -Method GET `
+    $resp = Invoke-JiraApi -Method GET `
         -Path "/rest/agile/1.0/board/$boardId/sprint?state=active" `
         -Creds $creds
     $sprint = $resp.values | Select-Object -First 1
@@ -139,7 +139,7 @@ function Get-SprintStories ($sprintId, $creds) {
     $allIssues = @()
 
     do {
-        $resp = Invoke-issue-trackerApi -Method GET `
+        $resp = Invoke-JiraApi -Method GET `
             -Path "/rest/agile/1.0/sprint/$sprintId/issue?jql=issuetype=Story&startAt=$startAt&maxResults=$maxResults&fields=summary,status,issuetype" `
             -Creds $creds
         $allIssues += $resp.issues
@@ -151,8 +151,8 @@ function Get-SprintStories ($sprintId, $creds) {
 
 function Get-FullStoryDetails ($storyKey, $creds) {
     # Request rendered fields so description comes back as HTML (easier to strip than ADF)
-    return Invoke-issue-trackerApi -Method GET `
-        -Path "/rest/api/2/issue/$storyKey`?expand=renderedFields&fields=summary,description,customfield_10016,customfield_10020,sprint,fixVersions,$issue-trackerAcField" `
+    return Invoke-JiraApi -Method GET `
+        -Path "/rest/api/2/issue/$storyKey`?expand=renderedFields&fields=summary,description,customfield_10016,customfield_10020,sprint,fixVersions,$JiraAcField" `
         -Creds $creds
 }
 
@@ -233,9 +233,9 @@ $sections
 }
 
 # ---------------------------------------------------------------------------
-# Convert test cases -> test-management steps array (flat - all TCs into one Test issue)
+# Convert test cases -> Xray steps array (flat - all TCs into one Test issue)
 # ---------------------------------------------------------------------------
-function Convert-Totest-managementSteps ($testCases) {
+function Convert-ToXraySteps ($testCases) {
     $steps = @()
     $tcNum = 1
     foreach ($tc in $testCases) {
@@ -255,29 +255,29 @@ function Convert-Totest-managementSteps ($testCases) {
 }
 
 # ---------------------------------------------------------------------------
-# Post issue-tracker comment
+# Post Jira comment
 # ---------------------------------------------------------------------------
-function Add-issue-trackerAutomationComment ($storyKey, $test-managementTestKey, $tcCount, $stepCount, $creds, $issue-trackerUrl) {
-    $link = "$issue-trackerUrl/browse/$test-managementTestKey"
+function Add-JiraAutomationComment ($storyKey, $xrayTestKey, $tcCount, $stepCount, $creds, $jiraUrl) {
+    $link = "$jiraUrl/browse/$xrayTestKey"
     $localDoc = "docs/TestCases/TC_$storyKey.md"
 
     $comment = @"
 *[QA Automation]* Test cases have been automatically generated for this story.
 
 || Field || Value ||
-| test-management Test Issue | [$test-managementTestKey|$link] |
+| Xray Test Issue | [$xrayTestKey|$link] |
 | Steps Created | $stepCount |
 | Test Cases | $tcCount |
 | Local Document | $localDoc |
 | Generated By | Ollama / $OllamaModel |
 
-The test-management Test is linked to this story and ready for execution once the feature is deployed to the test environment.
+The Xray Test is linked to this story and ready for execution once the feature is deployed to the test environment.
 Please review the test cases and amend any steps before execution.
 "@
 
     $body = @{ body = $comment }
     try {
-        Invoke-issue-trackerApi -Method POST -Path "/rest/api/2/issue/$storyKey/comment" -Creds $creds -Body $body | Out-Null
+        Invoke-JiraApi -Method POST -Path "/rest/api/2/issue/$storyKey/comment" -Creds $creds -Body $body | Out-Null
         Write-Log "  Comment posted on $storyKey"
     } catch {
         Write-Log "  Could not post comment on $storyKey`: $_" "WARN"
@@ -289,10 +289,10 @@ Please review the test cases and amend any steps before execution.
 # ---------------------------------------------------------------------------
 Write-Log "=== QA Automation Orchestrator started ==="
 Write-Log "  Board: $BoardId | Project: $ProjectKey | Model: $OllamaModel"
-if ($DryRun) { Write-Log "  [DRY RUN] No issue-tracker/test-management changes will be made - dry run active." "WARN" }
+if ($DryRun) { Write-Log "  [DRY RUN] No Jira/Xray changes will be made - dry run active." "WARN" }
 
 $state = Get-State
-$creds = Get-test-managementCreds
+$creds = Get-XrayCreds
 
 # 1. Get active sprint
 Write-Log "Fetching active sprint for board $BoardId..."
@@ -328,7 +328,7 @@ foreach ($story in $newStories) {
     try {
         # 4a. Fetch full story with rendered fields
         $full = Get-FullStoryDetails -storyKey $storyKey -creds $creds
-        $ac   = Extract-AcceptanceCriteria -issue $full -acField $issue-trackerAcField
+        $ac   = Extract-AcceptanceCriteria -issue $full -acField $JiraAcField
 
         if (-not $ac) {
             Write-Log "  No AC found for $storyKey - skipping." "WARN"
@@ -365,35 +365,35 @@ foreach ($story in $newStories) {
             Write-Log "  [DRY RUN] Would save: docs/TestCases/TC_$storyKey.md"
         }
 
-        # 4d. Create test-management Test issue with all steps
-        $test-managementSteps = Convert-Totest-managementSteps -testCases $testCases
+        # 4d. Create Xray Test issue with all steps
+        $xraySteps = Convert-ToXraySteps -testCases $testCases
 
         if (-not $DryRun) {
-            $test-managementResult = Ensure-test-managementTest `
+            $xrayResult = Ensure-XrayTest `
                 -ProjectKey  $ProjectKey `
                 -Summary     "TC $storyKey`: $($full.fields.summary)" `
                 -StoryKey    $storyKey `
-                -Steps       $test-managementSteps `
-                -Description "Auto-generated test-management Test for $storyKey. Local doc: docs/TestCases/TC_$storyKey.md. Generated by Ollama ($OllamaModel)."
+                -Steps       $xraySteps `
+                -Description "Auto-generated Xray Test for $storyKey. Local doc: docs/TestCases/TC_$storyKey.md. Generated by Ollama ($OllamaModel)."
 
-            $test-managementTestKey = $test-managementResult.Key
-            $test-managementAction  = $test-managementResult.Action
-            Write-Log "  test-management Test $test-managementAction`: $test-managementTestKey ($($test-managementSteps.Count) steps)"
+            $xrayTestKey = $xrayResult.Key
+            $xrayAction  = $xrayResult.Action
+            Write-Log "  Xray Test $xrayAction`: $xrayTestKey ($($xraySteps.Count) steps)"
 
             # 4e. Post comment on story (skip if test already existed with steps)
-            if ($test-managementAction -ne "skipped") {
-                Add-issue-trackerAutomationComment `
+            if ($xrayAction -ne "skipped") {
+                Add-JiraAutomationComment `
                     -storyKey    $storyKey `
-                    -test-managementTestKey $test-managementTestKey `
+                    -xrayTestKey $xrayTestKey `
                     -tcCount     $testCases.Count `
-                    -stepCount   $test-managementSteps.Count `
+                    -stepCount   $xraySteps.Count `
                     -creds       $creds `
-                    -issue-trackerUrl     $creds.Url
+                    -jiraUrl     $creds.Url
             } else {
-                Write-Log "  Comment skipped - Test $test-managementTestKey already had steps."
+                Write-Log "  Comment skipped - Test $xrayTestKey already had steps."
             }
         } else {
-            Write-Log "  [DRY RUN] Would create test-management Test with $($test-managementSteps.Count) steps for $storyKey"
+            Write-Log "  [DRY RUN] Would create Xray Test with $($xraySteps.Count) steps for $storyKey"
         }
 
         # 4f. Mark story processed

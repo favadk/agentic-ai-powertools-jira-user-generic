@@ -1,8 +1,8 @@
-cd C:\Agentic-AI\agentic-ai-powertools-issue-tracker-user-generic
+cd C:\Agentic-AI\agentic-ai-powertools-jira-user-generic
 $cfg = Get-Content ".vscode\mcp.local.json" | ConvertFrom-Json
-$issue-trackerSrv = $cfg.servers."issue-tracker-mcp-server".env
-$issue-trackerSrv | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name
+$jiraSrv = $cfg.servers."jira-mcp-server".env
+$jiraSrv | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name
 Write-Output "---"
-# Also show test-management server keys
-$test-managementSrv = $cfg.servers."test-management-mcp-server".env
-$test-managementSrv | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name
+# Also show xray server keys
+$xraySrv = $cfg.servers."xray-mcp-server".env
+$xraySrv | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name

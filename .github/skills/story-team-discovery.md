@@ -1,12 +1,12 @@
 ---
-description: Auto-discover the PO, Dev, and Tester assigned to a story from issue-tracker — used by all QA agents to direct comments and queries to the right person without user input
+description: Auto-discover the PO, Dev, and Tester assigned to a story from Jira — used by all QA agents to direct comments and queries to the right person without user input
 ---
 
 # Story Team Discovery
 
-This skill defines **how every QA agent discovers the right person** to contact for a given type of communication. Load this skill early in any workflow that needs to post issue-tracker comments or direct queries to PO, Dev, or Tester.
+This skill defines **how every QA agent discovers the right person** to contact for a given type of communication. Load this skill early in any workflow that needs to post Jira comments or direct queries to PO, Dev, or Tester.
 
-> **All agents must run Team Discovery before posting any issue-tracker comment.** Never hard-code accountIds or ask the user for team member details — derive them from issue-tracker.
+> **All agents must run Team Discovery before posting any Jira comment.** Never hard-code accountIds or ask the user for team member details — derive them from Jira.
 
 ---
 
@@ -28,7 +28,7 @@ This skill defines **how every QA agent discovers the right person** to contact 
 
 ```powershell
 # Step A: get the story with subtasks field included
-# issue-tracker_get_issue with fields: "reporter,assignee,subtasks"
+# jira_get_issue with fields: "reporter,assignee,subtasks"
 ```
 
 Extract the PO from `fields.reporter`:
@@ -48,14 +48,14 @@ Extract the sub-task list from `fields.subtasks[]` — this is returned directly
 # Iterate ALL sub-tasks — do not stop at the first match.
 # Each sub-task may map to a different role: Evidence Reviewer, TC Reviewer, Dev, or Tester.
 foreach ($subtask in $story.fields.subtasks) {
-    $detail = issue-tracker_get_issue($subtask.key, fields: "summary,issuetype,assignee,status")
+    $detail = jira_get_issue($subtask.key, fields: "summary,issuetype,assignee,status")
     # Apply priority keyword table (TD-Step 2) to classify this sub-task
     # and assign its $detail.fields.assignee to the correct role variable:
     # $evidenceReviewer, $tcReviewer, $dev, or $tester
 }
 ```
 
-> **Important**: `issue-tracker_search` with `parent = "{STORY-KEY}"` is NOT reliable across all issue-tracker configurations. Always use `fields.subtasks` from the story's own response and then fetch each sub-task individually.
+> **Important**: `jira_search` with `parent = "{STORY-KEY}"` is NOT reliable across all Jira configurations. Always use `fields.subtasks` from the story's own response and then fetch each sub-task individually.
 
 ---
 
@@ -91,7 +91,7 @@ If a role cannot be discovered from sub-tasks, apply these fallbacks **in order*
 |------|-----------|-----------|
 | **PO** | `fields.reporter` of the story | `fields.creator` of the story |
 | **Dev** | `fields.assignee` of the story (if story is still `In Dev`) | Ask user: "Who is the developer for {STORY-KEY}?" |
-| **Tester** | Assignee of the linked test-management Test issue | Ask user: "Who is the tester for {STORY-KEY}?" || **TC Reviewer** | Same as Tester (if no dedicated reviewer sub-task exists) | Log: "No TC Reviewer sub-task found — using Tester as fallback" |
+| **Tester** | Assignee of the linked Xray Test issue | Ask user: "Who is the tester for {STORY-KEY}?" || **TC Reviewer** | Same as Tester (if no dedicated reviewer sub-task exists) | Log: "No TC Reviewer sub-task found — using Tester as fallback" |
 | **Evidence Reviewer** | Same as TC Reviewer | Log: "No Evidence Reviewer sub-task found — using TC Reviewer as fallback" |
 > Only ask the user if both the primary source and all fallbacks fail.
 
@@ -177,12 +177,12 @@ Team discovered for {STORY-KEY}:
 
 ---
 
-## ADF Comment Template (issue-tracker mentions)
+## ADF Comment Template (Jira mentions)
 
-Use this pattern in PowerShell to build a issue-tracker comment that `@mentions` the right person. The `@mention` ensures issue-tracker sends them a notification.
+Use this pattern in PowerShell to build a Jira comment that `@mentions` the right person. The `@mention` ensures Jira sends them a notification.
 
 ```powershell
-function New-issue-trackerCommentADF {
+function New-JiraCommentADF {
     param(
         [hashtable]$Mentionee,   # @{ accountId="..."; displayName="..." }
         [string]$MessageText
@@ -219,7 +219,7 @@ function New-issue-trackerCommentADF {
 
 **AC clarification to PO:**
 ```powershell
-$commentBody = New-issue-trackerCommentADF -Mentionee $po -MessageText @"
+$commentBody = New-JiraCommentADF -Mentionee $po -MessageText @"
  — AC-05 clarification needed: The acceptance criterion states '...' but the test
 case interpretation is unclear. Should unauthenticated users who bookmark a direct
 help URL be redirected to login, or shown a 403 error page? Please confirm the
@@ -231,7 +231,7 @@ This comment was raised automatically by the QA agent during test case preparati
 
 **Dev query for architecture/implementation detail:**
 ```powershell
-$commentBody = New-issue-trackerCommentADF -Mentionee $dev -MessageText @"
+$commentBody = New-JiraCommentADF -Mentionee $dev -MessageText @"
  — Implementation query for {STORY-KEY}: The automation script needs to call
 the help-access API endpoint to verify authentication state. Could you confirm
 the endpoint path and whether it requires a bearer token or session cookie?
@@ -240,7 +240,7 @@ the endpoint path and whether it requires a bearer token or session cookie?
 
 **Tester notification for PR review:**
 ```powershell
-$commentBody = New-issue-trackerCommentADF -Mentionee $tester -MessageText @"
+$commentBody = New-JiraCommentADF -Mentionee $tester -MessageText @"
  — Automation PR raised for {STORY-KEY}: The E2E automation scripts have passed
 local test run and code review. PR: {PR_URL}. Please review and approve when ready.
 "@
@@ -270,16 +270,16 @@ If more than one sub-task matches the Dev or Tester keywords:
 
 1. **Prefer the sub-task whose status is `In Progress`** — that person is actively working on it.
 2. If still tied: prefer the sub-task with the most specific keyword match (e.g., `implementation` over `dev task`).
-3. If still tied: use the first one returned by issue-tracker and log a warning:
+3. If still tied: use the first one returned by Jira and log a warning:
    > "Multiple {role} sub-tasks found for {STORY-KEY}. Using {chosen sub-task key} ({assignee}). If this is wrong, specify the correct person."
 
 ---
 
-## Auto-Discover source-control Branch from issue-tracker Dev Info
+## Auto-Discover Bitbucket Branch from Jira Dev Info
 
 To find the feature branch a developer used (for context or comparison):
 
-Use `issue-tracker_get_development_information` with the story key. This returns:
+Use `jira_get_development_information` with the story key. This returns:
 - `branches[]` — list of branches linked to this story
 - `pullRequests[]` — list of PRs, their source/target branches, and merge status
 

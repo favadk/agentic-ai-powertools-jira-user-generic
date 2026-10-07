@@ -1,6 +1,6 @@
-. .\scripts\test-management-api.ps1
-$tok  = Get-test-managementCloudToken
-$gql  = "https://us.test-management.cloud.gettest-management.app/api/v2/graphql"
+. .\scripts\xray-api.ps1
+$tok  = Get-XrayCloudToken
+$gql  = "https://us.xray.cloud.getxray.app/api/v2/graphql"
 $hdrs = @{ Authorization = "Bearer $tok"; "Content-Type" = "application/json" }
 function Invoke-Gql($b) { Invoke-RestMethod -Uri $gql -Method POST -Headers $hdrs -Body $b }
 

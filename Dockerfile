@@ -52,7 +52,7 @@ RUN chmod +x /app/scripts/*.ps1
 # Default command: run monitors continuously
 CMD ["pwsh", "-Command", \
     "Set-Location /app; \
-    . ./scripts/test-management-api.ps1; \
+    . ./scripts/xray-api.ps1; \
     Write-Host '=== Agentic QA Framework Started ==='; \
     Write-Host 'Monitor interval: Every 30 minutes'; \
     Write-Host 'Log location: /app/logs/'; \

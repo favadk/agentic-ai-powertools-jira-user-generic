@@ -15,20 +15,20 @@ flowchart TD
     CT -->|Yes| TC1[test_case_preparation agent]
 
     TC1 --> TC1a[1a. Move 'Create Test Case'\nsub-task to 'Dev']
-    TC1a --> TC1b[1b. Create test-management Test\nSummary: 'Test for story-summary'\nLink test to story]
+    TC1a --> TC1b[1b. Create Xray Test\nSummary: 'Test for story-summary'\nLink test to story]
     TC1b --> TC1c[1c. Add test steps\nbased on story ACs]
     TC1c --> Q{All details\nclear?}
-    Q -->|No - gaps found| TC1d[Add comment on test-management Test\nwith clarification questions\nfor QA Engineer]
+    Q -->|No - gaps found| TC1d[Add comment on Xray Test\nwith clarification questions\nfor QA Engineer]
     TC1d --> WAIT1[Wait for QA Engineer reply\nin test case comments]
     WAIT1 -->|New reply detected| TC1e[Address reply:\nUpdate test steps\nOR respond with explanation]
     TC1e --> Q
-    Q -->|Yes - all clear| RFR[Set test-management Test status\nto 'Ready for Test Review']
+    Q -->|Yes - all clear| RFR[Set Xray Test status\nto 'Ready for Test Review']
 
     RFR --> R2{test_case_review agent\nmonitors: any test in\n'Ready for Test Review'?}
     R2 -->|Yes| TC2a[2a. Move 'Review Test Case'\nsub-task to 'Dev']
     TC2a --> TC2b[2b. Read 'Review Test Case'\nsub-task comments]
     TC2b --> RC{Comments found\nby reviewer?}
-    RC -->|Yes - issues found| TC2c[2c. Add review comments\nto test-management Test\nSet test status to 'Open']
+    RC -->|Yes - issues found| TC2c[2c. Add review comments\nto Xray Test\nSet test status to 'Open']
     RC -->|No issues| TC2d[Add comment to QA Engineer:\n'Review complete - please set\ntest to Active']
 
     TC2c --> OPEN[test_case_preparation agent\nmonitors: tests in 'Open' state]
@@ -85,9 +85,9 @@ flowchart TD
 
 | Step | Agent | Trigger Condition | Output |
 |------|-------|-------------------|--------|
-| 1 | `test_case_preparation` | Story status = In Dev/Ready for Dev AND 'Create Test Case' sub-task = In Dev | test-management Test created, steps added, status = Ready for Test Review |
-| 1 (loop) | `test_case_preparation` | test-management Test status = Open AND new comments in test | Updated steps OR counter-comment, status = Ready for Test Review |
-| 2 | `test_case_review` | test-management Test status = Ready for Test Review | Review comments OR notify QA Engineer to set Active |
+| 1 | `test_case_preparation` | Story status = In Dev/Ready for Dev AND 'Create Test Case' sub-task = In Dev | Xray Test created, steps added, status = Ready for Test Review |
+| 1 (loop) | `test_case_preparation` | Xray Test status = Open AND new comments in test | Updated steps OR counter-comment, status = Ready for Test Review |
+| 2 | `test_case_review` | Xray Test status = Ready for Test Review | Review comments OR notify QA Engineer to set Active |
 | 6 | `test_case_execution` | 'Create Test Case' closed + 'Review Test Case' closed + Test Active in TE | Test steps executed, evidences attached |
 | 7 | `test_case_evidence_review` | 'Test Results Review' sub-task = Ready for Verification | Evidence audit, pass/fail comment |
 | 8 | `automation_code_preparation` | Test execution passed, evidences approved | Automation spec written/updated |

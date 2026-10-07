@@ -9,7 +9,7 @@
 | **Filename**      | TC_{STORY-KEY}.md                           |
 |-------------------|---------------------------------------------|
 | **Story Key**     | `{STORY-KEY}`                               |
-| **Story Summary** | `{Story Summary from issue-tracker}`                 |
+| **Story Summary** | `{Story Summary from Jira}`                 |
 | **Sprint**        | `{Sprint Name}`                             |
 | **Prepared By**   | `{QA Owner}`                                |
 | **Date Prepared** | `{Date}`                                    |
@@ -25,10 +25,10 @@
 
 | Source Type | Reference | Access Status | Relevant Sections Extracted | Used In |
 | --- | --- | --- | --- | --- |
-| Story | `{issue-tracker Story Key + URL}` | Accessible / Restricted | `{AC, DN, QA Notes sections}` | AC list, expected results |
+| Story | `{Jira Story Key + URL}` | Accessible / Restricted | `{AC, DN, QA Notes sections}` | AC list, expected results |
 | Product Help | `{Help URL from project-reference-sources.md}` | Accessible / Restricted | `{Endpoint names, behavior notes}` | Expected results, step boundaries |
 | API Spec | `{Swagger/OpenAPI URL}` | Accessible / Restricted | `{Methods, paths, schema constraints}` | API checks, negative cases |
-| Additional Reference | `{knowledge-base/SharePoint/Design Doc}` | Accessible / Restricted | `{Rules, screenshots, decision notes}` | Preconditions, test data |
+| Additional Reference | `{Confluence/SharePoint/Design Doc}` | Accessible / Restricted | `{Rules, screenshots, decision notes}` | Preconditions, test data |
 
 ### Gate Checklist
 
@@ -41,7 +41,7 @@
 
 ## Story Acceptance Criteria
 
-> *Verbatim from issue-tracker. Assign sequential IDs AC-01, AC-02 …*
+> *Verbatim from Jira. Assign sequential IDs AC-01, AC-02 …*
 
 - **AC-01**: `{Acceptance criterion 1}`
 - **AC-02**: `{Acceptance criterion 2}`

@@ -9,15 +9,15 @@ services:
     container_name: agentic-qa-framework
     restart: unless-stopped
     environment:
-      # issue-tracker Configuration
-      issue-tracker_URL: ${issue-tracker_URL:-https://app.example.com
-      issue-tracker_USER: ${issue-tracker_USER:-qa-automation@company.atlassian.net}
-      issue-tracker_API_TOKEN: ${issue-tracker_API_TOKEN}
-      issue-tracker_PROJECT_KEY: ${issue-tracker_PROJECT_KEY:-STORY}
+      # Jira Configuration
+      JIRA_URL: ${JIRA_URL:-https://app.example.com
+      JIRA_USER: ${JIRA_USER:-qa-automation@company.atlassian.net}
+      JIRA_API_TOKEN: ${JIRA_API_TOKEN}
+      JIRA_PROJECT_KEY: ${JIRA_PROJECT_KEY:-STORY}
 
-      # test-management Cloud Configuration
-      test-management_CLOUD_CLIENT_ID: ${test-management_CLOUD_CLIENT_ID}
-      test-management_CLOUD_CLIENT_SECRET: ${test-management_CLOUD_CLIENT_SECRET}
+      # Xray Cloud Configuration
+      XRAY_CLOUD_CLIENT_ID: ${XRAY_CLOUD_CLIENT_ID}
+      XRAY_CLOUD_CLIENT_SECRET: ${XRAY_CLOUD_CLIENT_SECRET}
 
       # GitHub Integration
       GITHUB_TOKEN: ${GITHUB_TOKEN}
@@ -116,9 +116,9 @@ services:
     container_name: qa-dashboard
     restart: unless-stopped
     environment:
-      issue-tracker_URL: ${issue-tracker_URL:-https://app.example.com
-      issue-tracker_API_TOKEN: ${issue-tracker_API_TOKEN}
-      issue-tracker_PROJECT_KEY: ${issue-tracker_PROJECT_KEY:-STORY}
+      JIRA_URL: ${JIRA_URL:-https://app.example.com
+      JIRA_API_TOKEN: ${JIRA_API_TOKEN}
+      JIRA_PROJECT_KEY: ${JIRA_PROJECT_KEY:-STORY}
       DB_HOST: postgres
       DB_PORT: 5432
       DB_NAME: qa_metrics

@@ -1,7 +1,7 @@
 param()
 $ErrorActionPreference = "Stop"
 
-$workspace = "c:\Agentic-AI\agentic-ai-powertools-issue-tracker-user-generic"
+$workspace = "c:\Agentic-AI\agentic-ai-powertools-jira-user-generic"
 $evidenceDir = "$workspace\docs\TestExecution\evidence\STORY-0000-FullRun"
 New-Item -ItemType Directory -Force -Path $evidenceDir | Out-Null
 

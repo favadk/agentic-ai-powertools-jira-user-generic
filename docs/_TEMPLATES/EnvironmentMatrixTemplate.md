@@ -16,7 +16,7 @@ description: Project-specific compatibility matrix — defines the supported OS,
 
 The CID Hub project has four named environments. All QA agents use this table to resolve environment labels and base URLs.
 
-| Env Label | URL | Purpose | Use for test-management `Environment` field |
+| Env Label | URL | Purpose | Use for Xray `Environment` field |
 |-----------|-----|---------|----------------------------------|
 | **TEST** | https://app.example.com | Active QA/testing — **default for story execution** | `SIT` |
 | **DEV** | https://app.example.com | Developer integration | `DEV` |
@@ -118,7 +118,7 @@ Define per-area tiers when specific areas need different coverage rules than the
 
 ## Software Version Traceability Matrix
 
-Define the ExampleOrg software product configurations that apply to this project. Each row is a **named environment** (Env ID) representing a specific combination of installed product versions. Agents read this table to determine which software configurations must be tested, and create one test-management Test Execution per applicable row.
+Define the ExampleOrg software product configurations that apply to this project. Each row is a **named environment** (Env ID) representing a specific combination of installed product versions. Agents read this table to determine which software configurations must be tested, and create one Xray Test Execution per applicable row.
 
 > **How to use**:
 > - Add one row per software version configuration you need to test.
@@ -147,7 +147,7 @@ Define the ExampleOrg software product configurations that apply to this project
 
 ### Story-Level Override
 
-To test specific Env IDs for a particular story (overriding the tier rules), add a issue-tracker label:
+To test specific Env IDs for a particular story (overriding the tier rules), add a Jira label:
 - `sw-env:SWE-1` — test only SWE-1 for that story
 - `sw-env:SWE-1,SWE-2` — test SWE-1 and SWE-2 only
 - `sw-env:all` — test all rows regardless of tier
@@ -156,7 +156,7 @@ To test specific Env IDs for a particular story (overriding the tier rules), add
 
 | Column | Description |
 |--------|-------------|
-| **Env ID** | Short unique identifier used on test-management executions and defect labels (e.g., `SWE-1`, `PROD-Baseline`, `QA-v27`) |
+| **Env ID** | Short unique identifier used on Xray executions and defect labels (e.g., `SWE-1`, `PROD-Baseline`, `QA-v27`) |
 | **OpenLab Server** | Full version + service pack, e.g., `v2.7 SP2`, `v2.6 SR2` |
 | **OpenLab CDS** | Full version + SP or product name variant, e.g., `v2.7 SP2`, `ChemStation C.01.10` |
 | **Instr. Driver** | ExampleOrg instrument driver version, e.g., `v7.4.3`, `DDK v5.1` |

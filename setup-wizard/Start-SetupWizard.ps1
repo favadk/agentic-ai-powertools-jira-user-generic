@@ -157,20 +157,20 @@ while ($listener.IsListening) {
                     Log "⚙️  Running setup-qa-framework.ps1..."
                     $params = @{
                         TargetPath          = $cfg.targetPath
-                        issue-trackerBaseUrl         = $cfg.issue-trackerBaseUrl
-                        issue-trackerEmail           = $cfg.issue-trackerEmail
-                        issue-trackerToken           = $cfg.issue-trackerToken
-                        issue-trackerProjectKey      = $cfg.issue-trackerProjectKey
-                        test-managementClientId        = $cfg.test-managementClientId
-                        test-managementClientSecret    = $cfg.test-managementClientSecret
-                        source-controlServer     = $cfg.source-controlServer
-                        source-controlProjectKey = $cfg.source-controlProjectKey
-                        source-controlRepo       = $cfg.source-controlRepo
+                        JiraBaseUrl         = $cfg.jiraBaseUrl
+                        JiraEmail           = $cfg.jiraEmail
+                        JiraToken           = $cfg.jiraToken
+                        JiraProjectKey      = $cfg.jiraProjectKey
+                        XrayClientId        = $cfg.xrayClientId
+                        XrayClientSecret    = $cfg.xrayClientSecret
+                        BitbucketServer     = $cfg.bitbucketServer
+                        BitbucketProjectKey = $cfg.bitbucketProjectKey
+                        BitbucketRepo       = $cfg.bitbucketRepo
                         DefaultBranch       = $cfg.defaultBranch
                         PrTargetBranch      = $cfg.prTargetBranch
                         LocalRepoPath       = $cfg.localRepoPath
                     }
-                    if ($cfg.issue-trackerBoardId)   { $params.issue-trackerBoardId = $cfg.issue-trackerBoardId }
+                    if ($cfg.jiraBoardId)   { $params.JiraBoardId = $cfg.jiraBoardId }
                     if ($cfg.registerScheduler) { $params.RegisterScheduler = $true }
 
                     & $scriptPath @params 2>&1 | ForEach-Object { Log $_ }
@@ -179,7 +179,7 @@ while ($listener.IsListening) {
                     # ── Seed monitor baselines ──
                     Log "🌱 Seeding story-change baselines (first run — no triggers fired)..."
                     Set-Location $cfg.targetPath
-                    . (Join-Path $cfg.targetPath 'scripts' 'test-management-api.ps1')
+                    . (Join-Path $cfg.targetPath 'scripts' 'xray-api.ps1')
                     & $monitorPath 2>&1 | ForEach-Object { Log $_ }
                     Log "✅ Baselines seeded."
 

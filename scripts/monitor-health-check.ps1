@@ -7,8 +7,8 @@
     1. Scheduled monitors, comment review processor, and agent trigger dispatcher are registered and have a NextRunTime
       2. Unprocessed trigger files sitting longer than $StaleMinutes
       3. monitor-state.json entries stuck in PENDING_SCRIPT_RUN
-      4. issue-tracker API connectivity
-    On failure: Windows Event Log + issue-tracker comment on each affected story.
+      4. Jira API connectivity
+    On failure: Windows Event Log + Jira comment on each affected story.
 .PARAMETER StaleMinutes
     Trigger files older than this are flagged. Default: 60.
 .PARAMETER DryRun
@@ -24,8 +24,8 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 $repoRoot  = Split-Path (Split-Path $MyInvocation.MyCommand.Path -Parent) -Parent
-$test-managementApi   = Join-Path $repoRoot (Join-Path 'scripts' 'test-management-api.ps1')
-. $test-managementApi
+$xrayApi   = Join-Path $repoRoot (Join-Path 'scripts' 'xray-api.ps1')
+. $xrayApi
 
 $failures  = New-Object System.Collections.Generic.List[hashtable]
 $warnings  = New-Object System.Collections.Generic.List[hashtable]
@@ -96,7 +96,7 @@ if (Test-Path $triggerDir) {
             try {
                 $t = Get-Content $file.FullName -Raw | ConvertFrom-Json
                 $ageMin = [int]((Get-Date) - $file.LastWriteTime).TotalMinutes
-                Add-Failure 'Triggers' "$($file.Name) unprocessed for $ageMin min (changeType=$($t.changeType)). Verify QA-Process-Test-Comment-Reviews and its issue-tracker/test-management/Ollama prerequisites." "$($t.issueKey)"
+                Add-Failure 'Triggers' "$($file.Name) unprocessed for $ageMin min (changeType=$($t.changeType)). Verify QA-Process-Test-Comment-Reviews and its Jira/Xray/Ollama prerequisites." "$($t.issueKey)"
             } catch {
                 Add-Warn 'Triggers' "$($file.Name) is malformed and cannot be parsed."
             }
@@ -121,7 +121,7 @@ if (Test-Path $stateFile) {
                 if (Test-Path $scriptPath) {
                     $ageHrs = [int]((Get-Date) - (Get-Item $scriptPath).LastWriteTime).TotalHours
                     if ($ageHrs -gt 1) {
-                        Add-Failure 'WorkflowStuck' "$($issue.issueKey): Script '$($issue.executionScript)' generated $ageHrs hrs ago but never executed. Run: . .\scripts\test-management-api.ps1; .\$($issue.executionScript)" "$($issue.issueKey)"
+                        Add-Failure 'WorkflowStuck' "$($issue.issueKey): Script '$($issue.executionScript)' generated $ageHrs hrs ago but never executed. Run: . .\scripts\xray-api.ps1; .\$($issue.executionScript)" "$($issue.issueKey)"
                     }
                 }
             }
@@ -132,16 +132,16 @@ if (Test-Path $stateFile) {
 }
 
 # ---------------------------------------------------------------------------
-# CHECK 4 -- issue-tracker API connectivity
+# CHECK 4 -- Jira API connectivity
 # ---------------------------------------------------------------------------
-Write-Host "[..] Checking issue-tracker API..."
+Write-Host "[..] Checking Jira API..."
 try {
-    $creds  = Get-test-managementCreds
-    $issue-trackerUrl = if ($env:issue-tracker_URL) { $env:issue-tracker_URL } else { 'https://app.example.com }
-    $null = Invoke-RestMethod -Uri "$issue-trackerUrl/rest/api/3/myself" -Headers $creds.Headers -TimeoutSec 10 -ErrorAction Stop
-    Write-Host "[OK] issue-tracker API reachable."
+    $creds  = Get-XrayCreds
+    $jiraUrl = if ($env:JIRA_URL) { $env:JIRA_URL } else { 'https://app.example.com }
+    $null = Invoke-RestMethod -Uri "$jiraUrl/rest/api/3/myself" -Headers $creds.Headers -TimeoutSec 10 -ErrorAction Stop
+    Write-Host "[OK] Jira API reachable."
 } catch {
-    Add-Failure 'issue-trackerAPI' "issue-tracker unreachable: $($_.Exception.Message). Monitors will silently fail."
+    Add-Failure 'JiraAPI' "Jira unreachable: $($_.Exception.Message). Monitors will silently fail."
 }
 
 # ---------------------------------------------------------------------------
@@ -167,7 +167,7 @@ if ($warnings.Count -gt 0) {
     $lines += ""
 }
 $lines += "REQUIRED ACTIONS:"
-$lines += "1. Verify QA-Process-Test-Comment-Reviews can access Ollama, issue-tracker, and test-management credentials."
+$lines += "1. Verify QA-Process-Test-Comment-Reviews can access Ollama, Jira, and Xray credentials."
 $lines += "2. If scheduler tasks are missing or disabled: run setup-story-monitor-scheduler.ps1 as Admin."
 $lines += "3. Inspect the failed trigger and generated review document before retrying."
 
@@ -189,12 +189,12 @@ if (-not $DryRun) {
 
 # ---------------------------------------------------------------------------
 # ---------------------------------------------------------------------------
-# CHANNEL 3 -- issue-tracker comment on each affected story
+# CHANNEL 3 -- Jira comment on each affected story
 # ---------------------------------------------------------------------------
 if (-not $DryRun) {
     try {
-        $creds2  = Get-test-managementCreds
-        $issue-trackerUrl2 = if ($env:issue-tracker_URL) { $env:issue-tracker_URL } else { 'https://app.example.com }
+        $creds2  = Get-XrayCreds
+        $jiraUrl2 = if ($env:JIRA_URL) { $env:JIRA_URL } else { 'https://app.example.com }
         $affected = ($failures + $warnings) | Where-Object { $_.story } | ForEach-Object { $_.story } | Sort-Object -Unique
         foreach ($sk in $affected) {
             $issues = ($failures + $warnings) | Where-Object { $_.story -eq $sk }
@@ -210,16 +210,16 @@ if (-not $DryRun) {
                 $adf.content += @{ type='paragraph'; content=@(@{ type='text'; text=$ml }) }
             }
             $adf.content += @{ type='paragraph'; content=@(
-                @{ type='text'; text='Action: verify QA-Process-Test-Comment-Reviews and its Ollama, issue-tracker, and test-management prerequisites, then retry the scheduled task.' }
+                @{ type='text'; text='Action: verify QA-Process-Test-Comment-Reviews and its Ollama, Jira, and Xray prerequisites, then retry the scheduled task.' }
             )}
             $hdrs = $creds2.Headers.Clone()
             $hdrs['Content-Type'] = 'application/json'
             $body = @{ body = $adf } | ConvertTo-Json -Depth 20
-            Invoke-RestMethod -Uri "$issue-trackerUrl2/rest/api/3/issue/$sk/comment" -Method POST -Headers $hdrs -Body $body -ErrorAction SilentlyContinue
-            Write-Host "[OK] issue-tracker comment posted on $sk"
+            Invoke-RestMethod -Uri "$jiraUrl2/rest/api/3/issue/$sk/comment" -Method POST -Headers $hdrs -Body $body -ErrorAction SilentlyContinue
+            Write-Host "[OK] Jira comment posted on $sk"
         }
     } catch {
-        Write-Warning "[!!] issue-tracker notification failed: $($_.Exception.Message)"
+        Write-Warning "[!!] Jira notification failed: $($_.Exception.Message)"
     }
 }
 

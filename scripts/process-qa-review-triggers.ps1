@@ -1,15 +1,15 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-    Processes pending test-management test-comment review triggers without VS Code chat.
+    Processes pending Xray test-comment review triggers without VS Code chat.
 
 .DESCRIPTION
-    Reads PO_RESPONSE triggers created for linked test-management Test comments. For each
-    trigger, it gathers the story, current test-management steps, and local TC document,
+    Reads PO_RESPONSE triggers created for linked Xray Test comments. For each
+    trigger, it gathers the story, current Xray steps, and local TC document,
     uses the local Ollama model to classify the comment concerns, writes an
-    auditable review document, and posts the review verdict to the test-management Test.
+    auditable review document, and posts the review verdict to the Xray Test.
 
-    This processor never edits test-management steps. Step changes require the existing
+    This processor never edits Xray steps. Step changes require the existing
     test_case_preparation update path after a review identifies supported work.
 #>
 
@@ -28,7 +28,7 @@ $ErrorActionPreference = "Stop"
 $repoRoot = Split-Path $PSScriptRoot -Parent
 if (-not $StateFile) { $StateFile = Join-Path $PSScriptRoot "monitor-state.json" }
 if (-not $TriggerDirectory) { $TriggerDirectory = Join-Path $PSScriptRoot "triggers" }
-. (Join-Path $PSScriptRoot "test-management-api.ps1")
+. (Join-Path $PSScriptRoot "xray-api.ps1")
 
 function ConvertFrom-AdfText {
     param($Node)
@@ -42,10 +42,10 @@ function ConvertFrom-AdfText {
     return $text
 }
 
-function Get-issue-trackerIssueText {
+function Get-JiraIssueText {
     param([Parameter(Mandatory)][string] $IssueKey)
 
-    $creds = Get-test-managementCreds
+    $creds = Get-XrayCreds
     $headers = @{ Authorization = $creds.Headers.Authorization; Accept = "application/json" }
     $uri = "$($creds.Url)/rest/api/3/issue/$IssueKey`?fields=summary,description,comment"
     $issue = (Invoke-WebRequest -Method GET -Uri $uri -Headers $headers -UseBasicParsing).Content | ConvertFrom-Json
@@ -68,7 +68,7 @@ function Invoke-CommentReview {
 
     $stepText = if ($Steps.Count) {
         ($Steps | ForEach-Object { "Action: $($_.Action)`nExpected: $($_.Expected)" }) -join "`n---`n"
-    } else { "No test-management steps could be retrieved." }
+    } else { "No Xray steps could be retrieved." }
 
     $systemPrompt = @"
 You are a QA test-case reviewer. Classify each concrete concern in a reviewer comment using only the supplied acceptance criteria, test steps, and TC document. Do not invent requirements. Return JSON only with this shape:
@@ -93,10 +93,10 @@ Summary: $($Story.Summary)
 Acceptance criteria and description:
 $($Story.Description)
 
-Reviewer comment on test-management Test $($Trigger.sourceIssueKey):
+Reviewer comment on Xray Test $($Trigger.sourceIssueKey):
 $($Trigger.commentText)
 
-Current test-management steps:
+Current Xray steps:
 $stepText
 
 Local TC document:
@@ -160,7 +160,7 @@ function Normalize-ReviewResult {
     if (@($normalizedConcerns).Count -eq 0) {
         $normalizedConcerns = @(
             [pscustomobject]@{
-                concern = if (-not [string]::IsNullOrWhiteSpace([string]$Trigger.commentText)) { [string]$Trigger.commentText } else { "Linked test-management comment requires manual review." }
+                concern = if (-not [string]::IsNullOrWhiteSpace([string]$Trigger.commentText)) { [string]$Trigger.commentText } else { "Linked Xray comment requires manual review." }
                 verdict = "EVIDENCE_REQUIRED"
                 affectedStep = "Unmapped"
                 evidence = "Missing"
@@ -188,14 +188,14 @@ function New-ReviewCommentBody {
         }
     }
     $lines += ""
-    $lines += "No test-management test steps were changed by this automated review."
+    $lines += "No Xray test steps were changed by this automated review."
     return $lines -join "`n"
 }
 
-function Add-issue-trackerComment {
+function Add-JiraComment {
     param([Parameter(Mandatory)][string]$IssueKey, [Parameter(Mandatory)][string]$Text)
 
-    $creds = Get-test-managementCreds
+    $creds = Get-XrayCreds
     $body = @{ body = @{ version = 1; type = "doc"; content = @(@{ type = "paragraph"; content = @(@{ type = "text"; text = $Text }) }) } } | ConvertTo-Json -Depth 10
     Invoke-WebRequest -Method POST -Uri "$($creds.Url)/rest/api/3/issue/$IssueKey/comment" -Headers $creds.Headers -Body $body -UseBasicParsing | Out-Null
 }
@@ -240,21 +240,21 @@ $triggerFiles = Get-ChildItem -Path $TriggerDirectory -Filter "*-response*.json"
 foreach ($triggerFile in $triggerFiles) {
     $trigger = Get-Content -Raw $triggerFile.FullName | ConvertFrom-Json
     if ($trigger.changeType -ne "PO_RESPONSE") { continue }
-    if ($trigger.sourceIssueType -notin @("test-management_TEST", "STORY")) { continue }
+    if ($trigger.sourceIssueType -notin @("XRAY_TEST", "STORY")) { continue }
 
     Write-Host "[Review Processor] Processing comment $($trigger.commentId) on $($trigger.sourceIssueKey)."
     $tcPath = [string]$trigger.tcDocPath
     if (-not (Test-Path $tcPath)) { throw "TC document not found: $tcPath" }
 
-    $story = Get-issue-trackerIssueText -IssueKey $trigger.storyKey
-    $steps = @(Get-test-managementCloudTestSteps -TestKey $trigger.test-managementTestKey)
+    $story = Get-JiraIssueText -IssueKey $trigger.storyKey
+    $steps = @(Get-XrayCloudTestSteps -TestKey $trigger.xrayTestKey)
     $tcDocument = Get-Content -Raw $tcPath
     $reviewRaw = Invoke-CommentReview -Trigger $trigger -Story $story -Steps $steps -TcDocument $tcDocument
     $review = Normalize-ReviewResult -Review $reviewRaw -Trigger $trigger
 
     $reviewDirectory = Join-Path $repoRoot "docs\TestCaseReview"
     if (-not (Test-Path $reviewDirectory)) { New-Item -ItemType Directory -Path $reviewDirectory | Out-Null }
-    $reviewPath = Join-Path $reviewDirectory "TCR_$($trigger.test-managementTestKey)_Comments.md"
+    $reviewPath = Join-Path $reviewDirectory "TCR_$($trigger.xrayTestKey)_Comments.md"
     $sectionLines = @("", "## Review Entry", "", "| Field | Value |", "| --- | --- |", "| Story | $($trigger.storyKey) |", "| Source Test | $($trigger.sourceIssueKey) |", "| Comment ID | $($trigger.commentId) |", "| Reviewed | $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss K') |", "", "### Reviewer Comment", "", $trigger.commentText, "", "### Findings", "")
     foreach ($concern in @($review.concerns)) {
         $sectionLines += "#### $($concern.verdict) - $($concern.affectedStep)"
@@ -269,7 +269,7 @@ foreach ($triggerFile in $triggerFiles) {
     }
     if (-not $DryRun) {
         if (-not (Test-Path $reviewPath)) {
-            @("# Comment Review - $($trigger.test-managementTestKey)", "") | Set-Content -Path $reviewPath -Encoding UTF8
+            @("# Comment Review - $($trigger.xrayTestKey)", "") | Set-Content -Path $reviewPath -Encoding UTF8
         }
         Add-Content -Path $reviewPath -Value ($sectionLines -join "`r`n") -Encoding UTF8
     }
@@ -280,8 +280,8 @@ foreach ($triggerFile in $triggerFiles) {
 
     $commentText = New-ReviewCommentBody -Review $review
     $commentTargetIssue = $null
-    if ($trigger.test-managementTestKey -and [string]$trigger.test-managementTestKey -notmatch '^\s*$') {
-        $commentTargetIssue = [string]$trigger.test-managementTestKey
+    if ($trigger.xrayTestKey -and [string]$trigger.xrayTestKey -notmatch '^\s*$') {
+        $commentTargetIssue = [string]$trigger.xrayTestKey
     } elseif ($trigger.resolutionIssueKey -and [string]$trigger.resolutionIssueKey -notmatch '^\s*$') {
         $commentTargetIssue = [string]$trigger.resolutionIssueKey
     }
@@ -290,7 +290,7 @@ foreach ($triggerFile in $triggerFiles) {
         $reviewAlreadyPosted = $true
     }
     if (-not $DryRun -and -not $reviewAlreadyPosted -and $commentTargetIssue) {
-        Add-issue-trackerComment -IssueKey $commentTargetIssue -Text $commentText
+        Add-JiraComment -IssueKey $commentTargetIssue -Text $commentText
         $trigger | Add-Member -MemberType NoteProperty -Name "reviewCommentPosted" -Value $true -Force
         $trigger | Add-Member -MemberType NoteProperty -Name "reviewCommentPostedAt" -Value (Get-Date).ToString("o") -Force
         $trigger | ConvertTo-Json -Depth 10 | Set-Content -Path $triggerFile.FullName -Encoding UTF8

@@ -1,15 +1,15 @@
 <#
 .SYNOPSIS
-    test-management REST API helper functions for the QA lifecycle agents.
+    Xray REST API helper functions for the QA lifecycle agents.
     Supports: creating Test issues, adding steps, creating Test Executions,
     updating step results, and attaching screenshot evidence per step.
 
 .USAGE
     # Dot-source from an agent or terminal session:
-    . .\scripts\test-management-api.ps1
+    . .\scripts\xray-api.ps1
 
     # All functions will read credentials from .vscode/mcp.local.json automatically.
-    # Override by setting $env:issue-tracker_EMAIL and $env:issue-tracker_PERSONAL_TOKEN before dot-sourcing.
+    # Override by setting $env:JIRA_EMAIL and $env:JIRA_PERSONAL_TOKEN before dot-sourcing.
 #>
 
 # PS 5.1 defaults to TLS 1.0; Atlassian Cloud requires TLS 1.2
@@ -19,31 +19,31 @@
 # Credential bootstrap
 # ---------------------------------------------------------------------------
 
-function Get-test-managementCreds {
-    $email = $env:issue-tracker_EMAIL
-    $token = $env:issue-tracker_PERSONAL_TOKEN
-    $url   = $env:issue-tracker_URL
+function Get-XrayCreds {
+    $email = $env:JIRA_EMAIL
+    $token = $env:JIRA_PERSONAL_TOKEN
+    $url   = $env:JIRA_URL
 
     if (-not $email -or -not $token) {
         $localPath = Join-Path $PSScriptRoot "..\\.vscode\\mcp.local.json"
         if (Test-Path $localPath) {
             $cfg = Get-Content $localPath -Raw | ConvertFrom-Json
-            $issue-trackerEnvCfg = $cfg.servers.issue-tracker.env
+            $jiraEnvCfg = $cfg.servers.jira.env
             $savedMode = $null
             Set-StrictMode -Off
-            # Support both legacy (issue-tracker_EMAIL/issue-tracker_PERSONAL_TOKEN) and Cloud (issue-tracker_USERNAME/issue-tracker_TOKEN) vars
-            if (-not $email) { $email = $issue-trackerEnvCfg.issue-tracker_EMAIL; if (-not $email) { $email = $issue-trackerEnvCfg.issue-tracker_USERNAME } }
-            if (-not $token) { $token = $issue-trackerEnvCfg.issue-tracker_PERSONAL_TOKEN; if (-not $token) { $token = $issue-trackerEnvCfg.issue-tracker_TOKEN } }
-            if (-not $url)   { $url   = $issue-trackerEnvCfg.issue-tracker_URL }
+            # Support both legacy (JIRA_EMAIL/JIRA_PERSONAL_TOKEN) and Cloud (JIRA_USERNAME/JIRA_TOKEN) vars
+            if (-not $email) { $email = $jiraEnvCfg.JIRA_EMAIL; if (-not $email) { $email = $jiraEnvCfg.JIRA_USERNAME } }
+            if (-not $token) { $token = $jiraEnvCfg.JIRA_PERSONAL_TOKEN; if (-not $token) { $token = $jiraEnvCfg.JIRA_TOKEN } }
+            if (-not $url)   { $url   = $jiraEnvCfg.JIRA_URL }
             Set-StrictMode -Version Latest
         }
     }
 
     if (-not $email -or -not $token) {
-        throw "issue-tracker credentials not found. Set issue-tracker_EMAIL and issue-tracker_PERSONAL_TOKEN env vars, or ensure .vscode/mcp.local.json exists."
+        throw "Jira credentials not found. Set JIRA_EMAIL and JIRA_PERSONAL_TOKEN env vars, or ensure .vscode/mcp.local.json exists."
     }
 
-    if (-not $url) { throw "issue-tracker base URL not found. Set issue-tracker_BASE_URL env var, or ensure .vscode/mcp.local.json exists with issue-trackerBaseUrl." }
+    if (-not $url) { throw "Jira base URL not found. Set JIRA_BASE_URL env var, or ensure .vscode/mcp.local.json exists with jiraBaseUrl." }
     $url = $url.TrimEnd("/")
     $encoded = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes("${email}:${token}"))
 
@@ -61,7 +61,7 @@ function Get-test-managementCreds {
 # Internal helpers
 # ---------------------------------------------------------------------------
 
-function Invoke-issue-trackerApi {
+function Invoke-JiraApi {
     param(
         [string]$Method,
         [string]$Path,
@@ -95,20 +95,20 @@ function Invoke-issue-trackerApi {
         $stream = $_.Exception.Response.GetResponseStream()
         $reader = New-Object System.IO.StreamReader($stream)
         $errBody = $reader.ReadToEnd()
-        throw "issue-tracker API $Method $Path failed [$($_.Exception.Response.StatusCode)]: $errBody"
+        throw "Jira API $Method $Path failed [$($_.Exception.Response.StatusCode)]: $errBody"
     }
     if ($resp.Content) { return $resp.Content | ConvertFrom-Json }
     return $null
 }
 
-function Invoke-test-managementApi {
+function Invoke-XrayApi {
     param(
         [string]$Method,
         [string]$Path,
         [hashtable]$Creds,
         [object]$Body = $null
     )
-    return Invoke-issue-trackerApi -Method $Method -Path $Path -Creds $Creds -Body $Body
+    return Invoke-JiraApi -Method $Method -Path $Path -Creds $Creds -Body $Body
 }
 
 # ---------------------------------------------------------------------------
@@ -118,12 +118,12 @@ function Invoke-test-managementApi {
 function Get-StoryStatus {
     <#
     .SYNOPSIS
-        Returns the issue-tracker status name for a given issue (story OR test-management Test).
-        Strategy 1: issue-tracker API v3 GET (works when Browse permission is granted).
-        Strategy 2: test-management Cloud GraphQL issue-tracker(fields:["status"]) — fallback for
+        Returns the Jira status name for a given issue (story OR Xray Test).
+        Strategy 1: Jira API v3 GET (works when Browse permission is granted).
+        Strategy 2: Xray Cloud GraphQL jira(fields:["status"]) — fallback for
                     Test issues or issues where the REST API returns 404/403.
         Returns $null only when both strategies fail.
-    .PARAMETER IssueKey   Any issue-tracker issue key (e.g. STORY-0000, STORY-0000)
+    .PARAMETER IssueKey   Any Jira issue key (e.g. STORY-0000, STORY-0000)
     .PARAMETER StoryKey   Alias for IssueKey — kept for backwards compatibility
     #>
     param(
@@ -133,8 +133,8 @@ function Get-StoryStatus {
     if (-not $IssueKey) { $IssueKey = $StoryKey }
     if (-not $IssueKey) { throw "Get-StoryStatus: IssueKey is required." }
 
-    # -- Strategy 1: issue-tracker REST API v3 ----------------------------------------
-    $creds   = Get-test-managementCreds
+    # -- Strategy 1: Jira REST API v3 ----------------------------------------
+    $creds   = Get-XrayCreds
     $uri     = "$($creds.Url)/rest/api/3/issue/$IssueKey`?fields=status"
     $headers = @{ Authorization = $creds.Headers.Authorization; Accept = "application/json" }
     try {
@@ -142,29 +142,29 @@ function Get-StoryStatus {
         $status = ($resp.Content | ConvertFrom-Json).fields.status.name
         if ($status) { return $status }
     } catch {
-        Write-Verbose "[Get-StoryStatus] issue-tracker REST failed for $IssueKey ($(($_.Exception.Message -split '\n')[0])). Trying test-management GraphQL fallback..."
+        Write-Verbose "[Get-StoryStatus] Jira REST failed for $IssueKey ($(($_.Exception.Message -split '\n')[0])). Trying Xray GraphQL fallback..."
     }
 
-    # -- Strategy 2: test-management Cloud GraphQL fallback ------------------------------
+    # -- Strategy 2: Xray Cloud GraphQL fallback ------------------------------
     try {
-        $token    = Get-test-managementCloudToken
+        $token    = Get-XrayCloudToken
         $headers2 = @{ Authorization = "Bearer $token"; "Content-Type" = "application/json" }
-        $queryStr = "{ getTests(jql: `"key = $IssueKey`", limit: 1) { results { issue-tracker(fields: [`"status`"]) } } }"
+        $queryStr = "{ getTests(jql: `"key = $IssueKey`", limit: 1) { results { jira(fields: [`"status`"]) } } }"
         $gqlBody  = @{ query = $queryStr } | ConvertTo-Json -Depth 5
-        $resp2    = Invoke-WebRequest -Method POST -Uri "https://us.test-management.cloud.gettest-management.app/api/v2/graphql" `
+        $resp2    = Invoke-WebRequest -Method POST -Uri "https://us.xray.cloud.getxray.app/api/v2/graphql" `
                         -Headers $headers2 -Body $gqlBody -UseBasicParsing -ErrorAction Stop
         $results  = ($resp2.Content | ConvertFrom-Json).data.getTests.results
         if ($results -and $results.Count -gt 0) {
-            $statusObj = $results[0].issue-tracker.status
-            # GraphQL returns status as object {name:"Active"} or plain string depending on test-management version
+            $statusObj = $results[0].jira.status
+            # GraphQL returns status as object {name:"Active"} or plain string depending on Xray version
             $status = if ($statusObj -is [string]) { $statusObj } else { $statusObj.name }
             if ($status) {
-                Write-Verbose "[Get-StoryStatus] test-management GraphQL returned status '$status' for $IssueKey"
+                Write-Verbose "[Get-StoryStatus] Xray GraphQL returned status '$status' for $IssueKey"
                 return $status
             }
         }
     } catch {
-        Write-Verbose "[Get-StoryStatus] test-management GraphQL fallback also failed for $IssueKey`: $_"
+        Write-Verbose "[Get-StoryStatus] Xray GraphQL fallback also failed for $IssueKey`: $_"
     }
 
     Write-Warning "[Get-StoryStatus] Could not determine status for $IssueKey via any method."
@@ -202,20 +202,20 @@ function Assert-StoryInDev {
 }
 
 # ---------------------------------------------------------------------------
-# 1. Create test-management Test issue with steps
+# 1. Create Xray Test issue with steps
 # ---------------------------------------------------------------------------
 
-function New-test-managementTest {
+function New-XrayTest {
     <#
     .SYNOPSIS
-        Creates an test-management Test issue and populates its test steps.
+        Creates an Xray Test issue and populates its test steps.
 
-    .PARAMETER ProjectKey  issue-tracker project key (e.g. "STORY")
+    .PARAMETER ProjectKey  Jira project key (e.g. "STORY")
     .PARAMETER Summary     Test issue summary (e.g. "TC STORY-0000: Restrict help to auth users")
     .PARAMETER StoryKey    User Story key to link via "Tests" link
     .PARAMETER Steps       Array of hashtables: @{ Action="..."; Data="..."; Expected="..." }
     .PARAMETER Description Optional description / preconditions text
-    .PARAMETER AssigneeAccountId  Optional issue-tracker accountId to assign the test to after creation
+    .PARAMETER AssigneeAccountId  Optional Jira accountId to assign the test to after creation
 
     .OUTPUTS   The created Test issue key (e.g. "STORY-0000")
     #>
@@ -228,11 +228,11 @@ function New-test-managementTest {
         [string]$AssigneeAccountId = ""
     )
 
-    $creds = Get-test-managementCreds
+    $creds = Get-XrayCreds
 
     # --- Story status gate ---
     if (-not (Assert-StoryInDev -StoryKey $StoryKey)) {
-        Write-Warning "New-test-managementTest aborted for $StoryKey — story is not In Dev or Ready for Dev."
+        Write-Warning "New-XrayTest aborted for $StoryKey — story is not In Dev or Ready for Dev."
         return $null
     }
 
@@ -246,8 +246,8 @@ function New-test-managementTest {
         }
     }
 
-    Write-Host "Creating test-management Test issue in $ProjectKey..."
-    $created = Invoke-issue-trackerApi -Method POST -Path "/rest/api/2/issue" -Creds $creds -Body $issueBody
+    Write-Host "Creating Xray Test issue in $ProjectKey..."
+    $created = Invoke-JiraApi -Method POST -Path "/rest/api/2/issue" -Creds $creds -Body $issueBody
     $testKey = $created.key
     Write-Host "  Created: $testKey"
 
@@ -255,17 +255,17 @@ function New-test-managementTest {
     if ($AssigneeAccountId) {
         try {
             $assignBody = @{ accountId = $AssigneeAccountId } | ConvertTo-Json
-            Invoke-issue-trackerApi -Method PUT -Path "/rest/api/3/issue/$testKey/assignee" -Creds $creds -Body ($assignBody | ConvertFrom-Json)
+            Invoke-JiraApi -Method PUT -Path "/rest/api/3/issue/$testKey/assignee" -Creds $creds -Body ($assignBody | ConvertFrom-Json)
             Write-Host "  Assigned $testKey to accountId $AssigneeAccountId"
         } catch {
             Write-Warning "  Could not assign $testKey`: $_"
         }
     }
 
-    # --- Add test steps via test-management API ---
+    # --- Add test steps via Xray API ---
     Write-Host "  Adding $($Steps.Count) test steps..."
     $stepsAdded = 0
-    $test-managementApiAvailable = $true
+    $xrayApiAvailable = $true
     foreach ($step in $Steps) {
         $stepBody = @{
             step   = $step.Action
@@ -273,14 +273,14 @@ function New-test-managementTest {
             result = if ($step.Expected) { $step.Expected } else { "" }
         }
         try {
-            Invoke-test-managementApi -Method POST -Path "/rest/raven/1.0/api/test/$testKey/step" -Creds $creds -Body $stepBody | Out-Null
+            Invoke-XrayApi -Method POST -Path "/rest/raven/1.0/api/test/$testKey/step" -Creds $creds -Body $stepBody | Out-Null
             $stepsAdded++
         } catch {
-            if ($test-managementApiAvailable) {
-                $test-managementApiAvailable = $false
-                # Server/DC API unavailable - try test-management Cloud API
-                Write-Host "  Server step API unavailable - trying test-management Cloud API..." -ForegroundColor Yellow
-                $cloudOk = Set-test-managementCloudTestSteps `
+            if ($xrayApiAvailable) {
+                $xrayApiAvailable = $false
+                # Server/DC API unavailable - try Xray Cloud API
+                Write-Host "  Server step API unavailable - trying Xray Cloud API..." -ForegroundColor Yellow
+                $cloudOk = Set-XrayCloudTestSteps `
                     -TestKey    $testKey `
                     -ProjectKey $ProjectKey `
                     -Summary    $Summary `
@@ -304,7 +304,7 @@ function New-test-managementTest {
         outwardIssue = @{ key = $StoryKey }
     }
     try {
-        Invoke-issue-trackerApi -Method POST -Path "/rest/api/2/issueLink" -Creds $creds -Body $linkBody | Out-Null
+        Invoke-JiraApi -Method POST -Path "/rest/api/2/issueLink" -Creds $creds -Body $linkBody | Out-Null
         Write-Host "  Linked: $testKey Tests $StoryKey"
     } catch {
         Write-Warning "  Could not create 'Tests' link  -  link type may differ. Link manually: $testKey -> $StoryKey"
@@ -317,13 +317,13 @@ function New-test-managementTest {
 # 2. Create Test Execution + add Tests + link to User Story
 # ---------------------------------------------------------------------------
 
-function New-test-managementTestExecution {
+function New-XrayTestExecution {
     <#
     .SYNOPSIS
-        Creates an test-management Test Execution issue, adds one or more Test issues to it,
+        Creates an Xray Test Execution issue, adds one or more Test issues to it,
         and links the execution back to the User Story.
 
-    .PARAMETER ProjectKey   issue-tracker project key
+    .PARAMETER ProjectKey   Jira project key
     .PARAMETER StoryKey     User Story key (e.g. STORY-0000)
     .PARAMETER TestKeys     Array of Test issue keys to include (e.g. @("STORY-0000"))
     .PARAMETER Summary      Optional summary override. Defaults to "Test Execution: {StoryKey}"
@@ -340,7 +340,7 @@ function New-test-managementTestExecution {
         [string]$FixVersion = ""   # Optional override; auto-detected from story if empty
     )
 
-    $creds = Get-test-managementCreds
+    $creds = Get-XrayCreds
 
     if (-not $Summary) { $Summary = "Test Execution: $StoryKey  -  $Environment" }
 
@@ -375,69 +375,69 @@ function New-test-managementTestExecution {
     $issueBody = @{ fields = $teFields }
 
     Write-Host "Creating Test Execution issue..."
-    $created = Invoke-issue-trackerApi -Method POST -Path "/rest/api/2/issue" -Creds $creds -Body $issueBody
+    $created = Invoke-JiraApi -Method POST -Path "/rest/api/2/issue" -Creds $creds -Body $issueBody
     $execKey = $created.key
     Write-Host "  Created: $execKey"
 
-    # --- Resolve numeric issue-tracker ID for the new TE (needed for test-management Cloud GraphQL) ---
+    # --- Resolve numeric Jira ID for the new TE (needed for Xray Cloud GraphQL) ---
     $execId = $null
     try {
         $execResp = Invoke-WebRequest -Method GET -Uri "$($creds.Url)/rest/api/2/issue/$execKey`?fields=id" `
             -Headers $creds.Headers -UseBasicParsing -ErrorAction Stop
         $execId = ($execResp.Content | ConvertFrom-Json).id
     } catch {
-        Write-Warning "  Could not resolve numeric ID for $execKey. test-management Cloud test-addition may fall back to issue-tracker link."
+        Write-Warning "  Could not resolve numeric ID for $execKey. Xray Cloud test-addition may fall back to Jira link."
     }
 
-    # --- Add Tests to the Execution via test-management Cloud GraphQL (primary) ---
-    $test-managementToken = $null
-    try { $test-managementToken = Get-test-managementCloudToken } catch { Write-Verbose "  test-management Cloud token unavailable." }
+    # --- Add Tests to the Execution via Xray Cloud GraphQL (primary) ---
+    $xrayToken = $null
+    try { $xrayToken = Get-XrayCloudToken } catch { Write-Verbose "  Xray Cloud token unavailable." }
 
     foreach ($testKey in $TestKeys) {
         Write-Host "  Adding $testKey to $execKey..."
         $added = $false
 
-        # Strategy 1: test-management Cloud GraphQL mutation (works for test-management Cloud instances)
-        if ($test-managementToken -and $execId) {
+        # Strategy 1: Xray Cloud GraphQL mutation (works for Xray Cloud instances)
+        if ($xrayToken -and $execId) {
             try {
                 $testIdResp = Invoke-WebRequest -Method GET -Uri "$($creds.Url)/rest/api/2/issue/$testKey`?fields=id" `
                     -Headers $creds.Headers -UseBasicParsing -ErrorAction Stop
                 $testId = ($testIdResp.Content | ConvertFrom-Json).id
-                $gqlHeaders = @{ Authorization = "Bearer $test-managementToken"; "Content-Type" = "application/json" }
+                $gqlHeaders = @{ Authorization = "Bearer $xrayToken"; "Content-Type" = "application/json" }
                 $gqlMutation = "{`"query`":`"mutation { addTestsToTestExecution(issueId: \`"$execId\`", testIssueIds: [\`"$testId\`"]) { addedTests warning } }`"}"
-                $gqlResp = Invoke-WebRequest -Method POST -Uri "https://us.test-management.cloud.gettest-management.app/api/v2/graphql" `
+                $gqlResp = Invoke-WebRequest -Method POST -Uri "https://us.xray.cloud.getxray.app/api/v2/graphql" `
                     -Headers $gqlHeaders -Body $gqlMutation -UseBasicParsing -ErrorAction Stop
                 $gqlResult = ($gqlResp.Content | ConvertFrom-Json).data.addTestsToTestExecution
                 if ($gqlResult.addedTests -contains $testId) {
-                    Write-Host "  Added $testKey (via test-management Cloud GraphQL)"
+                    Write-Host "  Added $testKey (via Xray Cloud GraphQL)"
                     $added = $true
                 } elseif ($gqlResult.warning) {
-                    Write-Warning "  test-management Cloud warned: $($gqlResult.warning)"
+                    Write-Warning "  Xray Cloud warned: $($gqlResult.warning)"
                 }
             } catch {
-                Write-Verbose "  test-management Cloud GraphQL failed for $testKey`: $_"
+                Write-Verbose "  Xray Cloud GraphQL failed for $testKey`: $_"
             }
         }
 
-        # Strategy 2: test-management Server/DC REST API fallback
+        # Strategy 2: Xray Server/DC REST API fallback
         if (-not $added) {
             try {
-                Invoke-test-managementApi -Method POST -Path "/rest/raven/1.0/api/testexec/$execKey/test" `
+                Invoke-XrayApi -Method POST -Path "/rest/raven/1.0/api/testexec/$execKey/test" `
                     -Creds $creds -Body @{ add = @($testKey) } | Out-Null
-                Write-Host "  Added $testKey (via test-management Server API)"
+                Write-Host "  Added $testKey (via Xray Server API)"
                 $added = $true
             } catch {
-                Write-Verbose "  test-management Server API also failed for $testKey."
+                Write-Verbose "  Xray Server API also failed for $testKey."
             }
         }
 
         if (-not $added) {
-            Write-Warning "  Could not add $testKey to $execKey via test-management API. Add manually in test-management."
+            Write-Warning "  Could not add $testKey to $execKey via Xray API. Add manually in Xray."
         }
     }
 
-    # NOTE: Sprint TEs are containers for test-management Tests — no issue link to the story is created here.
-    # The test-management Test (not the TE) holds the "Tests" relationship to the story.
+    # NOTE: Sprint TEs are containers for Xray Tests — no issue link to the story is created here.
+    # The Xray Test (not the TE) holds the "Tests" relationship to the story.
     return $execKey
 }
 
@@ -445,18 +445,18 @@ function New-test-managementTestExecution {
 # 3. Get Test Run ID (needed to update step results / attach evidence)
 # ---------------------------------------------------------------------------
 
-function Get-test-managementTestRunId {
+function Get-XrayTestRunId {
     <#
     .SYNOPSIS
-        Returns the test-management Test Run internal ID for a given Test in a Test Execution.
+        Returns the Xray Test Run internal ID for a given Test in a Test Execution.
     #>
     param(
         [Parameter(Mandatory)][string]$TestExecKey,
         [Parameter(Mandatory)][string]$TestKey
     )
 
-    $creds = Get-test-managementCreds
-    $result = Invoke-test-managementApi -Method GET `
+    $creds = Get-XrayCreds
+    $result = Invoke-XrayApi -Method GET `
         -Path "/rest/raven/1.0/api/testrun?testExecIssueKey=$TestExecKey&testIssueKey=$TestKey" `
         -Creds $creds
     return $result.id
@@ -466,7 +466,7 @@ function Get-test-managementTestRunId {
 # 4. Get all steps for a Test Run
 # ---------------------------------------------------------------------------
 
-function Get-test-managementTestRunSteps {
+function Get-XrayTestRunSteps {
     <#
     .SYNOPSIS
         Returns all steps for a test run (with their IDs for result updates).
@@ -475,21 +475,21 @@ function Get-test-managementTestRunSteps {
         [Parameter(Mandatory)][string]$TestRunId
     )
 
-    $creds = Get-test-managementCreds
-    return Invoke-test-managementApi -Method GET -Path "/rest/raven/1.0/api/testrun/$TestRunId/step" -Creds $creds
+    $creds = Get-XrayCreds
+    return Invoke-XrayApi -Method GET -Path "/rest/raven/1.0/api/testrun/$TestRunId/step" -Creds $creds
 }
 
 # ---------------------------------------------------------------------------
 # 5. Set step result (PASS / FAIL / EXECUTING / TODO / BLOCKED)
 # ---------------------------------------------------------------------------
 
-function Set-test-managementStepResult {
+function Set-XrayStepResult {
     <#
     .SYNOPSIS
         Updates the result status of a single test step in a test run.
 
-    .PARAMETER TestRunId    Internal test-management test run ID
-    .PARAMETER StepId       Step ID from Get-test-managementTestRunSteps
+    .PARAMETER TestRunId    Internal Xray test run ID
+    .PARAMETER StepId       Step ID from Get-XrayTestRunSteps
     .PARAMETER Status       One of: PASS, FAIL, EXECUTING, TODO, BLOCKED
     .PARAMETER Comment      Optional comment / actual result text
     #>
@@ -500,11 +500,11 @@ function Set-test-managementStepResult {
         [string]$Comment = ""
     )
 
-    $creds = Get-test-managementCreds
+    $creds = Get-XrayCreds
     $body = @{ status = $Status }
     if ($Comment) { $body.comment = $Comment }
 
-    Invoke-test-managementApi -Method PUT `
+    Invoke-XrayApi -Method PUT `
         -Path "/rest/raven/1.0/api/testrun/$TestRunId/step/$StepId" `
         -Creds $creds -Body $body | Out-Null
 
@@ -515,12 +515,12 @@ function Set-test-managementStepResult {
 # 6. Attach evidence (screenshot) to a test step
 # ---------------------------------------------------------------------------
 
-function Add-test-managementStepEvidence {
+function Add-XrayStepEvidence {
     <#
     .SYNOPSIS
         Attaches a file (screenshot) as evidence to a specific test step in a test run.
 
-    .PARAMETER TestRunId    Internal test-management test run ID
+    .PARAMETER TestRunId    Internal Xray test run ID
     .PARAMETER StepId       Step ID
     .PARAMETER FilePath     Absolute or relative path to the screenshot file
     #>
@@ -535,7 +535,7 @@ function Add-test-managementStepEvidence {
         return
     }
 
-    $creds = Get-test-managementCreds
+    $creds = Get-XrayCreds
     $fileName = Split-Path $FilePath -Leaf
     $mimeType = switch ([System.IO.Path]::GetExtension($FilePath).ToLower()) {
         ".png"  { "image/png" }
@@ -571,7 +571,7 @@ function Add-test-managementStepEvidence {
 # 7. Update overall Test Run status
 # ---------------------------------------------------------------------------
 
-function Set-test-managementTestRunStatus {
+function Set-XrayTestRunStatus {
     <#
     .SYNOPSIS
         Sets the overall status of a test run (PASS / FAIL / EXECUTING / ABORTED).
@@ -581,8 +581,8 @@ function Set-test-managementTestRunStatus {
         [Parameter(Mandatory)][ValidateSet("PASS","FAIL","EXECUTING","ABORTED","TODO")][string]$Status
     )
 
-    $creds = Get-test-managementCreds
-    Invoke-test-managementApi -Method PUT `
+    $creds = Get-XrayCreds
+    Invoke-XrayApi -Method PUT `
         -Path "/rest/raven/1.0/api/testrun/$TestRunId/status?status=$Status" `
         -Creds $creds | Out-Null
 
@@ -593,7 +593,7 @@ function Set-test-managementTestRunStatus {
 # 8. Convenience: Show test run steps summary
 # ---------------------------------------------------------------------------
 
-function Show-test-managementTestRunSteps {
+function Show-XrayTestRunSteps {
     <#
     .SYNOPSIS
         Prints a summary table of all steps in a test run with their current status.
@@ -603,8 +603,8 @@ function Show-test-managementTestRunSteps {
         [Parameter(Mandatory)][string]$TestKey
     )
 
-    $runId = Get-test-managementTestRunId -TestExecKey $TestExecKey -TestKey $TestKey
-    $steps = Get-test-managementTestRunSteps -TestRunId $runId
+    $runId = Get-XrayTestRunId -TestExecKey $TestExecKey -TestKey $TestKey
+    $steps = Get-XrayTestRunSteps -TestRunId $runId
 
     Write-Host "`nTest Run $runId  -  Steps:"
     Write-Host ("-" * 80)
@@ -618,93 +618,93 @@ function Show-test-managementTestRunSteps {
 }
 
 # ---------------------------------------------------------------------------
-# 9. test-management Cloud REST API v2 - Authenticate (requires Client ID + Client Secret)
+# 9. Xray Cloud REST API v2 - Authenticate (requires Client ID + Client Secret)
 # ---------------------------------------------------------------------------
 
-function Get-test-managementCloudToken {
+function Get-XrayCloudToken {
     <#
     .SYNOPSIS
-        Authenticates with the test-management Cloud REST API v2 and returns a Bearer token.
-        Credentials read from env vars test-management_CLIENT_ID and test-management_CLIENT_SECRET,
-        or from .vscode/mcp.local.json under servers.test-management.env.
+        Authenticates with the Xray Cloud REST API v2 and returns a Bearer token.
+        Credentials read from env vars XRAY_CLIENT_ID and XRAY_CLIENT_SECRET,
+        or from .vscode/mcp.local.json under servers.xray.env.
 
     .OUTPUTS   JWT token string to use as "Bearer <token>" in Authorization header.
     #>
 
-    $clientId     = $env:test-management_CLIENT_ID
-    $clientSecret = $env:test-management_CLIENT_SECRET
+    $clientId     = $env:XRAY_CLIENT_ID
+    $clientSecret = $env:XRAY_CLIENT_SECRET
 
     if (-not $clientId -or -not $clientSecret) {
         $localPath = Join-Path $PSScriptRoot "..\\.vscode\\mcp.local.json"
         if (Test-Path $localPath) {
             $cfg = Get-Content $localPath -Raw | ConvertFrom-Json
-            if ($cfg.servers.test-management) {
-                if (-not $clientId)     { $clientId     = $cfg.servers.test-management.env.test-management_CLIENT_ID }
-                if (-not $clientSecret) { $clientSecret = $cfg.servers.test-management.env.test-management_CLIENT_SECRET }
+            if ($cfg.servers.xray) {
+                if (-not $clientId)     { $clientId     = $cfg.servers.xray.env.XRAY_CLIENT_ID }
+                if (-not $clientSecret) { $clientSecret = $cfg.servers.xray.env.XRAY_CLIENT_SECRET }
             }
         }
     }
 
     if (-not $clientId -or -not $clientSecret) {
-        throw "test-management Cloud credentials not found.`nSet test-management_CLIENT_ID and test-management_CLIENT_SECRET env vars, or add them to .vscode/mcp.local.json under servers.test-management.env."
+        throw "Xray Cloud credentials not found.`nSet XRAY_CLIENT_ID and XRAY_CLIENT_SECRET env vars, or add them to .vscode/mcp.local.json under servers.xray.env."
     }
 
     $body = @{ client_id = $clientId; client_secret = $clientSecret } | ConvertTo-Json
     $resp = Invoke-WebRequest -Method POST `
-        -Uri "https://test-management.cloud.gettest-management.app/api/v2/authenticate" `
+        -Uri "https://xray.cloud.getxray.app/api/v2/authenticate" `
         -Body $body `
         -ContentType "application/json" `
         -UseBasicParsing -ErrorAction Stop
 
     # Response is a quoted JWT string, strip surrounding quotes
     $token = ($resp.Content | ConvertFrom-Json)
-    Write-Host "test-management Cloud token obtained."
+    Write-Host "Xray Cloud token obtained."
     return $token
 }
 
 # ---------------------------------------------------------------------------
-# 10. test-management Cloud REST API v2 - Import/update test steps for an existing Test issue
+# 10. Xray Cloud REST API v2 - Import/update test steps for an existing Test issue
 # ---------------------------------------------------------------------------
 
-function Import-test-managementCloudTestSteps {
+function Import-XrayCloudTestSteps {
     <#
     .SYNOPSIS
-        Imports (adds/replaces) test steps into an existing test-management Test issue
-        using the test-management Cloud REST API v2. Does NOT require BULK_CHANGE permission.
+        Imports (adds/replaces) test steps into an existing Xray Test issue
+        using the Xray Cloud REST API v2. Does NOT require BULK_CHANGE permission.
 
-    .PARAMETER JsonFilePath   Path to a test-management JSON import file (array of test objects).
-                              Use scripts/test-management-import-STORY-0000.json for STORY-0000.
-    .PARAMETER test-managementToken      Bearer token from Get-test-managementCloudToken. If omitted,
-                              Get-test-managementCloudToken is called automatically.
-    .PARAMETER Region         test-management Cloud region base URL. Defaults to US region.
+    .PARAMETER JsonFilePath   Path to a Xray JSON import file (array of test objects).
+                              Use scripts/xray-import-STORY-0000.json for STORY-0000.
+    .PARAMETER XrayToken      Bearer token from Get-XrayCloudToken. If omitted,
+                              Get-XrayCloudToken is called automatically.
+    .PARAMETER Region         Xray Cloud region base URL. Defaults to US region.
 
     .EXAMPLE
-        $tok = Get-test-managementCloudToken
-        Import-test-managementCloudTestSteps -JsonFilePath "scripts\test-management-import-STORY-0000.json" -test-managementToken $tok
+        $tok = Get-XrayCloudToken
+        Import-XrayCloudTestSteps -JsonFilePath "scripts\xray-import-STORY-0000.json" -XrayToken $tok
     #>
     param(
         [Parameter(Mandatory)][string]$JsonFilePath,
-        [string]$test-managementToken = "",
-        [string]$Region = "https://us.test-management.cloud.gettest-management.app"
+        [string]$XrayToken = "",
+        [string]$Region = "https://us.xray.cloud.getxray.app"
     )
 
     if (-not (Test-Path $JsonFilePath)) {
         throw "Import file not found: $JsonFilePath"
     }
 
-    if (-not $test-managementToken) {
-        $test-managementToken = Get-test-managementCloudToken
+    if (-not $XrayToken) {
+        $XrayToken = Get-XrayCloudToken
     }
 
     $jsonContent = Get-Content $JsonFilePath -Raw -Encoding UTF8
 
     $headers = @{
-        Authorization  = "Bearer $test-managementToken"
+        Authorization  = "Bearer $XrayToken"
         "Content-Type" = "application/json"
     }
 
     $uri = "$Region/api/v2/import/test"
-    Write-Host "Importing test steps to test-management Cloud..."
+    Write-Host "Importing test steps to Xray Cloud..."
     Write-Host "  Endpoint: $uri"
 
     $resp = Invoke-WebRequest -Method POST -Uri $uri `
@@ -718,41 +718,41 @@ function Import-test-managementCloudTestSteps {
 }
 
 # ---------------------------------------------------------------------------
-# 11. Set test steps on an existing test-management Cloud Test issue (inline - no file needed)
+# 11. Set test steps on an existing Xray Cloud Test issue (inline - no file needed)
 # ---------------------------------------------------------------------------
 
-function Set-test-managementCloudTestSteps {
+function Set-XrayCloudTestSteps {
     <#
     .SYNOPSIS
-        Adds steps to an existing test-management Cloud Test issue one at a time via the
-        addTestStep GraphQL mutation (test-management Cloud API v2).
+        Adds steps to an existing Xray Cloud Test issue one at a time via the
+        addTestStep GraphQL mutation (Xray Cloud API v2).
         Returns $true on success, $false if any steps failed.
 
-    .PARAMETER TestKey      Existing test-management Test issue key (e.g. "STORY-0000")
-    .PARAMETER ProjectKey   issue-tracker project key (e.g. "STORY") — used to look up numeric ID
+    .PARAMETER TestKey      Existing Xray Test issue key (e.g. "STORY-0000")
+    .PARAMETER ProjectKey   Jira project key (e.g. "STORY") — used to look up numeric ID
     .PARAMETER Summary      Unused — kept for signature compatibility
     .PARAMETER Steps        Array of hashtables: @{ Action; Data; Expected }
-    .PARAMETER Region       test-management Cloud region. Defaults to US.
+    .PARAMETER Region       Xray Cloud region. Defaults to US.
     #>
     param(
         [Parameter(Mandatory)][string]$TestKey,
         [Parameter(Mandatory)][string]$ProjectKey,
         [string]$Summary = "",
         [Parameter(Mandatory)][array]$Steps,
-        [string]$Region = "https://us.test-management.cloud.gettest-management.app"
+        [string]$Region = "https://us.xray.cloud.getxray.app"
     )
 
-    # Resolve numeric issue-tracker issue ID (required by GraphQL)
-    $creds = Get-test-managementCreds
+    # Resolve numeric Jira issue ID (required by GraphQL)
+    $creds = Get-XrayCreds
     try {
         $issueData = (Invoke-WebRequest -Uri ($creds.Url+"/rest/api/3/issue/$TestKey`?fields=id") -Headers $creds.Headers -UseBasicParsing).Content | ConvertFrom-Json
         $numericId = $issueData.id
     } catch {
-        Write-Warning "  [Set-test-managementCloudTestSteps] Could not resolve numeric ID for $TestKey`: $_"
+        Write-Warning "  [Set-XrayCloudTestSteps] Could not resolve numeric ID for $TestKey`: $_"
         return $false
     }
 
-    $token   = Get-test-managementCloudToken
+    $token   = Get-XrayCloudToken
     $headers = @{ Authorization = "Bearer $token"; "Content-Type" = "application/json" }
     $gqlUrl  = "$Region/api/v2/graphql"
 
@@ -784,13 +784,13 @@ function Set-test-managementCloudTestSteps {
 }
 
 # ---------------------------------------------------------------------------
-# Find existing test-management Test issue(s) already linked to a User Story
+# Find existing Xray Test issue(s) already linked to a User Story
 # ---------------------------------------------------------------------------
 
-function Find-Existingtest-managementTest {
+function Find-ExistingXrayTest {
     <#
     .SYNOPSIS
-        Returns the first test-management Test issue key linked to the given User Story,
+        Returns the first Xray Test issue key linked to the given User Story,
         or $null if none is found.
 
     .PARAMETER StoryKey   User Story key to check (e.g. STORY-0000)
@@ -799,11 +799,11 @@ function Find-Existingtest-managementTest {
     #>
     param([Parameter(Mandatory)][string]$StoryKey)
 
-    $creds = Get-test-managementCreds
+    $creds = Get-XrayCreds
 
     # Strategy 1: check the issue's own links for any linked "Test" issue type
     try {
-        $issue = Invoke-issue-trackerApi -Method GET `
+        $issue = Invoke-JiraApi -Method GET `
             -Path "/rest/api/2/issue/$StoryKey`?fields=issuelinks" `
             -Creds $creds
 
@@ -811,70 +811,70 @@ function Find-Existingtest-managementTest {
             $linked = if ($link.inwardIssue)  { $link.inwardIssue  } `
                       else                    { $link.outwardIssue }
             if ($linked -and $linked.fields.issuetype.name -eq "Test") {
-                Write-Host "  [Find-Existingtest-managementTest] Found linked Test: $($linked.key)"
+                Write-Host "  [Find-ExistingXrayTest] Found linked Test: $($linked.key)"
                 return $linked.key
             }
         }
     } catch {
-        Write-Warning "  [Find-Existingtest-managementTest] Could not retrieve issue links for $StoryKey`: $_"
+        Write-Warning "  [Find-ExistingXrayTest] Could not retrieve issue links for $StoryKey`: $_"
     }
 
     # Strategy 2: JQL search - Test issues that mention the story key in their summary
     try {
         $jql     = [System.Uri]::EscapeDataString("project = `"$($StoryKey -replace '-\d+$','')`" AND issuetype = Test AND summary ~ `"$StoryKey`" ORDER BY created DESC")
-        $results = Invoke-issue-trackerApi -Method GET `
+        $results = Invoke-JiraApi -Method GET `
             -Path "/rest/api/3/issue/search?jql=$jql&maxResults=1&fields=summary,issuetype" `
             -Creds $creds
 
         if ($results.issues -and $results.issues.Count -gt 0) {
             $found = $results.issues[0].key
-            Write-Host "  [Find-Existingtest-managementTest] Found via JQL: $found"
+            Write-Host "  [Find-ExistingXrayTest] Found via JQL: $found"
             return $found
         }
     } catch {
-        Write-Warning "  [Find-Existingtest-managementTest] JQL search failed: $_"
+        Write-Warning "  [Find-ExistingXrayTest] JQL search failed: $_"
     }
 
-    Write-Host "  [Find-Existingtest-managementTest] No existing Test issue found for $StoryKey"
+    Write-Host "  [Find-ExistingXrayTest] No existing Test issue found for $StoryKey"
     return $null
 }
 
 # ---------------------------------------------------------------------------
-# Get step count for an existing test-management Test issue
+# Get step count for an existing Xray Test issue
 # ---------------------------------------------------------------------------
 
-function Get-test-managementTestStepCount {
+function Get-XrayTestStepCount {
     <#
     .SYNOPSIS
-        Returns the number of steps on an existing test-management Test issue.
-        Returns -1 if the test-management step API is unavailable (issue-tracker Cloud).
+        Returns the number of steps on an existing Xray Test issue.
+        Returns -1 if the Xray step API is unavailable (Jira Cloud).
 
-    .PARAMETER TestKey   test-management Test issue key (e.g. STORY-0000)
+    .PARAMETER TestKey   Xray Test issue key (e.g. STORY-0000)
     #>
     param([Parameter(Mandatory)][string]$TestKey)
 
-    $creds = Get-test-managementCreds
+    $creds = Get-XrayCreds
     try {
-        $steps = Invoke-test-managementApi -Method GET `
+        $steps = Invoke-XrayApi -Method GET `
             -Path "/rest/raven/1.0/api/test/$TestKey/step" `
             -Creds $creds
         $count = if ($steps) { @($steps).Count } else { 0 }
-        Write-Host "  [Get-test-managementTestStepCount] $TestKey has $count step(s)."
+        Write-Host "  [Get-XrayTestStepCount] $TestKey has $count step(s)."
         return $count
     } catch {
-        Write-Warning "  [Get-test-managementTestStepCount] test-management step API unavailable for $TestKey (issue-tracker Cloud). Cannot verify step count remotely."
+        Write-Warning "  [Get-XrayTestStepCount] Xray step API unavailable for $TestKey (Jira Cloud). Cannot verify step count remotely."
         return -1
     }
 }
 
 # ---------------------------------------------------------------------------
-# Ensure test-management Test: create or reuse, add steps only if missing
+# Ensure Xray Test: create or reuse, add steps only if missing
 # ---------------------------------------------------------------------------
 
-function Ensure-test-managementTest {
+function Ensure-XrayTest {
     <#
     .SYNOPSIS
-        Idempotent wrapper around New-test-managementTest.
+        Idempotent wrapper around New-XrayTest.
         1. Checks if a Test issue already exists and is linked to the story.
         2. If it exists and has steps: returns existing key without changes.
         3. If it exists but has 0 steps (or step count unknown on Cloud):
@@ -891,28 +891,28 @@ function Ensure-test-managementTest {
         [string]$Description = ""
     )
 
-    $creds = Get-test-managementCreds
+    $creds = Get-XrayCreds
 
     # --- Story status gate ---
     if (-not (Assert-StoryInDev -StoryKey $StoryKey)) {
-        Write-Warning "Ensure-test-managementTest aborted for $StoryKey — story is not In Dev or Ready for Dev."
+        Write-Warning "Ensure-XrayTest aborted for $StoryKey — story is not In Dev or Ready for Dev."
         return @{ Key = $null; Action = "blocked" }
     }
 
     # -- Step 1: look for an existing linked Test --
-    $existingKey = Find-Existingtest-managementTest -StoryKey $StoryKey
+    $existingKey = Find-ExistingXrayTest -StoryKey $StoryKey
 
     if ($existingKey) {
-        $stepCount = Get-test-managementTestStepCount -TestKey $existingKey
+        $stepCount = Get-XrayTestStepCount -TestKey $existingKey
 
         if ($stepCount -gt 0) {
-            Write-Host "  [Ensure-test-managementTest] $existingKey already exists with $stepCount step(s) - skipping creation." -ForegroundColor Cyan
+            Write-Host "  [Ensure-XrayTest] $existingKey already exists with $stepCount step(s) - skipping creation." -ForegroundColor Cyan
             return @{ Key = $existingKey; Action = "skipped" }
         }
 
         # stepCount is 0 or -1 (Cloud API unavailable) - add steps to existing issue
         $verb = if ($stepCount -eq 0) { "0 steps found" } else { "step count unknown (Cloud API)" }
-        Write-Host "  [Ensure-test-managementTest] $existingKey exists but $verb - adding steps..." -ForegroundColor Yellow
+        Write-Host "  [Ensure-XrayTest] $existingKey exists but $verb - adding steps..." -ForegroundColor Yellow
 
         $stepsAdded   = 0
         $apiAvailable = $true
@@ -923,16 +923,16 @@ function Ensure-test-managementTest {
                 result = if ($step.Expected) { $step.Expected } else { "" }
             }
             try {
-                Invoke-test-managementApi -Method POST `
+                Invoke-XrayApi -Method POST `
                     -Path "/rest/raven/1.0/api/test/$existingKey/step" `
                     -Creds $creds -Body $stepBody | Out-Null
                 $stepsAdded++
             } catch {
                 if ($apiAvailable) {
                     $apiAvailable = $false
-                    # Server/DC API unavailable - try test-management Cloud API
-                    Write-Host "  Server step API unavailable - trying test-management Cloud API..." -ForegroundColor Yellow
-                    $cloudOk = Set-test-managementCloudTestSteps `
+                    # Server/DC API unavailable - try Xray Cloud API
+                    Write-Host "  Server step API unavailable - trying Xray Cloud API..." -ForegroundColor Yellow
+                    $cloudOk = Set-XrayCloudTestSteps `
                         -TestKey    $existingKey `
                         -ProjectKey $ProjectKey `
                         -Summary    $Summary `
@@ -950,8 +950,8 @@ function Ensure-test-managementTest {
     }
 
     # -- Step 2: no existing Test found - create new --
-    Write-Host "  [Ensure-test-managementTest] No existing Test for $StoryKey - creating new..." -ForegroundColor Cyan
-    $newKey = New-test-managementTest `
+    Write-Host "  [Ensure-XrayTest] No existing Test for $StoryKey - creating new..." -ForegroundColor Cyan
+    $newKey = New-XrayTest `
         -ProjectKey  $ProjectKey `
         -Summary     $Summary `
         -StoryKey    $StoryKey `
@@ -962,23 +962,23 @@ function Ensure-test-managementTest {
 }
 
 # ---------------------------------------------------------------------------
-# Workflow: update an Active test-management Test when a new story impacts it
+# Workflow: update an Active Xray Test when a new story impacts it
 #   Active ? [review] ? Open ? [prep resolves findings + story context] ? Ready for Test Review
 # ---------------------------------------------------------------------------
 
-function Get-issue-trackerStoryDetail {
+function Get-JiraStoryDetail {
     <#
     .SYNOPSIS
-        Fetches the full detail of a issue-tracker story including description, acceptance criteria,
+        Fetches the full detail of a Jira story including description, acceptance criteria,
         and ALL comments — so the prep agent can detect mid-sprint enhancements.
         Returns a structured hashtable. Falls back to $null on auth/404 failure.
 
-    .PARAMETER StoryKey   Any issue-tracker issue key (story, task, test, etc.)
+    .PARAMETER StoryKey   Any Jira issue key (story, task, test, etc.)
     .OUTPUTS   @{ Key; Summary; Description; AcceptanceCriteria; Comments; CommentCount }
     #>
     param([Parameter(Mandatory)][string]$StoryKey)
 
-    $creds   = Get-test-managementCreds
+    $creds   = Get-XrayCreds
     $headers = @{ Authorization = $creds.Headers.Authorization; Accept = "application/json" }
 
     # -- Issue fields ---------------------------------------------------------
@@ -988,7 +988,7 @@ function Get-issue-trackerStoryDetail {
         $resp = Invoke-WebRequest -Method GET -Uri $uri -Headers $headers -UseBasicParsing -ErrorAction Stop
         $detail = $resp.Content | ConvertFrom-Json
     } catch {
-        Write-Warning "  [Get-issue-trackerStoryDetail] Cannot read issue $StoryKey`: $_"
+        Write-Warning "  [Get-JiraStoryDetail] Cannot read issue $StoryKey`: $_"
         return $null
     }
 
@@ -1005,7 +1005,7 @@ function Get-issue-trackerStoryDetail {
     }
 
     $descText = ConvertFrom-AdfToText $detail.fields.description
-    # Try standard AC field (customfield_10014 = Acceptance Criteria in many issue-tracker configs)
+    # Try standard AC field (customfield_10014 = Acceptance Criteria in many Jira configs)
     $acText   = ConvertFrom-AdfToText $detail.fields.customfield_10014
     if (-not $acText.Trim()) { $acText = ConvertFrom-AdfToText $detail.fields.customfield_10016 }
 
@@ -1028,33 +1028,33 @@ function Get-issue-trackerStoryDetail {
     }
 }
 
-function Get-issue-trackerIssueTransitions {
+function Get-JiraIssueTransitions {
     <#
     .SYNOPSIS
-        Returns all available workflow transitions for a issue-tracker issue.
-    .PARAMETER IssueKey   Any issue-tracker issue key (Test, Story, etc.)
+        Returns all available workflow transitions for a Jira issue.
+    .PARAMETER IssueKey   Any Jira issue key (Test, Story, etc.)
     .OUTPUTS   Array of transition objects with .id and .name properties.
     #>
     param([Parameter(Mandatory)][string]$IssueKey)
 
-    $creds   = Get-test-managementCreds
+    $creds   = Get-XrayCreds
     $uri     = "$($creds.Url)/rest/api/3/issue/$IssueKey/transitions"
     $headers = @{ Authorization = $creds.Headers.Authorization; Accept = "application/json" }
     try {
         $resp = Invoke-WebRequest -Method GET -Uri $uri -Headers $headers -UseBasicParsing -ErrorAction Stop
         return ($resp.Content | ConvertFrom-Json).transitions
     } catch {
-        Write-Warning "  [Get-issue-trackerIssueTransitions] Failed for $IssueKey`: $_"
+        Write-Warning "  [Get-JiraIssueTransitions] Failed for $IssueKey`: $_"
         return $null
     }
 }
 
-function Invoke-issue-trackerTransition {
+function Invoke-JiraTransition {
     <#
     .SYNOPSIS
-        Executes a named workflow transition on a issue-tracker issue.
+        Executes a named workflow transition on a Jira issue.
         Returns $true on success, $false on failure.
-    .PARAMETER IssueKey        issue-tracker issue key to transition (e.g. STORY-0000)
+    .PARAMETER IssueKey        Jira issue key to transition (e.g. STORY-0000)
     .PARAMETER TransitionName  Exact name of the target transition (e.g. "Open", "Ready for Test Review")
     #>
     param(
@@ -1062,21 +1062,21 @@ function Invoke-issue-trackerTransition {
         [Parameter(Mandatory)][string]$TransitionName
     )
 
-    $transitions = Get-issue-trackerIssueTransitions -IssueKey $IssueKey
+    $transitions = Get-JiraIssueTransitions -IssueKey $IssueKey
     if (-not $transitions) {
-        Write-Warning "  [Invoke-issue-trackerTransition] No transitions available for $IssueKey."
+        Write-Warning "  [Invoke-JiraTransition] No transitions available for $IssueKey."
         return $false
     }
 
     $t = $transitions | Where-Object { $_.name -eq $TransitionName } | Select-Object -First 1
     if (-not $t) {
         $available = ($transitions | Select-Object -ExpandProperty name) -join ", "
-        Write-Warning "  [Invoke-issue-trackerTransition] Transition '$TransitionName' not found for $IssueKey."
+        Write-Warning "  [Invoke-JiraTransition] Transition '$TransitionName' not found for $IssueKey."
         Write-Warning "    Available transitions: $available"
         return $false
     }
 
-    $creds   = Get-test-managementCreds
+    $creds   = Get-XrayCreds
     $uri     = "$($creds.Url)/rest/api/3/issue/$IssueKey/transitions"
     $headers = @{ Authorization = $creds.Headers.Authorization; "Content-Type" = "application/json"; Accept = "application/json" }
     $body    = @{ transition = @{ id = $t.id } } | ConvertTo-Json -Depth 5
@@ -1086,25 +1086,25 @@ function Invoke-issue-trackerTransition {
         Write-Host "  [Transition] $IssueKey  ?  '$TransitionName'" -ForegroundColor Cyan
         return $true
     } catch {
-        Write-Warning "  [Invoke-issue-trackerTransition] Transition failed for $IssueKey to '$TransitionName': $_"
+        Write-Warning "  [Invoke-JiraTransition] Transition failed for $IssueKey to '$TransitionName': $_"
         return $false
     }
 }
 
-function Get-test-managementCloudTestSteps {
+function Get-XrayCloudTestSteps {
     <#
     .SYNOPSIS
-        Retrieves the current steps from an existing test-management Cloud Test issue via GraphQL.
+        Retrieves the current steps from an existing Xray Cloud Test issue via GraphQL.
         Returns an array of @{ Action; Data; Expected } hashtables (empty array if none).
-    .PARAMETER TestKey   test-management Test issue key (e.g. STORY-0000)
-    .PARAMETER Region    test-management Cloud region. Defaults to US.
+    .PARAMETER TestKey   Xray Test issue key (e.g. STORY-0000)
+    .PARAMETER Region    Xray Cloud region. Defaults to US.
     #>
     param(
         [Parameter(Mandatory)][string]$TestKey,
-        [string]$Region = "https://us.test-management.cloud.gettest-management.app"
+        [string]$Region = "https://us.xray.cloud.getxray.app"
     )
 
-    $token      = Get-test-managementCloudToken
+    $token      = Get-XrayCloudToken
     $headers    = @{ Authorization = "Bearer $token"; "Content-Type" = "application/json" }
     $queryStr   = "{ getTests(jql: `"key = $TestKey`", limit: 1) { results { steps { action data result } } } }"
     $gqlBody    = @{ query = $queryStr } | ConvertTo-Json -Depth 5
@@ -1116,27 +1116,27 @@ function Get-test-managementCloudTestSteps {
         if (-not $results -or $results.Count -eq 0 -or -not $results[0].steps) { return @() }
         return @($results[0].steps | ForEach-Object { @{ Action = $_.action; Data = $_.data; Expected = $_.result } })
     } catch {
-        Write-Warning "  [Get-test-managementCloudTestSteps] GraphQL query failed for $TestKey`: $_"
+        Write-Warning "  [Get-XrayCloudTestSteps] GraphQL query failed for $TestKey`: $_"
         return @()
     }
 }
 
-function Update-test-managementTestForStory {
+function Update-XrayTestForStory {
     <#
     .SYNOPSIS
-        Updates an existing Active test-management Test issue to accommodate changes introduced
+        Updates an existing Active Xray Test issue to accommodate changes introduced
         by a new or impacting User Story.
 
         Workflow enforced:
           Active  ?  Open  ?  [append new steps to existing steps]  ?  Ready for Test Review
 
     .PARAMETER StoryKey         The NEW/impacting User Story key (used in audit comment)
-    .PARAMETER TestKey          Existing test-management Test issue key to update.
-                                If omitted, Find-Existingtest-managementTest is called using LinkedStoryKey.
+    .PARAMETER TestKey          Existing Xray Test issue key to update.
+                                If omitted, Find-ExistingXrayTest is called using LinkedStoryKey.
     .PARAMETER LinkedStoryKey   Story that currently owns the Test (used only when TestKey is omitted).
     .PARAMETER NewSteps         Array of @{ Action="..."; Data="..."; Expected="..." } to APPEND.
-    .PARAMETER ProjectKey       issue-tracker project key. Default "STORY".
-    .PARAMETER Region           test-management Cloud region. Default US.
+    .PARAMETER ProjectKey       Jira project key. Default "STORY".
+    .PARAMETER Region           Xray Cloud region. Default US.
 
     .OUTPUTS   Hashtable: @{ TestKey; StoryKey; StepsAdded; TotalSteps; FinalStatus }
                Returns $null on failure.
@@ -1145,7 +1145,7 @@ function Update-test-managementTestForStory {
         $steps = @(
             @{ Action="Navigate to Help"; Data=""; Expected="Help page loads" }
         )
-        Update-test-managementTestForStory -StoryKey "STORY-0000" -TestKey "STORY-0000" -NewSteps $steps
+        Update-XrayTestForStory -StoryKey "STORY-0000" -TestKey "STORY-0000" -NewSteps $steps
     #>
     param(
         [Parameter(Mandatory)][string]$StoryKey,
@@ -1153,17 +1153,17 @@ function Update-test-managementTestForStory {
         [string]$LinkedStoryKey  = "",
         [Parameter(Mandatory)][array]$NewSteps,
         [string]$ProjectKey      = "STORY",
-        [string]$Region          = "https://us.test-management.cloud.gettest-management.app"
+        [string]$Region          = "https://us.xray.cloud.getxray.app"
     )
 
     # -- 1. Resolve TestKey --------------------------------------------------
     if (-not $TestKey) {
         $lookupKey = if ($LinkedStoryKey) { $LinkedStoryKey } else { $StoryKey }
         Write-Host "  [Update] Finding existing Test for $lookupKey..."
-        $TestKey = Find-Existingtest-managementTest -StoryKey $lookupKey
+        $TestKey = Find-ExistingXrayTest -StoryKey $lookupKey
         if (-not $TestKey) {
-            Write-Warning "  [Update-test-managementTestForStory] No existing test-management Test found for $lookupKey."
-            Write-Warning "    Use New-test-managementTest / Ensure-test-managementTest to create one first."
+            Write-Warning "  [Update-XrayTestForStory] No existing Xray Test found for $lookupKey."
+            Write-Warning "    Use New-XrayTest / Ensure-XrayTest to create one first."
             return $null
         }
     }
@@ -1174,21 +1174,21 @@ function Update-test-managementTestForStory {
     Write-Host "  [Update] $TestKey current status: '$currentStatus'"
 
     if ($currentStatus -ne "Active") {
-        Write-Warning "  [Update-test-managementTestForStory] BLOCKED: $TestKey is '$currentStatus', expected 'Active'."
+        Write-Warning "  [Update-XrayTestForStory] BLOCKED: $TestKey is '$currentStatus', expected 'Active'."
         Write-Warning "    Only tests in 'Active' status can be updated via this workflow."
         return $null
     }
 
     # -- 3. Transition  Active ? Open ----------------------------------------
     Write-Host "  [Update] Transitioning $TestKey Active ? Open..." -ForegroundColor Yellow
-    if (-not (Invoke-issue-trackerTransition -IssueKey $TestKey -TransitionName "Open")) {
-        Write-Warning "  [Update-test-managementTestForStory] Cannot transition $TestKey to 'Open'. Aborting."
+    if (-not (Invoke-JiraTransition -IssueKey $TestKey -TransitionName "Open")) {
+        Write-Warning "  [Update-XrayTestForStory] Cannot transition $TestKey to 'Open'. Aborting."
         return $null
     }
 
     # -- 4. Fetch existing steps ----------------------------------------------
     Write-Host "  [Update] Fetching existing steps from $TestKey..."
-    $existingSteps = Get-test-managementCloudTestSteps -TestKey $TestKey -Region $Region
+    $existingSteps = Get-XrayCloudTestSteps -TestKey $TestKey -Region $Region
     Write-Host "  [Update] Existing steps: $(@($existingSteps).Count)  |  New steps to append: $(@($NewSteps).Count)"
 
     # -- 5. Merge existing + new ----------------------------------------------
@@ -1196,7 +1196,7 @@ function Update-test-managementTestForStory {
 
     # -- 6. Upload merged steps -----------------------------------------------
     Write-Host "  [Update] Uploading $(@($mergedSteps).Count) merged step(s) to $TestKey..."
-    $uploaded = Set-test-managementCloudTestSteps `
+    $uploaded = Set-XrayCloudTestSteps `
         -TestKey    $TestKey `
         -ProjectKey $ProjectKey `
         -Summary    "$TestKey - updated for $StoryKey" `
@@ -1204,12 +1204,12 @@ function Update-test-managementTestForStory {
         -Region     $Region
 
     if (-not $uploaded) {
-        Write-Warning "  [Update-test-managementTestForStory] Step upload FAILED. $TestKey left in 'Open' — review and transition manually."
+        Write-Warning "  [Update-XrayTestForStory] Step upload FAILED. $TestKey left in 'Open' — review and transition manually."
         return $null
     }
 
     # -- 7. Add audit comment -------------------------------------------------
-    $creds = Get-test-managementCreds
+    $creds = Get-XrayCreds
     $commentBody = @{
         body = @{
             version = 1
@@ -1230,19 +1230,19 @@ function Update-test-managementTestForStory {
             -Body ($commentBody | ConvertTo-Json -Depth 10) -UseBasicParsing -ErrorAction Stop | Out-Null
         Write-Host "  [Update] Audit comment added to $TestKey." -ForegroundColor Gray
     } catch {
-        Write-Warning "  [Update-test-managementTestForStory] Could not add audit comment: $_"
+        Write-Warning "  [Update-XrayTestForStory] Could not add audit comment: $_"
     }
 
     # -- 8. Transition  Open ? Ready for Test Review --------------------------
     Write-Host "  [Update] Transitioning $TestKey Open ? 'Ready for Test Review'..." -ForegroundColor Yellow
-    $finalOk = Invoke-issue-trackerTransition -IssueKey $TestKey -TransitionName "Ready for Test Review"
+    $finalOk = Invoke-JiraTransition -IssueKey $TestKey -TransitionName "Ready for Test Review"
     if (-not $finalOk) {
-        Write-Warning "  [Update-test-managementTestForStory] Steps uploaded but transition to 'Ready for Test Review' failed."
-        Write-Warning "    Transition $TestKey manually in issue-tracker."
+        Write-Warning "  [Update-XrayTestForStory] Steps uploaded but transition to 'Ready for Test Review' failed."
+        Write-Warning "    Transition $TestKey manually in Jira."
     }
 
     $finalStatus = if ($finalOk) { "Ready for Test Review" } else { "Open (manual transition required)" }
-    Write-Host "  [Update-test-managementTestForStory] COMPLETE: $TestKey ? '$finalStatus'  ($(@($mergedSteps).Count) total steps)" -ForegroundColor Green
+    Write-Host "  [Update-XrayTestForStory] COMPLETE: $TestKey ? '$finalStatus'  ($(@($mergedSteps).Count) total steps)" -ForegroundColor Green
 
     return @{
         TestKey     = $TestKey
@@ -1253,17 +1253,17 @@ function Update-test-managementTestForStory {
     }
 }
 
-Write-Host "test-management-api.ps1 loaded. Functions available:"
-Write-Host "  New-test-managementTest, New-test-managementTestExecution, Get-test-managementTestRunId"
-Write-Host "  Get-test-managementTestRunSteps, Set-test-managementStepResult, Add-test-managementStepEvidence"
-Write-Host "  Set-test-managementTestRunStatus, Show-test-managementTestRunSteps"
-Write-Host "  Get-test-managementCloudToken, Import-test-managementCloudTestSteps, Set-test-managementCloudTestSteps  [test-management Cloud API v2]"
-Write-Host "  Find-Existingtest-managementTest, Get-test-managementTestStepCount, Ensure-test-managementTest  [idempotent helpers]"
+Write-Host "xray-api.ps1 loaded. Functions available:"
+Write-Host "  New-XrayTest, New-XrayTestExecution, Get-XrayTestRunId"
+Write-Host "  Get-XrayTestRunSteps, Set-XrayStepResult, Add-XrayStepEvidence"
+Write-Host "  Set-XrayTestRunStatus, Show-XrayTestRunSteps"
+Write-Host "  Get-XrayCloudToken, Import-XrayCloudTestSteps, Set-XrayCloudTestSteps  [Xray Cloud API v2]"
+Write-Host "  Find-ExistingXrayTest, Get-XrayTestStepCount, Ensure-XrayTest  [idempotent helpers]"
 Write-Host "  Get-StoryStatus, Assert-StoryInDev  [status gate: In Dev | Ready for Dev]"
-Write-Host "  Get-issue-trackerIssueTransitions, Invoke-issue-trackerTransition  [workflow transition helpers]"
-Write-Host "  Get-test-managementCloudTestSteps  [read existing steps via GraphQL]"
-Write-Host "  Get-issue-trackerStoryDetail  [fetch description + comments + AC for agent context]"
-Write-Host "  Update-test-managementTestForStory  [Active?Open?append steps?Ready for Test Review]"
+Write-Host "  Get-JiraIssueTransitions, Invoke-JiraTransition  [workflow transition helpers]"
+Write-Host "  Get-XrayCloudTestSteps  [read existing steps via GraphQL]"
+Write-Host "  Get-JiraStoryDetail  [fetch description + comments + AC for agent context]"
+Write-Host "  Update-XrayTestForStory  [Active?Open?append steps?Ready for Test Review]"
 
 
 
